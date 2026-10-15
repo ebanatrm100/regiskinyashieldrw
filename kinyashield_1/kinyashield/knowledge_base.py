@@ -433,4 +433,6 @@ from knowledge_code import ENTRIES_CODE
 ENTRIES = ENTRIES + ENTRIES_CODE
 from knowledge_life import ENTRIES_LIFE
 ENTRIES = ENTRIES + ENTRIES_LIFE
+from knowledge_more import ENTRIES_MORE
+ENTRIES = ENTRIES + ENTRIES_MORE
 BY_ID = {e["id"]: e for e in ENTRIES}

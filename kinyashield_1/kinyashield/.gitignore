@@ -2,3 +2,4 @@
 .streamlit/secrets.toml
 app.py.kinyashield-chat-backup
 app.py.kinyashield-part2-backup
+__pycache__/

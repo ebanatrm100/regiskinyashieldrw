@@ -29,3 +29,13 @@ streamlit run app.py                     # optional Python/Streamlit version
 
 ## Honest status
 Blind test round 1: 79.7% accuracy, 88% precision, 68.8% recall on 64 fictional messages. French, Kinyarwanda and Kiswahili wording are drafts awaiting fluent reviewers. No real messages, users or official reporting contacts are included yet. See `docs/EVALUATION.md` and `docs/MVP_STATUS.md`.
+
+## Ask tab (added in 0.3.1)
+- `knowledge_base.py`: 27 original answers in en/fr/rw/sw (written for this project, nothing copied). `web/ask.js` does keyword retrieval and says "no reliable answer" instead of guessing.
+- Optional "Claude AI" mode appears only inside claude.ai (via the `sample` capability); it needs the viewer's consent, can be wrong, and is absent in the standalone file.
+- Tests: `node tests/ask_test.js`. fr/rw/sw guide text is a draft until fluent speakers review it.
+
+## Deploying the Streamlit app
+- Main file path in Streamlit Cloud: `kinyashield_1/kinyashield/app.py`.
+- Add `GEMINI_API_KEY = "..."` in the app's Secrets (never in code). Without it, the AI chat shows "not configured"; the checker and the offline safety guide still work.
+- Browser-only version (no server, works offline): `kinyashield_1/index.html`.

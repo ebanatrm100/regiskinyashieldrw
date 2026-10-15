@@ -67,8 +67,6 @@ with tab_learn:
 
 with tab_about:
     st.subheader(t["about_title"])
-    _desc = {'en': 'Regis KinyaShield RW is a cybersecurity and AI project focused on digital safety, threat awareness and intelligent protection against online risks. It has a cybersecurity part (check messages, learn, safety guide) and an AI part where you can ask anything and get an answer in English, French, Kinyarwanda or Kiswahili.', 'fr': "Regis KinyaShield RW est un projet de cybersécurité et d'IA axé sur la sécurité numérique, la sensibilisation aux menaces et la protection intelligente contre les risques en ligne. Il comprend une partie cybersécurité (vérifier des messages, apprendre, guide de sécurité) et une partie IA où vous pouvez poser n'importe quelle question et obtenir une réponse en anglais, français, kinyarwanda ou kiswahili.", 'rw': "Regis KinyaShield RW ni umushinga wa cybersecurity na AI wibanda ku mutekano wa digitale, kumenya ibyago no kurindwa mu buryo bw'ubwenge ingaruka zo kuri murandasi. Ufite igice cya cybersecurity (genzura ubutumwa, wige, igitabo cy'umutekano) n'igice cya AI ushobora kubazamo icyo ushaka cyose ugasubizwa mu Cyongereza, Igifaransa, Ikinyarwanda cyangwa Igiswahili.", 'sw': 'Regis KinyaShield RW ni mradi wa usalama wa mtandao na AI unaolenga usalama wa kidijitali, uelewa wa vitisho na ulinzi wa busara dhidi ya hatari za mtandaoni. Una sehemu ya usalama wa mtandao (hakiki jumbe, jifunze, mwongozo wa usalama) na sehemu ya AI ambapo unaweza kuuliza chochote na kupata jibu kwa Kiingereza, Kifaransa, Kinyarwanda au Kiswahili.'}
-    st.info(_desc.get(str(lang).lower(), _desc["en"]))  # KINYASHIELD_PART2_V1
     for line in t["about"]:
         st.markdown(f"- {line}")
     st.subheader(t["sources_title"])

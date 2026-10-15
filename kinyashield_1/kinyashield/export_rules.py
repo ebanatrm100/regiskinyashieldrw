@@ -5,6 +5,7 @@ from safety_rules import (RULES, PROTECTIVE_PREFIX, GENERAL_ADVICE, LANG_MARKERS
                           NO_GUARANTEE, LANGS, LANG_NAMES)
 from ui_strings import UI
 from trusted_sources import SOURCES, NOTE
+from knowledge_base import ENTRIES
 
 def examples(per_lang_susp=4, per_lang_legit=3):
     out = {l: [] for l in LANGS}
@@ -19,7 +20,7 @@ def examples(per_lang_susp=4, per_lang_legit=3):
 def build():
     data = dict(rules=RULES, protective=PROTECTIVE_PREFIX, general=GENERAL_ADVICE, markers=LANG_MARKERS,
                 verdicts=VERDICTS, noGuarantee=NO_GUARANTEE, langs=LANGS, langNames=LANG_NAMES, ui=UI,
-                sources=SOURCES, sourcesNote=NOTE, examples=examples(), version="0.3.0-mvp")
+                sources=SOURCES, sourcesNote=NOTE, examples=examples(), guide=ENTRIES, version="0.3.0-mvp")
     pathlib.Path("web").mkdir(exist_ok=True)
     with open("web/rules.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))

@@ -56,6 +56,17 @@ if not bad:
         for k in UI["en"]:
             if k not in UI[l]: fail("ui string missing", k, l)
             elif isinstance(UI["en"][k], list) and len(UI[l][k]) != len(UI["en"][k]): fail("ui list length", k, l)
+    from knowledge_base import ENTRIES, BY_ID
+    import re as _re
+    for e in ENTRIES:
+        for r in e["related"]:
+            if r not in BY_ID: fail("guide: unknown related", e["id"], r)
+        for l in LANGS:
+            if not e["title"].get(l) or not e["answer"].get(l) or not e["keywords"].get(l): fail("guide: missing text", e["id"], l)
+            if len(e["steps"][l]) != len(e["steps"]["en"]): fail("guide: step count", e["id"], l)
+            for k in e["keywords"][l]:
+                if k != k.lower() or not k.isascii(): fail("guide: keyword must be ascii lower-case", e["id"], l, k)
+    print("guide entries checked:", len(ENTRIES))
     print("rules checked:", len(RULES), "| languages:", ", ".join(LANGS))
 print("FAILED" if bad else "ALL OK")
 sys.exit(1 if bad else 0)

@@ -1,8 +1,8 @@
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <svg viewBox="0 0 64 72" width="48" height="54" role="img" aria-label="KinyaShield"><defs><linearGradient id="ksg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b6e4f"/><stop offset="1" stop-color="#1a8fc4"/></linearGradient></defs><path d="M32 3 L58 12 V35 C58 52 46 63 32 69 C18 63 6 52 6 35 V12 Z" fill="url(#ksg)"/><path d="M32 9 L52 16 V35 C52 48 43 57 32 62 C21 57 12 48 12 35 V16 Z" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/><path d="M24 22 V50 M24 36 L40 22 M28.5 32.5 L41 50" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-      <div><h1>KinyaShield RW</h1><p id="tagline"></p></div>
+      <svg viewBox="0 0 64 72" width="48" height="54" role="img" aria-label="Regis KinyaShield RW"><defs><linearGradient id="ksg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b6e4f"/><stop offset="1" stop-color="#1a8fc4"/></linearGradient></defs><path d="M32 3 L58 12 V35 C58 52 46 63 32 69 C18 63 6 52 6 35 V12 Z" fill="url(#ksg)"/><path d="M32 9 L52 16 V35 C52 48 43 57 32 62 C21 57 12 48 12 35 V16 Z" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/><path d="M24 22 V50 M24 36 L40 22 M28.5 32.5 L41 50" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <div><h1>Regis KinyaShield RW</h1><p id="tagline"></p></div>
     </div>
     <div class="tools">
       <div class="seg" id="langseg" role="group" aria-label="Language"></div>
@@ -14,12 +14,28 @@
   <div class="note" id="draftNote" hidden></div>
 
   <div class="tabs" role="tablist" id="tabs">
-    <button role="tab" id="tab-check" aria-controls="p-check" aria-selected="true" type="button"></button>
+    <button role="tab" id="tab-cyber" aria-controls="p-cyber" aria-selected="true" type="button"></button>
+    <button role="tab" id="tab-gen" aria-controls="p-gen" aria-selected="false" type="button"></button>
     <button role="tab" id="tab-learn" aria-controls="p-learn" aria-selected="false" type="button"></button>
     <button role="tab" id="tab-about" aria-controls="p-about" aria-selected="false" type="button"></button>
   </div>
 
-  <section class="panel" id="p-check" role="tabpanel" aria-labelledby="tab-check">
+  <section class="panel" id="p-cyber" role="tabpanel" aria-labelledby="tab-cyber">
+    <div class="seg subseg" id="subseg" role="group"></div>
+    <div id="sub-ask" class="subpanel">
+    <div class="askhead"><div><h2 id="secTitle"></h2><p class="small" id="secWelcome"></p></div></div>
+    <div class="chat" id="secChat" aria-live="polite"></div>
+    <div class="sugg" id="secSugg"></div>
+    <form class="composer" id="secForm">
+      <label class="sr" for="secIn" id="secLbl"></label>
+      <textarea id="secIn" rows="1" autocomplete="off" enterkeyhint="send"></textarea>
+      <button class="btn primary" id="secSend" type="submit"></button>
+      <button class="btn ghost" id="secStop" type="button" hidden></button>
+    </form>
+    <p class="small" id="secNote"></p>
+    <button class="chip" id="secNew" type="button" hidden></button>
+    </div>
+    <div id="sub-check" class="subpanel" hidden>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div>
         <label class="lbl" for="msg" id="pasteLbl"></label>
@@ -33,6 +49,21 @@
       </div>
       <div id="result" aria-live="polite"></div>
     </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-gen" role="tabpanel" aria-labelledby="tab-gen" hidden>
+    <div class="askhead"><div><h2 id="genTitle"></h2><p class="small" id="genWelcome"></p></div></div>
+    <div class="chat" id="genChat" aria-live="polite"></div>
+    <div class="sugg" id="genSugg"></div>
+    <form class="composer" id="genForm">
+      <label class="sr" for="genIn" id="genLbl"></label>
+      <textarea id="genIn" rows="1" autocomplete="off" enterkeyhint="send"></textarea>
+      <button class="btn primary" id="genSend" type="submit"></button>
+      <button class="btn ghost" id="genStop" type="button" hidden></button>
+    </form>
+    <p class="small" id="genNote"></p>
+    <button class="chip" id="genNew" type="button" hidden></button>
   </section>
 
   <section class="panel" id="p-learn" role="tabpanel" aria-labelledby="tab-learn" hidden></section>

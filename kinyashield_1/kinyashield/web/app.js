@@ -7,8 +7,8 @@
     get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* private mode: page still works */ } }
   };
-  var SIZES = [100, 112, 125, 140], THEMES = ["auto", "light", "dark"];
-  var state = { lang: "en", tab: "check", last: null, exampleActive: false, size: 0, theme: "auto", fb: [], fbPicked: null };
+  var TABS = ["cyber", "gen", "learn", "about"], SIZES = [100, 112, 125, 140], THEMES = ["auto", "light", "dark"];
+  var state = { lang: "en", tab: "cyber", sub: "ask", last: null, exampleActive: false, size: 0, theme: "auto", fb: [], fbPicked: null, hist: [], ai: null, busy: false, ctl: null };
 
   function t(k) { var s = D.ui[state.lang][k]; return s === undefined ? D.ui.en[k] : s; }
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }
@@ -29,7 +29,7 @@
     $("privacy").textContent = t("privacy");
     $("go").textContent = t("analyze");
     $("clear").textContent = t("clear");
-    $("tab-check").textContent = t("tab_check"); $("tab-learn").textContent = t("tab_learn"); $("tab-about").textContent = t("tab_about");
+    $("tab-cyber").textContent = t("tab_cyber"); $("tab-gen").textContent = t("tab_gen"); $("tab-learn").textContent = t("tab_learn"); $("tab-about").textContent = t("tab_about");
     $("langseg").setAttribute("aria-label", t("language"));
     $("sizeBtn").textContent = "A+ " + SIZES[state.size] + "%"; $("sizeBtn").setAttribute("aria-label", t("text_size"));
     $("themeBtn").textContent = t("theme") + ": " + t("theme_" + state.theme);
@@ -46,7 +46,7 @@
     (D.examples[state.lang] || []).forEach(function (ex, i) {
       var o = el("option", "", (ex.text.length > 58 ? ex.text.slice(0, 58) + "…" : ex.text)); o.value = String(i); sel.appendChild(o);
     });
-    renderLearn(); renderAbout();
+    renderLearn(); renderAbout(); renderChatsStatic();
   }
 
   function renderLearn() {
@@ -206,10 +206,132 @@
   }
   function setTab(name) {
     state.tab = name;
-    ["check", "learn", "about"].forEach(function (n) { $("p-" + n).hidden = n !== name; $("tab-" + n).setAttribute("aria-selected", String(n === name)); });
+    TABS.forEach(function (n) { $("p-" + n).hidden = n !== name; $("tab-" + n).setAttribute("aria-selected", String(n === name)); });
   }
   function applyTheme() {
     var r = document.documentElement; if (state.theme === "auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", state.theme);
+  }
+
+
+  /* ---------- Chats: "sec" = cybersecurity guide (offline), "gen" = ask anything (Claude, when available) ---------- */
+  var GUIDE = D.guide || [], AI_MAX_TURNS = 8, CHATS = ["sec", "gen"];
+  function entryById(id) { for (var i = 0; i < GUIDE.length; i++) if (GUIDE[i].id === id) return GUIDE[i]; return null; }
+  function gl(e, field) { var v = e[field]; return v[state.lang] || v.en; }
+  function suggestIds() { return ["shared_pin", "verify_sender", "where_to_report", "strong_passwords", "lost_phone", "sent_money_scammer"]; }
+
+  function renderChatsStatic() {
+    CHATS.forEach(function (k) {
+      var gen = k === "gen";
+      $(k + "Title").textContent = gen ? t("gen_title") : t("ask_title");
+      $(k + "Welcome").textContent = gen ? (state.ai ? t("gen_welcome") : t("gen_need_ai")) : t("ask_welcome");
+      $(k + "In").placeholder = gen ? t("gen_placeholder") : t("ask_placeholder"); $(k + "Lbl").textContent = $(k + "Title").textContent;
+      $(k + "Send").textContent = t("ask_send"); $(k + "Stop").textContent = t("ask_stop"); $(k + "New").textContent = t("ask_new");
+      $(k + "Note").textContent = gen ? t("ask_ai_note") : t("ask_disclaimer");
+      var s = clear($(k + "Sugg")); s.appendChild(el("span", "small", t("ask_try") + ":"));
+      if (gen) { if (state.ai) t("gen_sugg").forEach(function (q) { s.appendChild(chipBtn(q, function () { ask(k, q); })); }); else s.hidden = true; s.hidden = !state.ai; }
+      else suggestIds().forEach(function (id) { var en = entryById(id); if (en) s.appendChild(chipBtn(gl(en, "title"), function () { ask(k, gl(en, "title")); })); });
+      $(k + "New").hidden = !$(k + "Chat").firstChild;
+    });
+    var ss = clear($("subseg")); ss.setAttribute("aria-label", t("tab_cyber"));
+    [["ask", t("sub_ask")], ["check", t("sub_check")]].forEach(function (m) {
+      var b = el("button", "", m[1]); b.type = "button"; b.setAttribute("aria-pressed", String(state.sub === m[0]));
+      b.addEventListener("click", function () { setSub(m[0]); }); ss.appendChild(b);
+    });
+  }
+  function chipBtn(label, fn) { var b = el("button", "chip", label); b.type = "button"; b.addEventListener("click", fn); return b; }
+  function setSub(n) {
+    state.sub = n; $("sub-ask").hidden = n !== "ask"; $("sub-check").hidden = n !== "check";
+    var bs = $("subseg").children; for (var i = 0; i < bs.length; i++) bs[i].setAttribute("aria-pressed", String((i === 0 ? "ask" : "check") === n));
+  }
+  function bubble(k, who, cls) {
+    var wrap = el("div", "msgrow " + cls), head = el("div", "who", who === "me" ? t("ask_you") : who); wrap.appendChild(head);
+    var body = el("div", "bub " + cls); wrap.appendChild(body); $(k + "Chat").appendChild(wrap); $(k + "New").hidden = false;
+    try { wrap.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) { /* old browsers */ }
+    return body;
+  }
+  function relatedChips(k, ids) {
+    var box = el("div", "sugg"); box.appendChild(el("span", "small", t("ask_related") + ":"));
+    ids.forEach(function (id) { var e = entryById(id); if (!e) return; box.appendChild(chipBtn(gl(e, "title"), function () { bubble(k, "me", "me").textContent = gl(e, "title"); showEntry(k, bubble(k, "KinyaShield", "bot"), e); })); });
+    return box;
+  }
+  function showEntry(k, body, e) {
+    body.appendChild(el("h4", "", gl(e, "title")));
+    body.appendChild(el("p", "", gl(e, "answer")));
+    body.appendChild(el("h5", "", t("ask_steps")));
+    var ol = el("ol", "steps"); e.steps[state.lang].forEach(function (x) { ol.appendChild(el("li", "", x)); }); body.appendChild(ol);
+    body.appendChild(el("p", "srcline", t("ask_from_guide")));
+    if (e.related && e.related.length) body.appendChild(relatedChips(k, e.related));
+  }
+  function looksLikeMessage(q) { if (q.length < 50) return false; return K.analyze(D, q).verdict !== "ok"; }
+  function setBusy(k, b) { state.busy = b; $(k + "Send").hidden = b; $(k + "Stop").hidden = !b; $(k + "In").disabled = b; if (!b) $(k + "In").focus(); }
+
+  function ask(k, q) {
+    q = (q || "").trim(); if (!q || state.busy) return;
+    var inp = $(k + "In"); inp.value = ""; inp.style.height = "";
+    bubble(k, "me", "me").textContent = q;
+    if (k === "gen" && state.ai) return askClaude(k, q);
+    var body = bubble(k, "KinyaShield", "bot");
+    if (k === "gen") {                       /* no Claude here: answer from the guide if it covers it, otherwise be honest */
+      var gh = window.KinyaAsk.best(window.KinyaAsk.search(K, GUIDE, q, state.lang));
+      if (gh) { showEntry(k, body, gh.entry); return; }
+      body.appendChild(el("p", "", t("gen_need_ai"))); return;
+    }
+    if (looksLikeMessage(q)) {
+      body.appendChild(el("p", "", t("ask_check_msg") + "."));
+      var go = el("button", "btn primary", t("ask_open_check")); go.type = "button";
+      go.addEventListener("click", function () { $("msg").value = q; state.exampleActive = false; setSub("check"); run(); }); body.appendChild(go);
+      return;
+    }
+    var hit = window.KinyaAsk.best(window.KinyaAsk.search(K, GUIDE, q, state.lang));
+    if (hit) { showEntry(k, body, hit.entry); return; }
+    body.appendChild(el("p", "", t("ask_unknown")));
+    if (state.ai) body.appendChild(chipBtn(t("ask_ai_btn"), function () { setTab("gen"); ask("gen", q); }));
+    body.appendChild(relatedChips(k, suggestIds()));
+  }
+
+  function instructions() {
+    return "You are the answering engine inside Regis KinyaShield RW, a free cybersecurity and AI project for digital safety, threat awareness and protection against online risks, used mainly in Rwanda and East Africa. " +
+      "It also answers any other question people ask, on any topic. Answer helpfully, correctly and concisely, in plain text with no markdown symbols (short paragraphs; use '1.' style numbering if steps help). " +
+      "Reply in the same language as the user's latest question; if unclear use " + D.langNames[state.lang] + ". Supported languages: English, French, Kinyarwanda, Kiswahili. " +
+      "Be accurate: if you are not sure, say so and say how to check. Never invent phone numbers, web addresses, laws, prices, quotes or statistics; for current facts you cannot verify, say your information may be out of date. " +
+      "Do not reproduce song lyrics, poems or passages from books, articles or other copyrighted works; summarise or explain in your own words instead. " +
+      "For scams, never tell the user to share a PIN, password or one-time code, and remind them a message cannot be proven safe by its content. " +
+      "For money, legal or medical questions give general information only and recommend a qualified person. Refuse anything that would help harm others.";
+  }
+  function askClaude(k, q) {
+    var sample = state.ai; if (!sample) return;
+    var body = bubble(k, t("ask_ai_label"), "bot ai"); body.textContent = t("ask_ai_thinking");
+    var turns = state.hist.slice(-(AI_MAX_TURNS * 2 - 1)).concat([{ role: "user", content: q }]);
+    while (turns.length && turns[0].role !== "user") turns.shift();
+    var msgs = turns.map(function (m, i) { return { role: m.role, content: i === 0 ? instructions() + "\n\n---\nUser question:\n" + m.content : m.content }; });
+    state.ctl = new AbortController(); setBusy(k, true);
+    sample(msgs, { signal: state.ctl.signal, cache: false, modelTier: "default", onText: function (e) { body.textContent = e.text; } }).then(function (r) {
+      var txt = (r && r.text) || ""; body.textContent = txt || t("ask_ai_error");
+      if (txt) state.hist.push({ role: "user", content: q }, { role: "assistant", content: txt });
+      setBusy(k, false);
+    }, function (err) {
+      var c = err && err.code, partial = err && err.text;
+      if (c === "cancelled") body.textContent = (partial ? partial + "\n\n" : "") + t("ask_ai_stopped");
+      else if (c === "rate_limited") body.textContent = t("ask_ai_rate");
+      else if (c === "not_granted" || c === "sampling_disabled") { body.textContent = t("ask_ai_denied"); state.ai = null; renderChatsStatic(); }
+      else body.textContent = (partial ? partial + "\n\n" : "") + t("ask_ai_error");
+      setBusy(k, false);
+    });
+  }
+  function initAsk() {
+    CHATS.forEach(function (k) {
+      $(k + "Form").addEventListener("submit", function (e) { e.preventDefault(); ask(k, $(k + "In").value); });
+      $(k + "In").addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); ask(k, $(k + "In").value); } });
+      $(k + "In").addEventListener("input", function () { var n = $(k + "In"); n.style.height = "auto"; n.style.height = Math.min(n.scrollHeight, 160) + "px"; });
+      $(k + "Stop").addEventListener("click", function () { if (state.ctl) state.ctl.abort(); });
+      $(k + "New").addEventListener("click", function () { if (state.ctl) state.ctl.abort(); if (k === "gen") state.hist = []; clear($(k + "Chat")); $(k + "New").hidden = true; });
+    });
+    /* Claude answers are optional: only inside claude.ai, and only if the viewer's host serves them. */
+    try {
+      if (window.claude && typeof window.claude.use === "function") {
+        window.claude.use("sample").then(function (s) { state.ai = s || null; renderChatsStatic(); }, function () { state.ai = null; });
+      }
+    } catch (e) { state.ai = null; }
   }
 
   function init() {
@@ -225,7 +347,8 @@
     $("examples").addEventListener("change", function (e) { if (e.target.value !== "") loadExample(parseInt(e.target.value, 10)); });
     $("sizeBtn").addEventListener("click", function () { state.size = (state.size + 1) % SIZES.length; store.set("ks_size", String(state.size)); document.documentElement.style.fontSize = SIZES[state.size] + "%"; renderStatic(); });
     $("themeBtn").addEventListener("click", function () { state.theme = THEMES[(THEMES.indexOf(state.theme) + 1) % THEMES.length]; store.set("ks_theme", state.theme); applyTheme(); renderStatic(); });
-    ["check", "learn", "about"].forEach(function (n) { $("tab-" + n).addEventListener("click", function () { setTab(n); }); });
+    TABS.forEach(function (n) { $("tab-" + n).addEventListener("click", function () { setTab(n); }); });
+    initAsk();
     loadExample(0);
   }
   init();

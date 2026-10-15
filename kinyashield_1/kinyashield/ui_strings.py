@@ -190,3 +190,104 @@ _WEB_EXTRA = {
 }
 for _l, _extra in _WEB_EXTRA.items():
     UI[_l].update(_extra)
+
+
+# Ask tab (added for the Q&A step). Same four languages; fr/rw/sw are drafts until reviewed.
+_ASK = {
+    "en": {"tab_ask": "Ask", "ask_title": "Ask a safety question",
+           "ask_welcome": "Ask about scams, mobile-money safety, passwords, lost phones and more. Answers come from a guide written by the KinyaShield team.",
+           "ask_placeholder": "Type your question…", "ask_send": "Ask", "ask_try": "Try asking",
+           "ask_unknown": "I do not have a reliable answer to that in my guide, so I will not guess. Try rewording, pick one of the topics below, or ask your bank, provider or the authorities.",
+           "ask_from_guide": "From the KinyaShield guide", "ask_related": "Related questions", "ask_steps": "What to do",
+           "ask_check_msg": "This looks like a message you received. Check it in the Check tab", "ask_open_check": "Check this message",
+           "ask_mode_guide": "Guide", "ask_mode_ai": "Claude AI", "ask_mode": "Answer source",
+           "ask_ai_note": "Claude answers any question, but it can be wrong. Do not rely on it for money, legal or medical decisions, and do not paste secret codes.",
+           "ask_ai_thinking": "Thinking…", "ask_stop": "Stop", "ask_ai_btn": "Ask Claude instead",
+           "ask_ai_label": "Claude (AI)", "ask_you": "You", "ask_new": "New chat",
+           "ask_ai_rate": "Too many requests. Please wait a little and try again.", "ask_ai_error": "Claude could not answer now. The guide still works.",
+           "ask_ai_denied": "Claude was not allowed to answer. The guide still works.", "ask_ai_stopped": "Stopped.",
+           "ask_disclaimer": "General information only. It is not legal, financial or medical advice."},
+    "fr": {"tab_ask": "Demander", "ask_title": "Poser une question de sécurité",
+           "ask_welcome": "Posez des questions sur les arnaques, la sécurité du mobile money, les mots de passe, les téléphones perdus et plus. Les réponses viennent d'un guide rédigé par l'équipe KinyaShield.",
+           "ask_placeholder": "Écrivez votre question…", "ask_send": "Demander", "ask_try": "Essayez de demander",
+           "ask_unknown": "Je n'ai pas de réponse fiable à cela dans mon guide, donc je ne vais pas deviner. Reformulez, choisissez un sujet ci-dessous, ou demandez à votre banque, votre opérateur ou aux autorités.",
+           "ask_from_guide": "Du guide KinyaShield", "ask_related": "Questions liées", "ask_steps": "Que faire",
+           "ask_check_msg": "Cela ressemble à un message reçu. Vérifiez-le dans l'onglet Vérifier", "ask_open_check": "Vérifier ce message",
+           "ask_mode_guide": "Guide", "ask_mode_ai": "Claude IA", "ask_mode": "Source de la réponse",
+           "ask_ai_note": "Claude répond à toute question, mais il peut se tromper. Ne vous y fiez pas pour des décisions d'argent, juridiques ou médicales, et ne collez pas de codes secrets.",
+           "ask_ai_thinking": "Réflexion…", "ask_stop": "Arrêter", "ask_ai_btn": "Demander à Claude",
+           "ask_ai_label": "Claude (IA)", "ask_you": "Vous", "ask_new": "Nouvelle discussion",
+           "ask_ai_rate": "Trop de demandes. Patientez un peu puis réessayez.", "ask_ai_error": "Claude n'a pas pu répondre maintenant. Le guide fonctionne toujours.",
+           "ask_ai_denied": "Claude n'a pas été autorisé à répondre. Le guide fonctionne toujours.", "ask_ai_stopped": "Arrêté.",
+           "ask_disclaimer": "Informations générales uniquement. Ce ne sont pas des conseils juridiques, financiers ou médicaux."},
+    "rw": {"tab_ask": "Baza", "ask_title": "Baza ikibazo cy'umutekano",
+           "ask_welcome": "Baza ku buriganya, umutekano wa mobile money, amagambo y'ibanga, telefoni zitakaye n'ibindi. Ibisubizo bikomoka ku gitabo cyanditswe n'ikipe ya KinyaShield.",
+           "ask_placeholder": "Andika ikibazo cyawe…", "ask_send": "Baza", "ask_try": "Gerageza kubaza",
+           "ask_unknown": "Nta gisubizo cyizewe mfite kuri ibi mu gitabo cyanjye, ntabwo rero ndakeka. Ongera ubyandike ukundi, hitamo isomo hepfo, cyangwa ubaze banki yawe, ikigo cyawe cyangwa inzego z'ubuyobozi.",
+           "ask_from_guide": "Mu gitabo cya KinyaShield", "ask_related": "Ibibazo bifitanye isano", "ask_steps": "Icyo gukora",
+           "ask_check_msg": "Ibi bisa n'ubutumwa wakiriye. Bugenzure mu gice cya «Genzura»", "ask_open_check": "Genzura ubu butumwa",
+           "ask_mode_guide": "Igitabo", "ask_mode_ai": "Claude AI", "ask_mode": "Aho igisubizo gikomoka",
+           "ask_ai_note": "Claude asubiza ikibazo cyose, ariko ashobora kwibeshya. Ntumwiringire ku byemezo by'amafaranga, amategeko cyangwa ubuvuzi, kandi ntushyiremo kode z'ibanga.",
+           "ask_ai_thinking": "Aratekereza…", "ask_stop": "Hagarika", "ask_ai_btn": "Baza Claude",
+           "ask_ai_label": "Claude (AI)", "ask_you": "Wowe", "ask_new": "Ikiganiro gishya",
+           "ask_ai_rate": "Ibyifuzo ni byinshi cyane. Tegereza gato ongere ugerageze.", "ask_ai_error": "Claude ntiyashoboye gusubiza ubu. Igitabo kiracyakora.",
+           "ask_ai_denied": "Claude ntiyemerewe gusubiza. Igitabo kiracyakora.", "ask_ai_stopped": "Byahagaritswe.",
+           "ask_disclaimer": "Ni amakuru rusange gusa. Si inama z'amategeko, iz'imari cyangwa iz'ubuvuzi."},
+    "sw": {"tab_ask": "Uliza", "ask_title": "Uliza swali la usalama",
+           "ask_welcome": "Uliza kuhusu utapeli, usalama wa pesa kwa simu, nenosiri, simu zilizopotea na mengineyo. Majibu yanatoka kwenye mwongozo ulioandikwa na timu ya KinyaShield.",
+           "ask_placeholder": "Andika swali lako…", "ask_send": "Uliza", "ask_try": "Jaribu kuuliza",
+           "ask_unknown": "Sina jibu la kuaminika kwa hilo kwenye mwongozo wangu, kwa hiyo sitakisia. Jaribu kuandika tofauti, chagua mada hapa chini, au uulize benki yako, mtoa huduma wako au mamlaka.",
+           "ask_from_guide": "Kutoka mwongozo wa KinyaShield", "ask_related": "Maswali yanayohusiana", "ask_steps": "Cha kufanya",
+           "ask_check_msg": "Hii inaonekana kama ujumbe uliopokea. Uhakiki kwenye kichupo cha «Hakiki»", "ask_open_check": "Hakiki ujumbe huu",
+           "ask_mode_guide": "Mwongozo", "ask_mode_ai": "Claude AI", "ask_mode": "Chanzo cha jibu",
+           "ask_ai_note": "Claude hujibu swali lolote, lakini anaweza kukosea. Usimtegemee kwa maamuzi ya pesa, sheria au afya, na usibandike misimbo ya siri.",
+           "ask_ai_thinking": "Anafikiri…", "ask_stop": "Simamisha", "ask_ai_btn": "Muulize Claude",
+           "ask_ai_label": "Claude (AI)", "ask_you": "Wewe", "ask_new": "Gumzo jipya",
+           "ask_ai_rate": "Maombi ni mengi mno. Subiri kidogo kisha ujaribu tena.", "ask_ai_error": "Claude hakuweza kujibu sasa. Mwongozo bado unafanya kazi.",
+           "ask_ai_denied": "Claude hakuruhusiwa kujibu. Mwongozo bado unafanya kazi.", "ask_ai_stopped": "Imesimamishwa.",
+           "ask_disclaimer": "Taarifa za jumla tu. Si ushauri wa kisheria, kifedha wala kiafya."},
+}
+for _l, _extra in _ASK.items():
+    UI[_l].update(_extra)
+
+
+# "Two parts" restructure: Cybersecurity + Ask anything. fr/rw/sw are drafts until reviewed.
+_V2 = {
+    "en": {"tagline": "Cybersecurity and AI for digital safety, threat awareness and intelligent protection against online risks. It also answers any question you ask.",
+           "tab_cyber": "Cybersecurity", "tab_gen": "Ask anything", "sub_ask": "Security questions", "sub_check": "Check a message",
+           "gen_title": "Ask me anything", "gen_welcome": "Ask about any topic, in English, French, Kinyarwanda or Kiswahili: school, health basics, work, writing, technology, daily life.",
+           "gen_need_ai": "Open-ended answers need Claude AI, which only works when this page is opened inside claude.ai. The Cybersecurity part still works here, even offline.",
+           "gen_placeholder": "Ask anything…",
+           "gen_sugg": ["Explain how vaccines work in simple words", "Help me write a polite message asking a client to pay", "What are good ways to study for exams?", "How does a bank loan interest work?"]},
+    "fr": {"tagline": "Cybersécurité et IA pour la sécurité numérique, la sensibilisation aux menaces et une protection intelligente contre les risques en ligne. Répond aussi à toute question que vous posez.",
+           "tab_cyber": "Cybersécurité", "tab_gen": "Demandez tout", "sub_ask": "Questions de sécurité", "sub_check": "Vérifier un message",
+           "gen_title": "Posez-moi n'importe quelle question", "gen_welcome": "Posez des questions sur tout sujet, en anglais, français, kinyarwanda ou kiswahili : école, santé de base, travail, rédaction, technologie, vie quotidienne.",
+           "gen_need_ai": "Les réponses ouvertes demandent Claude IA, disponible seulement quand cette page est ouverte dans claude.ai. La partie Cybersécurité fonctionne toujours ici, même hors ligne.",
+           "gen_placeholder": "Posez n'importe quelle question…",
+           "gen_sugg": ["Explique simplement comment fonctionnent les vaccins", "Aide-moi à écrire un message poli pour demander un paiement à un client", "Quelles sont les bonnes méthodes pour réviser un examen ?", "Comment fonctionnent les intérêts d'un prêt bancaire ?"]},
+    "rw": {"tagline": "Umutekano wa murandasi na AI ku mutekano w'ikoranabuhanga, kumenya ibyago no kurinda mu buryo bw'ubwenge ibyago byo kuri murandasi. Isubiza kandi ikibazo cyose uyibajije.",
+           "tab_cyber": "Umutekano wa murandasi", "tab_gen": "Baza icyo ushaka", "sub_ask": "Ibibazo by'umutekano", "sub_check": "Genzura ubutumwa",
+           "gen_title": "Mbaza ikibazo cyose", "gen_welcome": "Baza ku nsanganyamatsiko iyo ari yo yose, mu Cyongereza, Igifaransa, Ikinyarwanda cyangwa Igiswahili: ishuri, ubuzima bw'ibanze, akazi, kwandika, ikoranabuhanga, ubuzima bwa buri munsi.",
+           "gen_need_ai": "Ibisubizo byo ku kibazo cyose bisaba Claude AI, ikora gusa uru rupapuro rufunguriwe muri claude.ai. Igice cy'umutekano wa murandasi kiracyakora hano, ndetse nta murandasi.",
+           "gen_placeholder": "Baza icyo ushaka…",
+           "gen_sugg": ["Sobanura mu magambo yoroshye uko inkingo zikora", "Mfasha kwandika ubutumwa bwiza busaba umukiliya kwishyura", "Ni ubuhe buryo bwiza bwo kwiga ngo nsibe ibizamini?", "Inyungu y'inguzanyo ya banki ikora ite?"]},
+    "sw": {"tagline": "Usalama wa mtandao na AI kwa usalama wa kidijitali, uelewa wa vitisho na ulinzi wa busara dhidi ya hatari za mtandaoni. Pia hujibu swali lolote unalouliza.",
+           "tab_cyber": "Usalama wa mtandao", "tab_gen": "Uliza chochote", "sub_ask": "Maswali ya usalama", "sub_check": "Hakiki ujumbe",
+           "gen_title": "Niulize chochote", "gen_welcome": "Uliza kuhusu mada yoyote, kwa Kiingereza, Kifaransa, Kinyarwanda au Kiswahili: shule, afya ya msingi, kazi, uandishi, teknolojia, maisha ya kila siku.",
+           "gen_need_ai": "Majibu ya maswali huru yanahitaji Claude AI, inayofanya kazi tu ukurasa huu ukifunguliwa ndani ya claude.ai. Sehemu ya Usalama wa mtandao bado inafanya kazi hapa, hata bila intaneti.",
+           "gen_placeholder": "Uliza chochote…",
+           "gen_sugg": ["Eleza kwa maneno rahisi chanjo zinavyofanya kazi", "Nisaidie kuandika ujumbe wa heshima kumuomba mteja alipe", "Njia nzuri za kujisomea mitihani ni zipi?", "Riba ya mkopo wa benki inafanyaje kazi?"]},
+}
+for _l, _extra in _V2.items():
+    UI[_l].update(_extra)
+
+
+# Project description shown first in About (all four languages; fr/rw/sw are drafts until reviewed).
+_DESC = {
+    "en": "Regis KinyaShield RW is a cybersecurity and AI project focused on digital safety, threat awareness and intelligent protection against online risks. It has a cybersecurity part (check messages, learn, safety guide) and an AI part where you can ask anything and get an answer in English, French, Kinyarwanda or Kiswahili.",
+    "fr": "Regis KinyaShield RW est un projet de cybersécurité et d'IA axé sur la sécurité numérique, la sensibilisation aux menaces et la protection intelligente contre les risques en ligne. Il comprend une partie cybersécurité (vérifier des messages, apprendre, guide de sécurité) et une partie IA où vous pouvez poser n'importe quelle question et obtenir une réponse en anglais, français, kinyarwanda ou kiswahili.",
+    "rw": "Regis KinyaShield RW ni umushinga wa cybersecurity na AI wibanda ku mutekano wa digitale, kumenya ibyago no kurindwa mu buryo bw'ubwenge ingaruka zo kuri murandasi. Ufite igice cya cybersecurity (genzura ubutumwa, wige, igitabo cy'umutekano) n'igice cya AI ushobora kubazamo icyo ushaka cyose ugasubizwa mu Cyongereza, Igifaransa, Ikinyarwanda cyangwa Igiswahili.",
+    "sw": "Regis KinyaShield RW ni mradi wa usalama wa mtandao na AI unaolenga usalama wa kidijitali, uelewa wa vitisho na ulinzi wa busara dhidi ya hatari za mtandaoni. Una sehemu ya usalama wa mtandao (hakiki jumbe, jifunze, mwongozo wa usalama) na sehemu ya AI ambapo unaweza kuuliza chochote na kupata jibu kwa Kiingereza, Kifaransa, Kinyarwanda au Kiswahili.",
+}
+for _l, _d in _DESC.items():
+    UI[_l]["about"] = [_d] + list(UI[_l]["about"])

@@ -1,0 +1,65 @@
+id,text,label,category,language,reviewed_by_fluent_speaker,split
+B001,"Dear subscriber, you are today's winner of 1,500,000 RWF. To collect, reply with your PIN and full name.",suspicious,prize,en,n/a,test
+B002,Your Equity account is on hold. Restore access now at https://equity-restore.click/login,suspicious,account_threat,en,n/a,test
+B003,"Hello, I accidentally sent 25,000 RWF to your line. Please return it to me urgently.",suspicious,mistaken_transfer,en,n/a,test
+B004,"Tax office: you have an unpaid fine. Settle 45,000 RWF through this link within 12 hours or face arrest: http://tinyurl.com/pay-fine",suspicious,link,en,n/a,test
+B005,I am a soldier abroad and I need someone to receive a large sum of gold money. You will get 30 percent. Contact me privately.,suspicious,advance_fee_419,en,n/a,test
+B006,Your MoMo wallet has been limited. Dial *182*8*1# and enter your secret number.,suspicious,credential,en,n/a,test
+B007,"Exclusive crypto offer: invest 50,000 RWF today and receive 200,000 RWF in one week, guaranteed.",suspicious,too_good,en,n/a,test
+B008,Install AnyDesk so our agent can fix your mobile banking problem right now.,suspicious,remote_access,en,n/a,test
+B009,Your verification code is 590127. It expires in 5 minutes. Do not give it to anyone.,legitimate,security_notice,en,n/a,test
+B010,"Hi mum, I changed my number, save this one. Call me tonight.",legitimate,family,en,n/a,test
+B011,Your monthly statement is ready. Log in to the official app to view it.,legitimate,bank,en,n/a,test
+B012,"Payment of 12,500 RWF for your electricity bill was received. Thank you.",legitimate,payment,en,n/a,test
+B013,Reminder: send your assignment by Friday midnight to the teacher's email.,legitimate,school,en,n/a,test
+B014,Our staff will never ask for your password. Report any suspicious call to the helpline on your card.,legitimate,security_notice,en,n/a,test
+B015,"Congratulations, you won first prize in the school science fair! Well done.",legitimate,congrats,en,n/a,test
+B016,Job vacancy at our bank: apply on the official careers page before 30 November.,legitimate,jobs,en,n/a,test
+B017,"Cher client, votre colis est en attente. Réglez 2 500 RWF de frais de livraison sur http://bit.ly/colis-rw pour le recevoir.",suspicious,link,fr,no,test
+B018,Votre compte Equity est suspendu. Envoyez-nous le code reçu par SMS pour le réactiver.,suspicious,credential,fr,no,test
+B019,Bravo ! Vous avez été sélectionné pour recevoir un smartphone gratuit. Confirmez votre numéro de carte d'identité.,suspicious,prize,fr,no,test
+B020,"Je viens de vous transférer 40 000 RWF par erreur, pourriez-vous me les renvoyer s'il vous plaît ?",suspicious,mistaken_transfer,fr,no,test
+B021,"Gagnez 20 000 RWF par jour en regardant des vidéos. Aucun diplôme requis, écrivez-nous sur WhatsApp.",suspicious,too_good,fr,no,test
+B022,Message de la banque : activité suspecte détectée. Donnez-nous votre mot de passe pour sécuriser votre compte.,suspicious,credential,fr,no,test
+B023,"Papa, mon téléphone est cassé, j'utilise le numéro d'un ami. Envoie-moi 60 000 RWF pour la réparation.",suspicious,family,fr,no,test
+B024,Téléchargez TeamViewer pour que notre technicien répare votre application bancaire.,suspicious,remote_access,fr,no,test
+B025,Votre code de vérification est 345678. Ne le communiquez à personne.,legitimate,security_notice,fr,no,test
+B026,Votre facture d'électricité de 12 500 RWF a été payée. Merci.,legitimate,payment,fr,no,test
+B027,La réunion de parents d'élèves aura lieu samedi à 9 h. Merci de venir à l'heure.,legitimate,event,fr,no,test
+B028,"Félicitations, vous avez gagné le premier prix du concours de sciences de l'école ! Bravo.",legitimate,congrats,fr,no,test
+B029,Votre carte arrive demain. Quelqu'un doit être présent pour la réceptionner.,legitimate,delivery,fr,no,test
+B030,Nous ne vous demanderons jamais votre mot de passe. Signalez tout appel suspect.,legitimate,security_notice,fr,no,test
+B031,Peux-tu m'envoyer la photo du document avant midi ? J'en ai besoin vite.,legitimate,work,fr,no,test
+B032,Alerte sécurité : changez votre mot de passe tous les 90 jours et ne le donnez à personne.,legitimate,security_notice,fr,no,test
+B033,"Mwiriwe, wabonye 500,000 Frw muri promosiyo ya Airtel. Mpa umubare w'ibanga wawe kugira ngo tuyakohereze.",suspicious,credential,rw,no,test
+B034,Konti yawe ya banki ifite ikibazo. Kanda https://bit.ly/bk-rw ubungabunge amakuru yawe.,suspicious,link,rw,no,test
+B035,"Nakohereje amafaranga ku nimero yawe kubw'impanuka, ndakwinginze ongera uyansubize.",suspicious,mistaken_transfer,rw,no,test
+B036,"Watsindiye telefoni ya iPhone! Ishyura 5,000 Frw yo kohereza kugira ngo uyihabwe.",suspicious,prize,rw,no,test
+B037,Ndi umukozi wa RRA. Ugomba kwishyura imisoro itarishyuwe ukoresheje iyi nomero ubu nonaha.,suspicious,impersonation,rw,no,test
+B038,Mwakoze gusaba akazi. Twandikire kuri WhatsApp +250780000000 turakomeza.,suspicious,offplatform,rw,no,test
+B039,"Mubyara, nagize ikibazo mu nzira, ndakeneye amafaranga 15,000 Frw ohereza kuri iyi nimero.",suspicious,family,rw,no,test
+B040,Konti yawe ya MoMo yafunzwe. Ohereza PIN yawe kuri 0788000000 kugira ngo ifungurwe.,suspicious,credential,rw,no,test
+B041,Kode yawe yo kwinjira ni 590127. Ntukayihe umuntu uwo ari we wese.,legitimate,security_notice,rw,no,test
+B042,"Wishyuye amafaranga y'ishuri 40,000 Frw. Murakoze.",legitimate,payment,rw,no,test
+B043,Inama y'ababyeyi izaba ku wa gatandatu saa tatu. Muze mwese.,legitimate,event,rw,no,test
+B044,Ikarita yawe nshya ya MoMo yiteguye. Uzayifate ku biro by'ishami.,legitimate,delivery,rw,no,test
+B045,Amatangazo y'akazi muri banki yacu: saba ku rubuga rwemewe mbere ya tariki 30 Ugushyingo.,legitimate,jobs,rw,no,test
+B046,"Ntituzigera tukubaza ijambo ry'ibanga. Niba hari ukubajije, tanga raporo.",legitimate,security_notice,rw,no,test
+B047,"Mfite ikibazo cyo kwishyura ishuri, nshobora kuguhamagara nimugoroba?",legitimate,family,rw,no,test
+B048,Ibiciro by'ibyo kurya byazamutse muri iki cyumweru. Reba ku isoko.,legitimate,news,rw,no,test
+B049,"Umechaguliwa kupata simu mpya bure! Tuma TSh 10,000 ya usafirishaji ili uipate.",suspicious,prize,sw,no,test
+B050,Akaunti yako ya benki imezuiwa. Bofya https://tinyurl.com/benki-sw kufungua.,suspicious,account_threat,sw,no,test
+B051,"Nimekutumia TSh 20,000 kimakosa, tafadhali nirudishie haraka.",suspicious,mistaken_transfer,sw,no,test
+B052,"Habari, nimeona CV yako. Wasiliana na mwajiri wetu kupitia WhatsApp ili uendelee.",suspicious,offplatform,sw,no,test
+B053,"Mteja, laini yako itafungwa leo. Tuma namba yako ya kitambulisho na PIN kwa 0755000000.",suspicious,credential,sw,no,test
+B054,"Pata TSh 50,000 kila siku ukiwa nyumbani bila mtaji. Jiunge sasa.",suspicious,too_good,sw,no,test
+B055,"Dada, nimepata ajali, nimepoteza simu na pesa. Nitumie TSh 40,000 kwenye namba hii.",suspicious,family,sw,no,test
+B056,"Mkurugenzi wetu anakuomba ununue vocha za Google Play za TSh 100,000 na umtumie picha ya kodi zake.",suspicious,gift_card,sw,no,test
+B057,Msimbo wako wa uthibitisho ni 590127. Usimpe mtu yeyote.,legitimate,security_notice,sw,no,test
+B058,"Malipo ya TSh 12,500 ya bili ya umeme yamepokelewa. Asante.",legitimate,payment,sw,no,test
+B059,Mkutano wa wazazi utafanyika Jumamosi saa tatu asubuhi. Karibuni nyote.,legitimate,event,sw,no,test
+B060,"Hongera, umeshinda nafasi ya kwanza kwenye maonyesho ya sayansi shuleni! Kazi nzuri.",legitimate,congrats,sw,no,test
+B061,Kadi yako mpya itawasili kesho. Mtu awepo nyumbani kuipokea.,legitimate,delivery,sw,no,test
+B062,"Hatutawahi kukuomba nenosiri lako. Ukipigiwa simu ya kutiliwa shaka, ripoti.",legitimate,security_notice,sw,no,test
+B063,"Tafadhali nitumie picha ya hati kabla ya saa sita mchana, naihitaji haraka.",legitimate,work,sw,no,test
+B064,Nafasi ya kazi benki yetu: omba kwenye tovuti rasmi kabla ya tarehe 30 Novemba.,legitimate,jobs,sw,no,test

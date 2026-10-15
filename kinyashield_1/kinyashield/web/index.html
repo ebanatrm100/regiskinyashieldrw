@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Paste a suspicious message and see, in English, French, Kinyarwanda or Kiswahili, which words are risky and what to do next.">
+<title>KinyaShield RW</title>
+</head>
+<body>
+<style>
+/* Layout: one calm column. Header (logo + language), tabs, then the checker with result below.
+   System fonts only: fast on weak connections and no outside requests. */
+:root{
+  --bg:#f2f6f5; --surface:#ffffff; --surface-2:#e7efed; --ink:#11292b; --ink-2:#465c5e; --line:#c9d8d5;
+  --brand:#0b6e4f; --brand-2:#1479a8; --on-brand:#ffffff; --focus:#1479a8;
+  --ok:#17794f; --ok-bg:#e2f3ea; --warn:#8f5200; --warn-bg:#fbefd5; --bad:#b3261e; --bad-bg:#fbe3e0;
+  --mark-high:rgba(179,38,30,.26); --mark-med:rgba(224,150,20,.40);
+  --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1718; --surface:#122324; --surface-2:#1a3032; --ink:#e7f2f0; --ink-2:#a3bab7; --line:#284241;
+  --brand:#46c49a; --brand-2:#63bde6; --on-brand:#06201a; --focus:#63bde6;
+  --ok:#62d49d; --ok-bg:#12301f; --warn:#f2b653; --warn-bg:#33270c; --bad:#ff948b; --bad-bg:#3b1815;
+  --mark-high:rgba(255,120,110,.34); --mark-med:rgba(240,170,50,.38); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1718; --surface:#122324; --surface-2:#1a3032; --ink:#e7f2f0; --ink-2:#a3bab7; --line:#284241;
+  --brand:#46c49a; --brand-2:#63bde6; --on-brand:#06201a; --focus:#63bde6;
+  --ok:#62d49d; --ok-bg:#12301f; --warn:#f2b653; --warn-bg:#33270c; --bad:#ff948b; --bad-bg:#3b1815;
+  --mark-high:rgba(255,120,110,.34); --mark-med:rgba(240,170,50,.38); color-scheme:dark}
+*{box-sizing:border-box}
+html{font-size:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.55;font-size:1rem;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button,select,textarea,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand svg{flex:none}
+.brand h1{margin:0;font-size:1.45rem;line-height:1.1;letter-spacing:-.02em;font-weight:800}
+.brand p{margin:2px 0 0;color:var(--ink-2);font-size:.92rem;max-width:34ch;text-wrap:balance}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:8px 12px;cursor:pointer;min-height:40px;font-weight:600;font-size:.92rem}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--on-brand)}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;min-height:40px;cursor:pointer;font-size:.9rem}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line)}
+.tabs button{border:0;background:transparent;padding:10px 14px;cursor:pointer;font-weight:700;color:var(--ink-2);margin-bottom:-2px;border-bottom:3px solid transparent;min-height:44px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brand)}
+.panel[hidden]{display:none}
+.note{border:1px dashed var(--line);border-radius:var(--r);padding:10px 14px;font-size:.9rem;color:var(--ink-2)}
+label.lbl{display:block;font-weight:700;margin-bottom:6px}
+textarea{width:100%;min-height:9.5rem;resize:vertical;padding:12px 14px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--surface);line-height:1.55}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select{max-width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);min-height:42px}
+.btn{border:0;border-radius:10px;padding:11px 20px;font-weight:700;cursor:pointer;min-height:46px}
+.btn.primary{background:var(--brand);color:var(--on-brand);flex:1 1 12rem}
+.btn.ghost{background:var(--surface);border:1px solid var(--line)}
+.small{font-size:.88rem;color:var(--ink-2)}
+.tag{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--ink-2)}
+#result{display:flex;flex-direction:column;gap:14px}
+.verdict{display:flex;gap:14px;align-items:center;border:2px solid;border-radius:14px;padding:16px 18px}
+.verdict svg{flex:none}
+.verdict h2{margin:0;font-size:1.3rem;line-height:1.2;text-wrap:balance}
+.verdict p{margin:4px 0 0;font-size:.9rem;color:var(--ink-2)}
+.verdict.ok{border-color:var(--ok);background:var(--ok-bg)} .verdict.ok svg{color:var(--ok)}
+.verdict.verify{border-color:var(--warn);background:var(--warn-bg)} .verdict.verify svg{color:var(--warn)}
+.verdict.high{border-color:var(--bad);background:var(--bad-bg)} .verdict.high svg{color:var(--bad)}
+h3{margin:0 0 8px;font-size:1.02rem}
+.msg{white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);line-height:1.75}
+mark{color:inherit;border-radius:4px;padding:1px 2px}
+mark.high{background:var(--mark-high);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+mark.medium{background:var(--mark-med);text-decoration:underline dotted;text-decoration-thickness:2px;text-underline-offset:3px}
+.cards{display:grid;gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;min-width:0}
+.card h4{margin:6px 0 4px;font-size:1rem}
+.card p{margin:4px 0;font-size:.94rem}
+.sev{font-size:.74rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:6px}
+.sev.high{background:var(--bad-bg);color:var(--bad)} .sev.medium{background:var(--warn-bg);color:var(--warn)} .sev.low{background:var(--surface-2);color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.85rem;background:var(--surface-2);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+ol.steps{margin:0;padding-left:1.3rem;display:grid;gap:8px}
+.fb{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fb .chip[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 0 0 0 1.5px var(--brand)}
+.sources li,.about li,.tips li{margin:6px 0}
+ul.plain{padding-left:1.2rem;margin:8px 0}
+.scamlist{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr))}
+textarea.exp{min-height:6rem;font-family:var(--mono);font-size:.82rem}
+@media (max-width:520px){.verdict{flex-direction:column;align-items:flex-start}.tools{width:100%}.seg{width:100%}.seg button{flex:1;padding-inline:6px}}
+@media (prefers-reduced-motion:no-preference){.verdict,.card{animation:rise .22s ease-out}@keyframes rise{from{transform:translateY(4px)}to{transform:none}}}
+
+</style>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 64 72" width="48" height="54" role="img" aria-label="KinyaShield"><defs><linearGradient id="ksg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b6e4f"/><stop offset="1" stop-color="#1a8fc4"/></linearGradient></defs><path d="M32 3 L58 12 V35 C58 52 46 63 32 69 C18 63 6 52 6 35 V12 Z" fill="url(#ksg)"/><path d="M32 9 L52 16 V35 C52 48 43 57 32 62 C21 57 12 48 12 35 V16 Z" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/><path d="M24 22 V50 M24 36 L40 22 M28.5 32.5 L41 50" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <div><h1>KinyaShield RW</h1><p id="tagline"></p></div>
+    </div>
+    <div class="tools">
+      <div class="seg" id="langseg" role="group" aria-label="Language"></div>
+      <button class="chip" id="sizeBtn" type="button"></button>
+      <button class="chip" id="themeBtn" type="button"></button>
+    </div>
+  </header>
+
+  <div class="note" id="draftNote" hidden></div>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" id="tab-check" aria-controls="p-check" aria-selected="true" type="button"></button>
+    <button role="tab" id="tab-learn" aria-controls="p-learn" aria-selected="false" type="button"></button>
+    <button role="tab" id="tab-about" aria-controls="p-about" aria-selected="false" type="button"></button>
+  </div>
+
+  <section class="panel" id="p-check" role="tabpanel" aria-labelledby="tab-check">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label class="lbl" for="msg" id="pasteLbl"></label>
+        <textarea id="msg" autocomplete="off" spellcheck="false"></textarea>
+        <div class="row" style="margin-top:6px"><span class="tag" id="exTag" hidden></span><span class="small" id="privacy"></span></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="go" type="button"></button>
+        <button class="btn ghost" id="clear" type="button"></button>
+        <select id="examples" aria-label="Examples"></select>
+      </div>
+      <div id="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-learn" role="tabpanel" aria-labelledby="tab-learn" hidden></section>
+  <section class="panel" id="p-about" role="tabpanel" aria-labelledby="tab-about" hidden></section>
+</div>
+
+<script id="ks-data" type="application/json">{"rules":[{"id":"credential_request","severity":"high","suppress_if_protective":true,"title":{"en":"Asks for a PIN, password or code","fr":"Demande un code PIN, un mot de passe ou un code","rw":"Irasaba PIN, ijambo ry'ibanga cyangwa kode","sw":"Inaomba PIN, nenosiri au msimbo"},"why":{"en":"Genuine banks, mobile-money companies and officials do not ask you to send or read out a PIN, password or one-time code.","fr":"Les vraies banques, opérateurs de mobile money et autorités ne vous demandent jamais d'envoyer ou de lire à voix haute un code PIN, un mot de passe ou un code à usage unique.","rw":"Banki, ibigo bya mobile money n'abayobozi nyakuri ntibasaba kohereza cyangwa kuvuga PIN, ijambo ry'ibanga cyangwa kode y'inyongera.","sw":"Benki, kampuni za pesa kwa simu na maafisa halali hawakuombi kutuma wala kusoma kwa sauti PIN, nenosiri au msimbo wa mara moja."},"advice":{"en":"Do not send or read out the code. Contact the organisation using a number from its official website or your card.","fr":"N'envoyez pas le code et ne le lisez pas. Contactez l'organisme avec un numéro tiré de son site officiel ou de votre carte.","rw":"Ntukohereze cyangwa ngo uvuge iyo kode. Hamagara ikigo ukoresheje nimero iri ku rubuga rwacyo rwemewe cyangwa ku ikarita yawe.","sw":"Usitume wala usisome msimbo huo. Wasiliana na taasisi kwa kutumia namba iliyo kwenye tovuti yake rasmi au kwenye kadi yako."},"patterns":{"en":["\\b(?:send|share|give|tell|provide|reply with|forward|confirm|enter|read out)\\b[^.!?\\n]{0,40}?\\b(?:pin|password|passcode|otp|cvv|verification code|one[- ]time (?:code|password)|secret code|secret number|secret pin|\\d+[- ]?digit (?:code|pin)|code (?:we|i|that we) (?:just )?(?:sent|texted))\\b"],"fr":["\\b(?:envoyez?|envoyer|donnez?|donner|communiquez?|communiquer|partagez?|partager|fournissez?|fournir|transmettez?|transmettre|confirmez?|confirmer|saisissez?|saisir|lisez|dites(?:-moi)?|repondez avec)\\b[^.!?\\n]{0,40}?\\b(?:pin|code pin|mot de passe|code secret|code de verification|code otp|otp|cvv|code confidentiel|code a \\d+ chiffres|code recu par sms)\\b"],"rw":["\\b(?:ohereza|mpa|mpe|tanga|mbwira|tuma)\\b[^.!?\\n]{0,40}?\\b(?:pin|umubare w'ibanga|ijambo ry'ibanga|kode|code|otp|password)\\b"],"sw":["\\b(?:tuma|nitumie|toa|nipe|nipatie|nitajie|thibitisha|weka|ingiza|jibu na|shiriki|mpe|mwambie)\\b[^.!?\\n]{0,40}?\\b(?:pin|nambari ya siri|namba ya siri|nenosiri|neno la siri|msimbo|msimbo wa tarakimu \\d+|kodi|code|otp|cvv)\\b"]}},{"id":"advance_fee","severity":"high","suppress_if_protective":true,"title":{"en":"Asks you to pay first to receive something","fr":"Demande de payer d'abord pour recevoir quelque chose","rw":"Irasaba kubanza kwishyura kugira ngo ubone ikintu","sw":"Inakuomba ulipe kwanza ili upokee kitu"},"why":{"en":"Scams often ask for a small 'fee' before a prize, loan, parcel or scholarship is released. The reward never arrives.","fr":"Les arnaques demandent souvent de petits « frais » avant de débloquer un gain, un prêt, un colis ou une bourse. Rien n'arrive jamais.","rw":"Abatekamutwe bakunze gusaba 'amafaranga make' mbere yo kukugezaho igihembo, inguzanyo, ipaki cyangwa buruse. Igihembo ntikiza.","sw":"Matapeli mara nyingi huomba 'ada ndogo' kabla ya kutoa zawadi, mkopo, kifurushi au ufadhili. Hakuna kinachofika."},"advice":{"en":"Do not pay. Check with the organisation directly, using contact details you find yourself.","fr":"Ne payez pas. Vérifiez auprès de l'organisme avec des coordonnées que vous trouvez vous-même.","rw":"Ntukishyure. Baza ikigo ubwacyo ukoresheje amakuru wibonera ubwawe.","sw":"Usilipe. Thibitisha moja kwa moja na taasisi ukitumia mawasiliano unayoyapata mwenyewe."},"patterns":{"en":["\\b(?:pay|send|deposit|transfer)\\b[^.!?\\n]{0,40}?\\b(?:fee|fees|charge|charges|tax|registration|processing|clearance|shipping|delivery)\\b[^.!?\\n]{0,60}?\\b(?:to (?:receive|claim|release|get|unlock|activate|collect)|before (?:you )?(?:receive|collect|claim)|in order to)\\b","\\bto (?:receive|claim|release|collect|unlock)\\b[^.!?\\n]{0,40}\\b(?:prize|scholarship|loan|parcel|package|reward|gift|funds)\\b[^.!?\\n]{0,50}\\b(?:pay|send|deposit)\\b[^.!?\\n]{0,30}\\b(?:fee|fees|rwf|frw)\\b"],"fr":["\\b(?:payez?|payer|versez?|verser|envoyez?|envoyer|deposez?|transferez?)\\b[^.!?\\n]{0,40}?\\b(?:frais|taxe|taxes|droits?|commission|caution)\\b[^.!?\\n]{0,60}?\\b(?:pour (?:recevoir|obtenir|debloquer|reclamer|retirer|toucher|activer)|avant de (?:recevoir|retirer|toucher))\\b","\\bpour (?:recevoir|reclamer|debloquer|retirer|toucher|obtenir)\\b[^.!?\\n]{0,40}\\b(?:prix|gain|gains|bourse|pret|colis|cadeau|fonds|lot)\\b[^.!?\\n]{0,50}\\b(?:payez?|envoyez?|versez?)\\b[^.!?\\n]{0,30}\\b(?:frais|rwf|frw|fcfa|usd)\\b"],"rw":["\\b(?:ishyura|kwishyura|ohereza|tanga)\\b[^.!?\\n]{0,50}?\\b(?:amafaranga|frw|rwf|ubwishyu|frais)\\b[^.!?\\n]{0,60}?\\b(?:kugira ngo|kugirango|mbere yo)\\b"],"sw":["\\b(?:lipa|tuma|weka|toa)\\b[^.!?\\n]{0,50}?\\b(?:ada|ushuru|gharama|malipo|tsh|rwf|frw|kes)\\b[^.!?\\n]{0,60}?\\b(?:ili (?:u(?:i|ya|zi|li)?(?:pate|pokee)|kupokea|kupata|kutoa|kuchukua)|kabla ya kupokea)\\b","\\bili (?:upokee|upate|kupokea|kupata|uchukue)\\b[^.!?\\n]{0,40}\\b(?:zawadi|tuzo|mkopo|ufadhili|kifurushi|fedha|pesa)\\b[^.!?\\n]{0,50}\\b(?:lipa|tuma)\\b[^.!?\\n]{0,30}\\b(?:ada|ushuru|tsh|rwf|frw|kes)\\b"]}},{"id":"remote_access","severity":"high","suppress_if_protective":true,"title":{"en":"Asks you to install remote-control software","fr":"Demande d'installer un logiciel de contrôle à distance","rw":"Irasaba gushyira kuri telefoni porogaramu yo kuyigenzura kure","sw":"Inakuomba usakinishe programu ya kudhibiti simu kwa mbali"},"why":{"en":"Remote-access apps let someone see and control your phone or bank app.","fr":"Ces applications permettent à quelqu'un de voir et de contrôler votre téléphone ou votre appli bancaire.","rw":"Porogaramu zo kugenzura kure zituma undi muntu abona kandi agakoresha telefoni yawe cyangwa porogaramu ya banki.","sw":"Programu hizi humruhusu mtu kuona na kudhibiti simu au programu yako ya benki."},"advice":{"en":"Do not install it. End the conversation and contact your bank through its official channel.","fr":"Ne l'installez pas. Coupez la conversation et contactez votre banque par son canal officiel.","rw":"Ntuyishyire kuri telefoni. Hagarika ikiganiro maze uvugane na banki yawe unyuze mu nzira yemewe.","sw":"Usiisakinishe. Maliza mazungumzo na uwasiliane na benki yako kupitia njia rasmi."},"patterns":{"en":["\\b(?:install|download)\\b[^.!?\\n]{0,30}\\b(?:anydesk|teamviewer|quicksupport|remote (?:access|support|control) (?:app|software))\\b"],"fr":["\\b(?:installez?|installer|telechargez?|telecharger)\\b[^.!?\\n]{0,30}\\b(?:anydesk|teamviewer|quicksupport|application de (?:controle|prise en main|assistance) a distance|logiciel de controle a distance)\\b"],"rw":[],"sw":["\\b(?:sakinisha|pakua|install)\\b[^.!?\\n]{0,30}\\b(?:anydesk|teamviewer|quicksupport|programu ya kudhibiti simu)\\b"]}},{"id":"mistaken_transfer","severity":"medium","suppress_if_protective":false,"title":{"en":"Says money was sent by mistake and asks for it back","fr":"Dit avoir envoyé de l'argent par erreur et le réclame","rw":"Ivuga ko amafaranga yoherejwe kubw'impanuka kandi irayasaba","sw":"Inasema pesa zilitumwa kimakosa na inazidai"},"why":{"en":"A common trick: a fake or reversed payment, then a request to 'return' the money.","fr":"Astuce courante : un faux paiement ou un paiement annulé, puis une demande de « rendre » l'argent.","rw":"Uburiganya buzwi: bohereza amafaranga y'ibinyoma, hanyuma bagusaba 'kuyasubiza'.","sw":"Mbinu ya kawaida: malipo bandia au yaliyorudishwa, kisha ombi la 'kurudisha' pesa."},"advice":{"en":"Check your own balance in your official app or at an agent. Do not send money back until you have confirmed it really arrived.","fr":"Vérifiez votre solde dans l'appli officielle ou chez un agent. Ne renvoyez rien avant d'avoir confirmé que l'argent est vraiment arrivé.","rw":"Reba amafaranga ufite muri porogaramu yemewe cyangwa ku mukozi. Ntusubize amafaranga utarabyemeza ko yaje koko.","sw":"Angalia salio lako kwenye programu rasmi au kwa wakala. Usirudishe pesa hadi uthibitishe kuwa zimefika kweli."},"patterns":{"en":["\\b(?:sent|transferred|deposited)\\b[^.!?\\n]{0,30}\\b(?:money|funds|amount|rwf|frw|\\d[\\d,. ]*\\s?(?:rwf|frw))\\b[^.!?\\n]{0,40}\\b(?:by mistake|mistakenly|accidentally|wrong number|in error)\\b","\\b(?:by mistake|mistakenly|accidentally|wrong number)\\b[^.!?\\n]{0,60}\\b(?:send back|return|refund)\\b[^.!?\\n]{0,30}\\b(?:money|funds|amount|rwf|frw)\\b","\\b(?:send back|return)\\b[^.!?\\n]{0,15}\\b(?:my|the)\\b[^.!?\\n]{0,15}\\b(?:money|funds|amount|cash)\\b"],"fr":["\\b(?:envoye|envoyer|transfere|transferer|depose|deposer|verse|verser|vire|virer)\\b[^.!?\\n]{0,30}\\b(?:argent|fonds|montant|somme|rwf|frw|fcfa|\\d[\\d,. ]*\\s?(?:rwf|frw|fcfa))\\b[^.!?\\n]{0,40}\\b(?:par erreur|par megarde|a tort|mauvais numero)\\b","\\b(?:par erreur|mauvais numero)\\b[^.!?\\n]{0,60}\\b(?:renvoyez|rembours\\w*|retournez|rendez)\\b[^.!?\\n]{0,30}\\b(?:argent|fonds|montant|somme)\\b","\\b(?:renvoyez|rendez|retournez)(?:-moi)?\\s+(?:mon\\s+|l')?(?:argent|fonds|montant)\\b"],"rw":["\\b(?:nakohereje|nohereje|bakohereje)\\b[^.!?\\n]{0,50}\\b(?:kubw'impanuka|kwibeshya|nabi)\\b","\\b(?:nsubiza|subiza)\\b[^.!?\\n]{0,20}\\bamafaranga\\b"],"sw":["\\b(?:nimekutumia|nimetuma|nilituma)\\b[^.!?\\n]{0,30}\\b(?:pesa|fedha|kiasi|tsh|rwf|frw|kes|\\d[\\d,\\.]*\\s?(?:tsh|rwf|frw|kes))\\b[^.!?\\n]{0,40}\\b(?:kimakosa|kwa makosa|namba mbaya)\\b","\\b(?:nirudishie|rudisha)\\b[^.!?\\n]{0,20}\\b(?:pesa|fedha)\\b"]}},{"id":"prize_claim","severity":"medium","suppress_if_protective":false,"unless":["\\b(?:first|second|third|1st|2nd|3rd) (?:prize|place)\\b","\\b(?:premier|deuxieme|troisieme) (?:prix|place)\\b","\\bnafasi ya (?:kwanza|pili|tatu)\\b","\\bumwanya wa (?:mbere|kabiri|gatatu)\\b","\\b(?:science fair|concours de sciences|maonyesho ya sayansi|irushanwa)\\b"],"keep_if":["\\d[\\d,. ]*\\s?(?:rwf|frw|fcfa|tsh|kes|ugx|usd|eur)\\b","https?://","\\b(?:claim|collect|reply|click|pay|payez|cliquez|reclamer|lipa|bofya|ishyura|kanda)\\b"],"title":{"en":"Says you won or were selected for a prize","fr":"Annonce que vous avez gagné ou été sélectionné","rw":"Ivuga ko watsinze cyangwa watoranyijwe guhabwa igihembo","sw":"Inasema umeshinda au umechaguliwa kupata zawadi"},"why":{"en":"Unexpected prize messages are among the most common scams. You cannot win a draw you never entered.","fr":"Les messages de gain inattendus figurent parmi les arnaques les plus courantes. On ne peut pas gagner un tirage auquel on n'a pas participé.","rw":"Ubutumwa buvuga ko watsindiye igihembo utazi ni bumwe mu buriganya busanzwe. Ntushobora gutsinda tombola utigeze ugiramo uruhare.","sw":"Ujumbe wa zawadi usiotarajiwa ni miongoni mwa utapeli unaojulikana zaidi. Huwezi kushinda droo ambayo hukushiriki."},"advice":{"en":"Ignore it unless you know you entered. Never pay or share personal details to 'claim' a prize.","fr":"Ignorez-le sauf si vous savez avoir participé. Ne payez jamais et ne donnez aucune information personnelle pour « réclamer » un gain.","rw":"Ntibugire icyo bukubwira keretse ubizi ko wagiye muri iyo tombola. Ntukishyure cyangwa ngo utange amakuru bwite 'kugira ngo uhabwe' igihembo.","sw":"Usiujali isipokuwa unajua ulishiriki. Usilipe wala kutoa taarifa binafsi ili 'kudai' zawadi."},"patterns":{"en":["\\b(?:you(?:'ve| have)? won|you were selected|you have been selected|selected to receive|lucky (?:draw|winner)|winner!)\\b"],"fr":["\\b(?:vous avez gagne|vous etes (?:le |la )?(?:gagnant|gagnante|selectionne|selectionnee|choisi|choisie)|gagnant du tirage|tirage au sort)\\b"],"rw":["\\b(?:watsindiye|mwatsindiye|wegukanye|mwegukanye|watoranyijwe|mwatoranyijwe)\\b"],"sw":["\\b(?:umeshinda|umechaguliwa kupokea|umechaguliwa kupata|umechaguliwa kuwa mshindi|mshindi wa bahati nasibu|droo ya bahati nasibu)\\b"]}},{"id":"account_threat","severity":"medium","suppress_if_protective":true,"title":{"en":"Threatens to block or close your account or SIM","fr":"Menace de bloquer ou fermer votre compte ou SIM","rw":"Iragutera ubwoba ko konti cyangwa SIM yawe izafungwa","sw":"Inatishia kufunga au kuzuia akaunti au laini yako"},"why":{"en":"Fear of losing access is used to rush people into clicking or sharing details.","fr":"La peur de perdre l'accès sert à vous pousser à cliquer ou à donner vos informations.","rw":"Ubwoba bwo gutakaza konti bukoreshwa kugira ngo abantu bihute gukanda cyangwa gutanga amakuru.","sw":"Hofu ya kupoteza huduma hutumiwa kukusukuma ubonyeze viungo au utoe taarifa."},"advice":{"en":"Do not follow links in the message. Open your official app or visit the provider yourself to check.","fr":"Ne suivez pas les liens du message. Ouvrez votre appli officielle ou rendez-vous chez l'opérateur pour vérifier.","rw":"Ntukande amahuza ari mu butumwa. Fungura porogaramu yemewe cyangwa ujye ku kigo ubwawe urebe.","sw":"Usifuate viungo vilivyomo kwenye ujumbe. Fungua programu rasmi au tembelea mtoa huduma mwenyewe ukague."},"patterns":{"en":["\\b(?:account|sim|line|card|wallet)\\b[^.!?\\n]{0,40}\\b(?:will be|has been|is being|been|was)\\s+(?:suspended|blocked|closed|deactivated|locked|terminated)\\b"],"fr":["\\b(?:compte|carte|sim|ligne|portefeuille)\\b[^.!?\\n]{0,40}\\b(?:sera|a ete|est|va etre|sont)\\s+(?:suspendu|bloque|ferme|desactive|verrouille|resilie)(?:e|s|es)?\\b"],"rw":["\\b(?:konti|sim|karita)\\b[^.!?\\n]{0,40}\\b(?:izafungwa|yafunzwe|ifunzwe|izahagarikwa|yahagaritswe|izasibwa)\\b"],"sw":["\\b(?:akaunti|laini|kadi|sim)\\b[^.!?\\n]{0,40}\\b(?:itafungwa|imefungwa|itazuiwa|imezuiwa|itasimamishwa|imesimamishwa|itafutwa|imefutwa)\\b"]}},{"id":"account_verification_request","severity":"medium","suppress_if_protective":true,"title":{"en":"Asks you to verify or update account details","fr":"Demande de vérifier ou mettre à jour les informations du compte","rw":"Irasaba kwemeza cyangwa kuvugurura amakuru ya konti","sw":"Inakuomba uthibitishe au usasishe taarifa za akaunti"},"why":{"en":"'Verify your account' messages are often used to collect your login or ID details.","fr":"Les messages « vérifiez votre compte » servent souvent à récupérer vos identifiants ou vos données d'identité.","rw":"Ubutumwa busaba 'kwemeza konti' bukunze gukoreshwa mu gukusanya amakuru yo kwinjira cyangwa indangamuntu.","sw":"Ujumbe wa 'thibitisha akaunti yako' mara nyingi hutumika kukusanya taarifa za kuingia au utambulisho."},"advice":{"en":"Do not use links or numbers from the message. Go to the official website or branch yourself.","fr":"N'utilisez ni liens ni numéros du message. Allez vous-même sur le site officiel ou en agence.","rw":"Ntukoreshe amahuza cyangwa nimero ziri mu butumwa. Jya ku rubuga rwemewe cyangwa ku biro ubwawe.","sw":"Usitumie viungo au namba zilizo kwenye ujumbe. Nenda mwenyewe kwenye tovuti rasmi au tawi."},"patterns":{"en":["\\b(?:verify|update|confirm|reactivate|re-?register)\\b[^.!?\\n]{0,25}\\b(?:your )?(?:account|sim(?: card)?|kyc|identity|bank details|national id|id number|nida)\\b"],"fr":["\\b(?:verifiez?|verifier|mettez a jour|mettre a jour|confirmez?|confirmer|reactivez?|actualisez?)\\b[^.!?\\n]{0,25}\\b(?:votre |vos )?(?:compte|sim|kyc|identite|coordonnees bancaires|donnees bancaires|numero d'identite|carte d'identite|nida)\\b"],"rw":["\\b(?:w?emeze|emeza|vugurura|uvugurure)\\b[^.!?\\n]{0,25}\\b(?:konti|sim|nomero|amakuru yawe)\\b"],"sw":["\\b(?:ku)?(?:thibitisha|sasisha|hakiki)\\b[^.!?\\n]{0,25}\\b(?:akaunti|laini|taarifa zako|taarifa za benki|namba yako|kitambulisho)\\b"]}},{"id":"risky_link","severity":"medium","suppress_if_protective":false,"title":{"en":"Contains a link that hides or disguises its destination","fr":"Contient un lien qui masque sa destination","rw":"Ifite ihuza ritagaragaza aho rijya","sw":"Ina kiungo kinachoficha kinakoelekea"},"why":{"en":"Shortened links, raw IP addresses and unusual web endings are often used to hide a fake site.","fr":"Les liens raccourcis, les adresses IP brutes et les extensions inhabituelles servent souvent à cacher un faux site.","rw":"Amahuza magufi, aderesi z'imibare n'iherezo ridasanzwe ry'urubuga bikunze gukoreshwa mu guhisha urubuga rw'uburiganya.","sw":"Viungo vifupi, anwani za IP na miisho isiyo ya kawaida hutumiwa mara nyingi kuficha tovuti bandia."},"advice":{"en":"Do not open it. Type the organisation's official address yourself.","fr":"Ne l'ouvrez pas. Tapez vous-même l'adresse officielle de l'organisme.","rw":"Ntuyifungure. Andika ubwawe aderesi yemewe y'ikigo.","sw":"Usikifungue. Andika mwenyewe anwani rasmi ya taasisi."},"patterns":{"any":["\\b(?:bit\\.ly|tinyurl\\.com|t\\.co|is\\.gd|cutt\\.ly|rb\\.gy|shorturl\\.at)/\\S+","https?://\\d{1,3}(?:\\.\\d{1,3}){3}\\S*","https?://[^\\s/]+\\.(?:xyz|top|click|tk|icu|buzz|gq|cf)\\b\\S*"]}},{"id":"too_good_offer","severity":"medium","suppress_if_protective":true,"title":{"en":"Promises unrealistic money","fr":"Promet de l'argent irréaliste","rw":"Isezeranya amafaranga adashoboka","sw":"Inaahidi pesa zisizo halisi"},"why":{"en":"Guaranteed or very fast returns are a classic sign of an investment scam.","fr":"Des gains garantis ou très rapides sont un signe classique d'arnaque à l'investissement.","rw":"Inyungu zemewe cyangwa zihuta cyane ni ikimenyetso gisanzwe cy'uburiganya mu ishoramari.","sw":"Faida ya uhakika au ya haraka sana ni dalili ya kawaida ya utapeli wa uwekezaji."},"advice":{"en":"Do not invest. Check whether the company is registered with the proper authority.","fr":"N'investissez pas. Vérifiez que la société est enregistrée auprès de l'autorité compétente.","rw":"Ntugashore. Reba niba ikigo cyanditse mu rwego rubifitiye ububasha.","sw":"Usiwekeze. Hakiki kama kampuni imesajiliwa na mamlaka husika."},"patterns":{"en":["\\b(?:double your money|guaranteed returns?|easy money)\\b","\\bearn\\b[^.!?\\n]{0,25}\\b(?:daily|per day|every day|weekly)\\b"],"fr":["\\b(?:doublez votre argent|rendements? garantis?|argent facile|gains? garantis?)\\b","\\bgagnez\\b[^.!?\\n]{0,25}\\b(?:par jour|chaque jour|quotidien\\w*|par semaine)\\b"],"rw":[],"sw":["\\b(?:mara mbili ya pesa yako|faida ya uhakika|pesa rahisi)\\b","\\b(?:pata|chuma)\\b[^.!?\\n]{0,25}\\b(?:tsh|rwf|frw|kes|pesa|shilingi)\\b[^.!?\\n]{0,15}\\b(?:kila siku|kwa siku|kila wiki)\\b"]}},{"id":"upfront_payment_offer","severity":"high","suppress_if_protective":false,"title":{"en":"Asks for a payment up front for an offer (job, loan)","fr":"Demande un paiement d'avance pour une offre (emploi, prêt)","rw":"Irasaba kwishyura mbere ku mirimo cyangwa inguzanyo","sw":"Inaomba malipo ya awali kwa ofa (kazi, mkopo)"},"why":{"en":"A real employer or lender does not ask for insurance, visa or processing money before paying you or starting work.","fr":"Un vrai employeur ou prêteur ne demande pas d'argent pour l'assurance, le visa ou le dossier avant de vous payer ou de commencer.","rw":"Umukoresha cyangwa umuguzanyi nyawe ntasaba amafaranga y'ubwishingizi, viza cyangwa ay'ibyangombwa mbere yo kuguha amafaranga cyangwa akazi.","sw":"Mwajiri au mkopeshaji halali haombi pesa za bima, viza au usindikaji kabla ya kukulipa au kuanza kazi."},"advice":{"en":"Do not pay anything up front. Check the offer with the organisation using contact details you find yourself.","fr":"Ne payez rien d'avance. Vérifiez l'offre auprès de l'organisme avec des coordonnées que vous trouvez vous-même.","rw":"Ntukishyure mbere. Baza ikigo ukoresheje amakuru wibonera ubwawe.","sw":"Usilipe chochote mapema. Hakiki ofa na taasisi kwa mawasiliano unayoyapata mwenyewe."},"groups":[{"en":["\\b(?:job offer|vacancy|we are hiring|recruiting|work abroad|you qualify|you are eligible|pre-?approved|loan offer)\\b"],"fr":["\\b(?:offre d'emploi|poste vacant|nous recrutons|travailler a l'etranger|vous etes eligible|vous etes preapprouve|offre de pret)\\b"],"rw":["\\b(?:amahirwe y'akazi|akazi hanze y'igihugu|wujuje ibisabwa|inguzanyo wemerewe)\\b"],"sw":["\\b(?:nafasi ya kazi|ofa ya kazi|tunaajiri|kazi nje ya nchi|umeidhinishwa mkopo|ofa ya mkopo)\\b"]},{"en":["\\b(?:deposit|pay|send)\\b[^.!?\\n]{0,30}\\b(?:\\d[\\d,. ]*\\s?(?:rwf|frw|usd|ksh|tsh|eur)|(?:rwf|frw|usd|ksh|tsh|eur)\\s?\\d[\\d,. ]*)\\b[^.!?\\n]{0,40}\\b(?:insurance|processing|visa|clearance|activation|upfront|admin|first|before)\\b"],"fr":["\\b(?:versez|payez|envoyez|deposez)\\b[^.!?\\n]{0,30}\\b(?:\\d[\\d,. ]*\\s?(?:rwf|frw|fcfa|usd|eur)|(?:rwf|frw|fcfa|usd|eur)\\s?\\d[\\d,. ]*)\\b[^.!?\\n]{0,40}\\b(?:assurance|visa|dedouanement|activation|d'avance|avant)\\b"],"rw":["\\b(?:ohereza|ishyura|tanga)\\b[^.!?\\n]{0,30}\\b(?:\\d[\\d,. ]*\\s?(?:frw|rwf)|(?:frw|rwf)\\s?\\d[\\d,. ]*)\\b[^.!?\\n]{0,40}\\b(?:ubwishingizi|viza|frais|mbere)\\b"],"sw":["\\b(?:lipa|tuma|weka)\\b[^.!?\\n]{0,30}\\b(?:\\d[\\d,. ]*\\s?(?:tsh|kes|ugx|rwf|frw|usd)|(?:tsh|kes|ugx|rwf|frw|usd)\\s?\\d[\\d,. ]*)\\b[^.!?\\n]{0,40}\\b(?:bima|viza|usindikaji|mapema|kwanza|kabla)\\b"]}]},{"id":"family_emergency_money","severity":"medium","suppress_if_protective":false,"title":{"en":"Pretends to be a relative in trouble and asks for money","fr":"Se fait passer pour un proche en difficulté et demande de l'argent","rw":"Yiyita umuvandimwe ufite ikibazo igusaba amafaranga","sw":"Inajifanya kuwa ndugu mwenye shida na kuomba pesa"},"why":{"en":"Scammers claim to be a family member with a new number or an emergency so you send money before thinking.","fr":"Les escrocs prétendent être un proche avec un nouveau numéro ou une urgence pour que vous envoyiez de l'argent sans réfléchir.","rw":"Abatekamutwe biyita abavandimwe bafite nimero nshya cyangwa ikibazo kugira ngo wohereze amafaranga utabanje gutekereza.","sw":"Matapeli hudai kuwa ndugu mwenye namba mpya au dharura ili utume pesa kabla ya kufikiri."},"advice":{"en":"Call the person on their old number, or ask a question only they could answer, before sending anything.","fr":"Appelez la personne sur son ancien numéro, ou posez une question que seule elle connaît, avant d'envoyer quoi que ce soit.","rw":"Hamagara uwo muntu kuri nimero ye isanzwe, cyangwa umubaze ikibazo wenyine azi, mbere yo kohereza ikintu icyo ari cyo cyose.","sw":"Mpigie mtu huyo kwa namba yake ya zamani, au muulize swali ambalo yeye tu anajua, kabla ya kutuma chochote."},"groups":[{"en":["\\b(?:it is me|it's me|this is your (?:mum|mom|dad|son|daughter|brother|sister)|i changed my number|my new number|new number|lost my phone|my phone (?:is )?(?:broken|stolen|lost)|using (?:a )?friend's (?:number|phone)|i am stuck at|i'm stuck at|stranded)\\b"],"fr":["\\b(?:c'est moi|j'ai change de numero|nouveau numero|j'ai perdu mon telephone|mon telephone est (?:casse|perdu|vole)|j'utilise le numero d'un|je suis bloque)\\b"],"rw":["\\b(?:ndi mubyara wawe|ndi mama|ndi papa|ndi musaza wawe|ndi mushiki wawe|nahinduye nimero|nimero nshya|telefoni yanjye (?:yangiritse|yibwe)|nagize ikibazo|ndi mu kaga)\\b"],"sw":["\\b(?:ni mimi|nimebadilisha namba|namba mpya|nimepoteza simu|simu yangu (?:imeibiwa|imeharibika)|natumia namba ya rafiki|nimekwama)\\b"]},{"en":["\\b(?:send|give|lend|transfer)\\b[^.!?\\n]{0,20}\\b(?:me|us)\\b[^.!?\\n]{0,30}\\b(?:money|cash|airtime|\\d[\\d,. ]*\\s?(?:rwf|frw|usd))\\b","\\bi need\\b[^.!?\\n]{0,15}\\b(?:money|cash|airtime)\\b"],"fr":["\\b(?:envoie|envoyez|donne|donnez|prete|pretez)(?:-moi)?\\b[^.!?\\n]{0,25}\\b(?:argent|credit|\\d[\\d,. ]*\\s?(?:rwf|frw|fcfa|usd))\\b","\\bj'ai besoin d'argent\\b"],"rw":["\\b(?:ohereza|mpa|ndakeneye)\\b[^.!?\\n]{0,30}\\bamafaranga\\b"],"sw":["\\b(?:nitumie|tuma|nipe|nikopeshe)\\b[^.!?\\n]{0,25}\\b(?:pesa|fedha|hela|tsh|kes|ugx|rwf|frw)\\b","\\bnahitaji pesa\\b","\\bninahitaji pesa\\b"]}]},{"id":"offplatform_contact","severity":"medium","suppress_if_protective":false,"title":{"en":"Pushes you to continue a job offer on WhatsApp or Telegram","fr":"Vous pousse à poursuivre une offre d'emploi sur WhatsApp ou Telegram","rw":"Igukururira kuri WhatsApp cyangwa Telegram ku kazi","sw":"Inakuvuta kwenye WhatsApp au Telegram kwa ofa ya kazi"},"why":{"en":"Fake job offers quickly move the conversation to a private chat so nobody can check them.","fr":"Les fausses offres d'emploi déplacent vite la conversation vers une messagerie privée pour échapper aux vérifications.","rw":"Amatangazo y'akazi y'ibinyoma ahita yimura ikiganiro kuri messagerie yihariye kugira ngo hatagira ugenzura.","sw":"Ofa bandia za kazi huhamisha mazungumzo haraka kwenye gumzo la faragha ili kuepuka uhakiki."},"advice":{"en":"Check the company and the recruiter on official sources before replying.","fr":"Vérifiez l'entreprise et le recruteur sur des sources officielles avant de répondre.","rw":"Genzura ikigo n'uwakoresha mu nzira zemewe mbere yo gusubiza.","sw":"Hakiki kampuni na mwajiri kwa vyanzo rasmi kabla ya kujibu."},"groups":[{"en":["\\b(?:recruiter|hiring manager|vacancy|job offer|your cv|saw your cv|work from home)\\b"],"fr":["\\b(?:recruteur|offre d'emploi|votre cv|poste vacant|teletravail)\\b"],"rw":["\\b(?:umukoresha|cv yawe|amahirwe y'akazi|gusaba akazi)\\b"],"sw":["\\b(?:mwajiri|nafasi ya kazi|cv yako|kazi ya nyumbani)\\b"]},{"en":["\\b(?:contact|message|chat|text|reach|add)\\b[^.!?\\n]{0,30}\\b(?:whatsapp|telegram|signal)\\b"],"fr":["\\b(?:contactez|ecrivez|discutez|joignez|ajoutez)\\b[^.!?\\n]{0,30}\\b(?:whatsapp|telegram|signal)\\b"],"rw":["\\b(?:vugana|andikira|twandikire|hamagara|ongeraho)\\b[^.!?\\n]{0,30}\\b(?:whatsapp|telegram)\\b"],"sw":["\\b(?:wasiliana|andika|ongea|ongeza)\\b[^.!?\\n]{0,30}\\b(?:whatsapp|telegram)\\b"]}]},{"id":"gift_card_request","severity":"medium","suppress_if_protective":true,"title":{"en":"Asks you to buy gift cards or vouchers for someone","fr":"Vous demande d'acheter des cartes cadeaux ou des bons pour quelqu'un","rw":"Igusaba kugura amakarita y'impano cyangwa ama-vocha","sw":"Inakuomba ununue kadi za zawadi au vocha kwa ajili ya mtu"},"why":{"en":"Scammers pose as a boss or official and ask for gift-card codes because they are hard to trace or reverse.","fr":"Les escrocs se font passer pour un chef ou un officiel et demandent des codes de cartes cadeaux, difficiles à tracer ou à annuler.","rw":"Abatekamutwe biyita abayobozi bagusaba kode z'amakarita y'impano kuko bigoye kuzikurikirana cyangwa kuzisubiza.","sw":"Matapeli hujifanya kuwa mkuu wa kazi au afisa na kuomba misimbo ya kadi za zawadi kwa sababu ni vigumu kufuatilia au kurudisha."},"advice":{"en":"Do not buy or send codes. Confirm the request face to face or by calling the person on a number you already know.","fr":"N'achetez ni n'envoyez de codes. Confirmez la demande en personne ou en appelant la personne sur un numéro que vous connaissez déjà.","rw":"Ntugure cyangwa ngo wohereze kode. Emeza icyo gusaba imbonankubone cyangwa uhamagare uwo muntu kuri nimero usanzwe uzi.","sw":"Usinunue wala kutuma misimbo. Thibitisha ombi ana kwa ana au kwa kumpigia mtu huyo kwa namba unayoijua tayari."},"patterns":{"en":["\\b(?:buy|purchase|get)\\b[^.!?\\n]{0,30}\\b(?:gift ?cards?|google play|itunes|steam|amazon vouchers?)\\b"],"fr":["\\b(?:achetez|acheter|achete)\\b[^.!?\\n]{0,30}\\b(?:cartes? cadeaux?|google play|itunes|steam)\\b"],"rw":["\\b(?:gura|ugure|kugura)\\b[^.!?\\n]{0,30}\\b(?:google play|itunes|steam|amakarita y'impano)\\b"],"sw":["\\b(?:nunua|ununue|kununua)\\b[^.!?\\n]{0,30}\\b(?:vocha|google play|itunes|steam|kadi za zawadi)\\b"]}},{"id":"pressure","severity":"low","suppress_if_protective":false,"title":{"en":"Uses time pressure","fr":"Met la pression sur le temps","rw":"Ikoresha igitutu cy'igihe","sw":"Inatumia shinikizo la muda"},"why":{"en":"Urgency alone is common in normal messages. It matters only when combined with other warning signs.","fr":"L'urgence seule est courante dans les messages normaux. Elle ne compte que combinée à d'autres signes.","rw":"Kwihutisha ubwabyo bikunze kuba mu butumwa busanzwe. Bifite uburemere gusa iyo byiyongereye ku bindi bimenyetso.","sw":"Haraka peke yake ni jambo la kawaida kwenye jumbe za kawaida. Ni muhimu pale tu inapoambatana na dalili nyingine."},"advice":{"en":"Take a minute to check before acting.","fr":"Prenez une minute pour vérifier avant d'agir.","rw":"Fata umunota wo kugenzura mbere yo gukora.","sw":"Chukua dakika moja kuhakiki kabla ya kutenda."},"patterns":{"en":["\\b(?:immediately|right now|within (?:\\d+|one|two) ?(?:hours?|minutes?)|urgent(?:ly)?|last warning|act now|today only)\\b"],"fr":["\\b(?:immediatement|tout de suite|maintenant|dans les (?:\\d+|deux) ?(?:heures?|minutes?)|sous (?:\\d+) ?(?:heures?|minutes?)|urgent|dernier avertissement|aujourd'hui seulement|agissez vite)\\b"],"rw":["\\b(?:byihuse|ako kanya|ubu nonaha|mu masaha \\d+|mu minota \\d+|uyu munsi gusa)\\b"],"sw":["\\b(?:haraka|mara moja|sasa hivi|ndani ya saa \\d+|ndani ya dakika \\d+|leo tu|onyo la mwisho)\\b"]}},{"id":"secrecy","severity":"low","suppress_if_protective":false,"title":{"en":"Asks you to keep it secret","fr":"Demande de garder le secret","rw":"Irasaba kubigira ibanga","sw":"Inakuomba uweke siri"},"why":{"en":"Scammers often ask for secrecy so family or friends cannot warn you.","fr":"Les escrocs demandent souvent le secret pour que vos proches ne puissent pas vous alerter.","rw":"Abatekamutwe bakunze gusaba ibanga kugira ngo umuryango cyangwa inshuti zitakuburira.","sw":"Matapeli mara nyingi huomba siri ili familia au marafiki wasikuonye."},"advice":{"en":"Talk to someone you trust before acting.","fr":"Parlez à quelqu'un de confiance avant d'agir.","rw":"Vugana n'umuntu wizeye mbere yo gukora.","sw":"Zungumza na mtu unayemwamini kabla ya kutenda."},"patterns":{"en":["\\b(?:do not tell|don't tell|keep (?:this|it) (?:a )?secret|tell no one)\\b"],"fr":["\\b(?:ne le dites a personne|ne dites rien a personne|gardez (?:ceci|cela|le) secret|n'en parlez a personne)\\b"],"rw":["\\b(?:ntugire uwo ubwira|bigire ibanga)\\b"],"sw":["\\b(?:usimwambie mtu|usimwambie yeyote|weka siri|iweke siri)\\b"]}},{"id":"link_present","severity":"low","suppress_if_protective":false,"title":{"en":"Contains a link","fr":"Contient un lien","rw":"Ifite ihuza","sw":"Ina kiungo"},"why":{"en":"Most messages with links are harmless; links matter when other warning signs are present.","fr":"La plupart des messages avec liens sont inoffensifs; les liens comptent s'il y a d'autres signes.","rw":"Ubutumwa bwinshi bufite amahuza ntibubi; amahuza agira uburemere iyo hari ibindi bimenyetso.","sw":"Jumbe nyingi zenye viungo hazina madhara; viungo ni muhimu pale kuna dalili nyingine."},"advice":{"en":"Prefer typing official addresses yourself.","fr":"Préférez taper vous-même les adresses officielles.","rw":"Ahubwo wandike ubwawe aderesi zemewe.","sw":"Afadhali andika mwenyewe anwani rasmi."},"patterns":{"any":["https?://\\S+"]}}],"protective":{"en":["\\b(?:never|do not|don't|dont|should not|shouldn't|must not|mustn't|won't|will not|not to)\\s+(?:ever\\s+)?$","\\b(?:never|no\\s+\\w+|nobody|not|n't|don't|won't)\\b[^,;]*\\b(?:ask|asks|asking|request|requests|require|requires|tell)\\w*\\b[^,;]*$"],"fr":["\\bn(?:e|')\\s*$","\\bjamais\\s+$","\\b(?:aucun\\w*|personne|jamais|pas)\\b[^,;]*\\b(?:demand|exig|solicit)\\w*\\b[^,;]*$"],"rw":["\\b(?:ntugasangize|ntugatange|ntukohereze|ntukamuhe|ntukabwire|ntuzigere|ntituzigera|ntituzigere)\\b[^,;]*$"],"sw":["\\b(?:kamwe|hatutakuomba|hatutaomba|hatuombi|haitakuuliza|hawatakuuliza|hatutakuuliza|hakuna\\s+\\w+\\s+itakayokuomba)\\b[^,;]*$"]},"general":{"en":["Do not click links or call numbers from a message you did not expect.","Never share a PIN, password or one-time code with anyone.","Contact the organisation using details from its official website, card or branch.","Talk to someone you trust before sending money."],"fr":["Ne cliquez pas sur les liens et n'appelez pas les numéros d'un message inattendu.","Ne partagez jamais un code PIN, un mot de passe ou un code à usage unique.","Contactez l'organisme avec les coordonnées de son site officiel, de votre carte ou de son agence.","Parlez à quelqu'un de confiance avant d'envoyer de l'argent."],"rw":["Ntukande amahuza cyangwa ngo uhamagare nimero ziri mu butumwa utari witeze.","Ntugatange PIN, ijambo ry'ibanga cyangwa kode y'inyongera ku muntu uwo ari we wese.","Vugana n'ikigo ukoresheje amakuru ari ku rubuga rwemewe, ku ikarita cyangwa ku biro.","Vugana n'umuntu wizeye mbere yo kohereza amafaranga."],"sw":["Usibonyeze viungo wala kupiga namba zilizo kwenye ujumbe usioutarajia.","Kamwe usishiriki PIN, nenosiri au msimbo wa mara moja na mtu yeyote.","Wasiliana na taasisi kwa kutumia taarifa za tovuti yake rasmi, kadi yako au tawi.","Zungumza na mtu unayemwamini kabla ya kutuma pesa."]},"markers":{"en":["the","your","you","please","account","dear","customer","money","pay","send","will","with"],"fr":["bonjour","votre","vous","compte","merci","avez","sera","nous","pour","cher","client","argent","mot de passe","est","les"],"rw":["konti","yawe","amafaranga","ohereza","mpa","kode","mwiriwe","murakoze","frw","kugira ngo","watsindiye","izafungwa","umubare","ibanga","nsubiza"],"sw":["habari","yako","wako","akaunti","asante","tafadhali","pesa","tuma","umeshinda","nambari","kwa","ili","mteja","tsh","na"]},"verdicts":{"ok":{"en":"No known warning signs detected","fr":"Aucun signe d'alerte connu détecté","rw":"Nta bimenyetso by'uburiganya bizwi byabonetse","sw":"Hakuna dalili za tahadhari zinazojulikana zilizogunduliwa"},"verify":{"en":"Verify before acting","fr":"Vérifiez avant d'agir","rw":"Banza ugenzure mbere yo gukora","sw":"Hakiki kabla ya kutenda"},"high":{"en":"Multiple high-risk indicators detected","fr":"Plusieurs indicateurs de risque élevé détectés","rw":"Hari ibimenyetso byinshi by'ibyago bikomeye","sw":"Viashiria vingi vya hatari kubwa vimegunduliwa"}},"noGuarantee":{"en":"This is a decision aid, not a guarantee. A message with no warning signs can still be a scam.","fr":"Ceci est une aide à la décision, pas une garantie. Un message sans signe d'alerte peut quand même être une arnaque.","rw":"Iki ni igikoresho cyunganira ibyemezo, ntabwo ari ingwate. Ubutumwa butagaragaza ibimenyetso na bwo bushobora kuba uburiganya.","sw":"Hiki ni kisaidizi cha uamuzi, si dhamana. Ujumbe usio na dalili bado unaweza kuwa utapeli."},"langs":["en","fr","rw","sw"],"langNames":{"en":"English","fr":"Français","rw":"Kinyarwanda","sw":"Kiswahili"},"ui":{"en":{"tagline":"Check a message before you click, pay or share a code.","tab_check":"Check","tab_learn":"Learn","tab_about":"About","paste":"Paste the message you received","placeholder":"Paste the suspicious message here","analyze":"Check message","clear":"Clear","examples":"Try an example","language":"Language","detected":"Message language looks like","evidence":"Wording that triggered it","findings":"Why it was flagged","steps":"Safest next steps","protective":"Protective wording (read as a warning, not counted)","low":"Minor signs (matter only together with others)","none_found":"No rule matched. That does not prove the message is safe.","paste_first":"Paste a message first.","privacy":"Your message is checked inside this page. It is not uploaded or stored.","draft_note":"Part of this translation is a draft awaiting review by fluent speakers.","copy_summary":"Copy summary","copied":"Copied","copy_failed":"Select the text and copy it manually.","feedback_q":"Was this result right?","fb_right":"Yes, right","fb_missed":"It missed a scam","fb_false":"False alarm","fb_thanks":"Saved on this device only. Thank you.","fb_export":"Copy my feedback as CSV","fb_count":"saved reports","fb_include":"Include the message text in the export","fb_help":"Reports help improve the rules. Nothing is sent anywhere unless you copy and share it yourself.","text_size":"Text size","theme":"Theme","learn_title":"Five habits that stop most scams","tips":["Do not click links or call numbers from a message you did not expect.","Never share a PIN, password or one-time code, even with someone who says they work for your bank.","You never pay a fee to receive a prize, loan or scholarship.","Check with the organisation yourself, using its official website, your card or a branch.","Talk to someone you trust before you send money, especially when you are told to hurry or keep it secret."],"about_title":"About KinyaShield RW","about":["KinyaShield explains why a message may be suspicious, in English, French, Kinyarwanda and Kiswahili.","It uses written rules you can read, not a hidden model. Every warning shows the exact words that caused it.","It is a decision aid. It cannot prove a message is safe, and it can miss new tricks, especially messages that sound normal.","Rules and wording in French, Kinyarwanda and Kiswahili are drafts until fluent speakers have reviewed them.","Tested only on short fictional messages written by the project owner. Real-world accuracy is not yet known."],"sources_title":"Where to get official help","sources_note":"Look up contact details yourself on the official website. This app does not list phone numbers on purpose.","sev_high":"High","sev_medium":"Medium","sev_low":"Minor","theme_auto":"Auto","theme_light":"Light","theme_dark":"Dark","example_note":"Fictional example message","result_head":"KinyaShield result","scam_types_title":"Common scam types","works_offline":"Once this page has loaded it keeps working without internet.","reasons":"Reasons","version":"Version","rules_count":"rules","no_reasons":"No warning signs matched","fb_clear":"Clear saved reports","fb_shown":"Report saved","lang_guess_unknown":"unclear"},"fr":{"tagline":"Vérifiez un message avant de cliquer, de payer ou de donner un code.","tab_check":"Vérifier","tab_learn":"Apprendre","tab_about":"À propos","paste":"Collez le message reçu","placeholder":"Collez ici le message suspect","analyze":"Vérifier le message","clear":"Effacer","examples":"Essayer un exemple","language":"Langue","detected":"La langue du message semble être","evidence":"Mots qui ont déclenché l'alerte","findings":"Pourquoi il est signalé","steps":"Prochaines étapes les plus sûres","protective":"Formulation protectrice (lue comme un avertissement, non comptée)","low":"Signes mineurs (comptent seulement avec d'autres)","none_found":"Aucune règle ne correspond. Cela ne prouve pas que le message est sûr.","paste_first":"Collez d'abord un message.","privacy":"Votre message est analysé dans cette page. Il n'est ni envoyé ni conservé.","draft_note":"Une partie de cette traduction est un brouillon en attente de relecture par des locuteurs.","copy_summary":"Copier le résumé","copied":"Copié","copy_failed":"Sélectionnez le texte et copiez-le manuellement.","feedback_q":"Ce résultat était-il juste ?","fb_right":"Oui, juste","fb_missed":"Il a raté une arnaque","fb_false":"Fausse alerte","fb_thanks":"Enregistré sur cet appareil uniquement. Merci.","fb_export":"Copier mes retours en CSV","fb_count":"signalements enregistrés","fb_include":"Inclure le texte du message dans l'export","fb_help":"Les signalements aident à améliorer les règles. Rien n'est envoyé sauf si vous le copiez et le partagez vous-même.","text_size":"Taille du texte","theme":"Thème","learn_title":"Cinq réflexes qui évitent la plupart des arnaques","tips":["Ne cliquez pas sur les liens et n'appelez pas les numéros d'un message inattendu.","Ne partagez jamais un code PIN, un mot de passe ou un code à usage unique, même avec quelqu'un qui dit travailler pour votre banque.","On ne paie jamais de frais pour recevoir un gain, un prêt ou une bourse.","Vérifiez vous-même auprès de l'organisme, via son site officiel, votre carte ou une agence.","Parlez à quelqu'un de confiance avant d'envoyer de l'argent, surtout si on vous presse ou vous demande le secret."],"about_title":"À propos de KinyaShield RW","about":["KinyaShield explique pourquoi un message peut être suspect, en anglais, français, kinyarwanda et kiswahili.","Il utilise des règles écrites que vous pouvez lire, pas un modèle caché. Chaque alerte montre les mots exacts qui l'ont causée.","C'est une aide à la décision. Il ne peut pas prouver qu'un message est sûr et peut rater de nouvelles ruses, surtout les messages qui paraissent normaux.","Les règles et formulations en français, kinyarwanda et kiswahili sont des brouillons tant que des locuteurs ne les ont pas relues.","Testé uniquement sur de courts messages fictifs écrits par le porteur du projet. La précision en conditions réelles est inconnue."],"sources_title":"Où trouver de l'aide officielle","sources_note":"Cherchez vous-même les coordonnées sur le site officiel. Cette appli n'affiche volontairement aucun numéro de téléphone.","sev_high":"Élevé","sev_medium":"Moyen","sev_low":"Mineur","theme_auto":"Auto","theme_light":"Clair","theme_dark":"Sombre","example_note":"Exemple de message fictif","result_head":"Résultat KinyaShield","scam_types_title":"Types d'arnaques courants","works_offline":"Une fois la page chargée, elle continue de fonctionner sans internet.","reasons":"Raisons","version":"Version","rules_count":"règles","no_reasons":"Aucun signe d'alerte trouvé","fb_clear":"Effacer les signalements","fb_shown":"Signalement enregistré","lang_guess_unknown":"incertaine"},"rw":{"tagline":"Genzura ubutumwa mbere yo gukanda, kwishyura cyangwa gutanga kode.","tab_check":"Genzura","tab_learn":"Wige","tab_about":"Ibyerekeye","paste":"Shyira hano ubutumwa wakiriye","placeholder":"Shyira hano ubutumwa ukeka","analyze":"Genzura ubutumwa","clear":"Siba","examples":"Gerageza urugero","language":"Ururimi","detected":"Ururimi rw'ubutumwa rusa nk'","evidence":"Amagambo yatumye hatangwa umuburo","findings":"Impamvu byagaragajwe","steps":"Intambwe zizewe zikurikira","protective":"Amagambo arinda (asomwa nk'umuburo, ntabarwa)","low":"Ibimenyetso bito (bifite uburemere iyo byiyongereye ku bindi)","none_found":"Nta tegeko ryahuye. Ibyo ntibyemeza ko ubutumwa butekanye.","paste_first":"Banza ushyiremo ubutumwa.","privacy":"Ubutumwa bwawe bugenzurirwa muri uru rupapuro. Ntibwoherezwa kandi ntibubikwa.","draft_note":"Igice cy'ubu buhinduzi ni igerageza gitegereje isuzumwa n'abakizi neza.","copy_summary":"Gukopera incamake","copied":"Byakoporowe","copy_failed":"Hitamo inyandiko uyikopere ubwawe.","feedback_q":"Ibi bisubizo byari byo?","fb_right":"Yego, ni byo","fb_missed":"Hari uburiganya butabonetse","fb_false":"Umuburo utari ngombwa","fb_thanks":"Byabitswe kuri iki gikoresho gusa. Murakoze.","fb_export":"Gukopera raporo zanjye (CSV)","fb_count":"raporo zabitswe","fb_include":"Shyiramo n'inyandiko y'ubutumwa","fb_help":"Raporo zifasha kunoza amategeko. Nta kintu cyoherezwa keretse ubikopeye ukabisangiza ubwawe.","text_size":"Ingano y'inyandiko","theme":"Isura","learn_title":"Ingeso eshanu zikumira uburiganya bwinshi","tips":["Ntukande amahuza cyangwa ngo uhamagare nimero ziri mu butumwa utari witeze.","Ntugatange PIN, ijambo ry'ibanga cyangwa kode y'inyongera, ndetse no ku muntu uvuga ko akora muri banki yawe.","Nta kwishyura mbere yo guhabwa igihembo, inguzanyo cyangwa buruse.","Baza ikigo ubwawe, ukoresheje urubuga rwacyo rwemewe, ikarita yawe cyangwa ibiro byacyo.","Vugana n'umuntu wizeye mbere yo kohereza amafaranga, cyane iyo bagusaba kwihuta cyangwa kubigira ibanga."],"about_title":"Ibyerekeye KinyaShield RW","about":["KinyaShield isobanura impamvu ubutumwa bushobora kuba uburiganya, mu Cyongereza, Igifaransa, Ikinyarwanda n'Igiswahili.","Ikoresha amategeko yanditse ushobora gusoma, ntabwo ari ikoranabuhanga rihishe. Buri muburo werekana amagambo yawuteye.","Ni igikoresho cyunganira ibyemezo. Ntigishobora kwemeza ko ubutumwa butekanye, kandi gishobora kudatahura amayeri mashya.","Amategeko n'amagambo mu Gifaransa, Ikinyarwanda n'Igiswahili ni igerageza kugeza ubwo abakizi neza bazayasuzuma.","Cyagerageshejwe gusa ku butumwa bugufi bw'impimbano bwanditswe na nyiri umushinga. Ukuri mu buzima busanzwe ntikurazwi."],"sources_title":"Aho wakura ubufasha bwemewe","sources_note":"Shaka ubwawe amakuru yo guhamagara ku rubuga rwemewe. Iyi porogaramu ntishyiraho nimero za telefoni ku bushake.","sev_high":"Gikomeye","sev_medium":"Giciriritse","sev_low":"Gito","theme_auto":"Byikoresha","theme_light":"Urumuri","theme_dark":"Umwijima","example_note":"Urugero rw'ubutumwa bw'impimbano","result_head":"Igisubizo cya KinyaShield","scam_types_title":"Ubwoko bw'uburiganya busanzwe","works_offline":"Iyo uru rupapuro rumaze gufunguka rukomeza gukora nta murandasi.","reasons":"Impamvu","version":"Verisiyo","rules_count":"amategeko","no_reasons":"Nta kimenyetso cyabonetse","fb_clear":"Siba raporo zabitswe","fb_shown":"Raporo yabitswe","lang_guess_unknown":"ntisobanutse"},"sw":{"tagline":"Hakiki ujumbe kabla ya kubonyeza, kulipa au kutoa msimbo.","tab_check":"Hakiki","tab_learn":"Jifunze","tab_about":"Kuhusu","paste":"Bandika ujumbe uliopokea","placeholder":"Bandika hapa ujumbe unaotia shaka","analyze":"Hakiki ujumbe","clear":"Futa","examples":"Jaribu mfano","language":"Lugha","detected":"Lugha ya ujumbe inaonekana kuwa","evidence":"Maneno yaliyosababisha tahadhari","findings":"Kwa nini umeonyeshwa","steps":"Hatua salama zinazofuata","protective":"Maneno ya kujikinga (yanasomwa kama onyo, hayahesabiwi)","low":"Dalili ndogo (zina maana zikiwa pamoja na nyingine)","none_found":"Hakuna kanuni iliyolingana. Hilo halithibitishi kuwa ujumbe ni salama.","paste_first":"Bandika ujumbe kwanza.","privacy":"Ujumbe wako unakaguliwa ndani ya ukurasa huu. Haupakiwi wala kuhifadhiwa.","draft_note":"Sehemu ya tafsiri hii ni rasimu inayosubiri ukaguzi wa wazungumzaji fasaha.","copy_summary":"Nakili muhtasari","copied":"Imenakiliwa","copy_failed":"Chagua maandishi kisha uyanakili mwenyewe.","feedback_q":"Je, matokeo haya yalikuwa sahihi?","fb_right":"Ndiyo, sahihi","fb_missed":"Ulikosa utapeli","fb_false":"Tahadhari ya uongo","fb_thanks":"Imehifadhiwa kwenye kifaa hiki pekee. Asante.","fb_export":"Nakili maoni yangu kama CSV","fb_count":"ripoti zilizohifadhiwa","fb_include":"Jumuisha maandishi ya ujumbe kwenye usafirishaji","fb_help":"Ripoti husaidia kuboresha kanuni. Hakuna kinachotumwa isipokuwa ukinakili na kushiriki mwenyewe.","text_size":"Ukubwa wa maandishi","theme":"Mandhari","learn_title":"Tabia tano zinazozuia utapeli mwingi","tips":["Usibonyeze viungo wala kupiga namba zilizo kwenye ujumbe usioutarajia.","Kamwe usishiriki PIN, nenosiri au msimbo wa mara moja, hata na mtu anayesema anafanya kazi benki yako.","Hulipi ada yoyote ili upokee zawadi, mkopo au ufadhili.","Hakiki mwenyewe na taasisi, kupitia tovuti yake rasmi, kadi yako au tawi.","Zungumza na mtu unayemwamini kabla ya kutuma pesa, hasa ukiambiwa uharakishe au uweke siri."],"about_title":"Kuhusu KinyaShield RW","about":["KinyaShield inaeleza kwa nini ujumbe unaweza kuwa wa kutiliwa shaka, kwa Kiingereza, Kifaransa, Kinyarwanda na Kiswahili.","Inatumia kanuni zilizoandikwa unazoweza kusoma, si modeli iliyofichwa. Kila tahadhari inaonyesha maneno halisi yaliyoisababisha.","Ni kisaidizi cha uamuzi. Haiwezi kuthibitisha kuwa ujumbe ni salama, na inaweza kukosa mbinu mpya, hasa jumbe zinazosikika za kawaida.","Kanuni na maneno ya Kifaransa, Kinyarwanda na Kiswahili ni rasimu hadi wazungumzaji fasaha wazikague.","Imejaribiwa kwa jumbe fupi za kubuni zilizoandikwa na mmiliki wa mradi pekee. Usahihi wa matumizi halisi bado haujulikani."],"sources_title":"Mahali pa kupata msaada rasmi","sources_note":"Tafuta mwenyewe mawasiliano kwenye tovuti rasmi. Programu hii haionyeshi namba za simu kwa makusudi.","sev_high":"Juu","sev_medium":"Wastani","sev_low":"Ndogo","theme_auto":"Otomatiki","theme_light":"Mwanga","theme_dark":"Giza","example_note":"Mfano wa ujumbe wa kubuni","result_head":"Matokeo ya KinyaShield","scam_types_title":"Aina za kawaida za utapeli","works_offline":"Ukurasa huu ukishapakia unaendelea kufanya kazi bila intaneti.","reasons":"Sababu","version":"Toleo","rules_count":"kanuni","no_reasons":"Hakuna dalili zilizolingana","fb_clear":"Futa ripoti zilizohifadhiwa","fb_shown":"Ripoti imehifadhiwa","lang_guess_unknown":"haijulikani"}},"sources":[{"name":"National Cyber Security Authority (NCSA), Rwanda","use":{"en":"Official cyber-security guidance and awareness material for Rwanda.","rw":"Inama n'ibikoresho byo gukangurira ku mutekano wa murandasi mu Rwanda.","fr":"Conseils officiels et matériel de sensibilisation sur la cybersécurité au Rwanda.","sw":"Mwongozo rasmi na vifaa vya uhamasishaji kuhusu usalama wa mtandao nchini Rwanda."},"url":"https://www.ncsa.gov.rw","verified":false},{"name":"Your bank or mobile-money provider (official website, card or branch)","use":{"en":"The only reliable way to confirm a message that claims to come from them.","rw":"Inzira yonyine yizewe yo kwemeza ubutumwa buvuga ko buturutse kuri bo.","fr":"Le seul moyen fiable de confirmer un message qui prétend venir d'eux.","sw":"Njia pekee ya kuaminika ya kuthibitisha ujumbe unaodai kutoka kwao."},"url":"","verified":true}],"sourcesNote":{"en":"Addresses marked unverified must be checked by the project owner before release.","rw":"Aderesi zanditseho 'unverified' zigomba kugenzurwa na nyiri umushinga mbere yo gusohora."},"examples":{"en":[{"text":"Congratulations! You have won 2,000,000 RWF in the MoMo lucky draw. Pay 15,000 RWF registration fee to receive your prize today.","kind":"suspicious"},{"text":"Dear customer, your MTN account will be suspended within 24 hours. Send your PIN to 0780000000 to verify.","kind":"suspicious"},{"text":"Your scholarship application is approved. To release your funds, send 20,000 RWF processing fee to the number below.","kind":"suspicious"},{"text":"I sent you 50,000 RWF by mistake. Please send back the money to my number, I am in hospital.","kind":"suspicious"},{"text":"Your OTP is 482913. Do not share it with anyone, including MTN staff.","kind":"legitimate"},{"text":"We will never ask you for your PIN or password by SMS or phone call.","kind":"legitimate"},{"text":"Reminder: your school fees for Term 2 are due on 15 May. Pay at the bursar's office or through the school's official account.","kind":"legitimate"}],"fr":[{"text":"Félicitations ! Vous avez gagné 2 000 000 RWF au tirage MoMo. Payez 15 000 RWF de frais d'inscription pour recevoir votre gain aujourd'hui.","kind":"suspicious"},{"text":"Cher client, votre compte MTN sera suspendu dans les 24 heures. Envoyez votre code PIN au 0780000000 pour vérifier.","kind":"suspicious"},{"text":"Votre bourse est approuvée. Pour débloquer vos fonds, envoyez 20 000 RWF de frais de dossier au numéro ci-dessous.","kind":"suspicious"},{"text":"Je vous ai envoyé 50 000 RWF par erreur. Renvoyez-moi l'argent s'il vous plaît, je suis à l'hôpital.","kind":"suspicious"},{"text":"Votre code OTP est 482913. Ne le partagez avec personne, y compris le personnel MTN.","kind":"legitimate"},{"text":"Nous ne vous demanderons jamais votre code PIN ni votre mot de passe par SMS ou par appel.","kind":"legitimate"},{"text":"Rappel : les frais de scolarité du trimestre 2 sont dus le 15 mai. Payez à la caisse de l'école ou sur le compte officiel.","kind":"legitimate"}],"rw":[{"text":"Mwiriwe, watsindiye miliyoni 2 muri tombola ya MoMo. Ishyura amafaranga 15,000 Frw kugira ngo ubone igihembo cyawe.","kind":"suspicious"},{"text":"Konti yawe ya MTN izafungwa mu masaha 24. Ohereza umubare w'ibanga wawe kuri 0780000000 ubu nonaha.","kind":"suspicious"},{"text":"Nakohereje amafaranga 50,000 Frw kubw'impanuka. Nsubiza amafaranga yanjye vuba.","kind":"suspicious"},{"text":"Kanda hano https://bit.ly/abc123 wemeze konti yawe cyangwa izafungwa.","kind":"suspicious"},{"text":"Kode yawe ni 482913. Ntugasangize iyi kode n'undi muntu.","kind":"legitimate"},{"text":"Ntituzigera tukubaza umubare w'ibanga wawe kuri telefoni cyangwa SMS.","kind":"legitimate"},{"text":"Murakoze kwishyura. Wishyuye 5,000 Frw ku wa 12 Gicurasi.","kind":"legitimate"}],"sw":[{"text":"Hongera! Umeshinda TSh 2,000,000 kwenye droo ya bahati nasibu ya M-Pesa. Lipa ada ya usajili ya TSh 15,000 ili upokee zawadi yako leo.","kind":"suspicious"},{"text":"Mteja mpendwa, akaunti yako itafungwa ndani ya saa 24. Tuma PIN yako kwa 0780000000 ili kuthibitisha.","kind":"suspicious"},{"text":"Maombi yako ya ufadhili yamekubaliwa. Ili upokee fedha zako, tuma ada ya usindikaji ya RWF 20,000 kwa namba iliyo hapa chini.","kind":"suspicious"},{"text":"Nimekutumia TSh 50,000 kimakosa. Tafadhali nirudishie pesa zangu, niko hospitalini.","kind":"suspicious"},{"text":"Msimbo wako wa OTP ni 482913. Usimshirikishe mtu yeyote, ikiwemo wafanyakazi wa Vodacom.","kind":"legitimate"},{"text":"Hatutakuomba kamwe PIN au nenosiri lako kwa SMS au simu.","kind":"legitimate"},{"text":"Kumbusho: ada ya shule ya muhula wa 2 inadaiwa tarehe 15 Mei. Lipa kwa karani wa shule au kupitia akaunti rasmi ya shule.","kind":"legitimate"}]},"version":"0.3.0-mvp"}</script>
+<script>
+/* KinyaShield RW detector (browser). Mirrors detector.py step for step.
+   Parity with the Python version is checked by tests/parity.js. */
+(function (root) {
+  "use strict";
+  var FLAGS = "gi";
+
+  function fold(text) {
+    text = text || "";
+    var out = "";
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      if (ch === "’" || ch === "‘") { out += "'"; continue; }
+      if (ch === " " || ch === " ") { out += " "; continue; }
+      if (ch.charCodeAt(0) < 128) { out += ch; continue; }
+      var d = ch.normalize("NFD").replace(/[̀-ͯ]/g, "");
+      out += d.length === 1 ? d : ch;
+    }
+    return out;
+  }
+
+  function detectLanguage(D, folded) {
+    var t = " " + folded.toLowerCase().replace(/[^a-z0-9' ]+/g, " ") + " ";
+    var best = "en", bestN = 1;
+    D.langs.forEach(function (lang) {
+      var n = 0;
+      D.markers[lang].forEach(function (m) { if (t.indexOf(" " + m + " ") !== -1) n++; });
+      if (n > bestN) { best = lang; bestN = n; }
+    });
+    return best;
+  }
+
+  function sentencePrefix(text, start) {
+    var last = 0, re = /[.!?\n]\s/g, m, head = text.slice(0, start);
+    while ((m = re.exec(head)) !== null) last = m.index + m[0].length;
+    return text.slice(last, start);
+  }
+
+  function sentence(text, start, end) {
+    var first = 0, re = /[.!?\n]\s/g, m, head = text.slice(0, start);
+    while ((m = re.exec(head)) !== null) first = m.index + m[0].length;
+    var tail = text.slice(end), nx = /[.!?\n]\s/.exec(tail);
+    return nx ? text.slice(first, end + nx.index + 1) : text.slice(first);
+  }
+
+  function anyMatch(patterns, s) {
+    for (var i = 0; i < patterns.length; i++) if (new RegExp(patterns[i], "i").test(s)) return true;
+    return false;
+  }
+
+  function isProtective(D, folded, start) {
+    var prefix = sentencePrefix(folded, start).toLowerCase();
+    var langs = Object.keys(D.protective);
+    for (var i = 0; i < langs.length; i++) {
+      var pats = D.protective[langs[i]];
+      for (var j = 0; j < pats.length; j++) if (new RegExp(pats[j], "i").test(prefix)) return true;
+    }
+    return false;
+  }
+
+  function benignContext(folded, start, end, rule) {
+    var sent = sentence(folded, start, end);
+    if (!anyMatch(rule.unless, sent)) return false;
+    return !anyMatch(rule.keep_if || [], sent);
+  }
+
+  function analyze(D, rawText) {
+    var original = rawText || "";
+    var folded = fold(original);
+    var lang = detectLanguage(D, folded);
+    var findings = [], protective = [];
+
+    D.rules.forEach(function (rule) {
+      var spans = [];
+      if (rule.groups) {
+        var found = [];
+        for (var gi = 0; gi < rule.groups.length; gi++) {
+          var hit = null, group = rule.groups[gi];
+          Object.keys(group).forEach(function (l) {
+            group[l].forEach(function (pat) {
+              var m = new RegExp(pat, "i").exec(folded);
+              if (m && (hit === null || m.index < hit[0])) hit = [m.index, m.index + m[0].length, original.slice(m.index, m.index + m[0].length)];
+            });
+          });
+          if (hit === null) { found = []; break; }
+          found.push(hit);
+        }
+        spans = spans.concat(found);
+      } else {
+        Object.keys(rule.patterns).forEach(function (l) {
+          rule.patterns[l].forEach(function (pat) {
+            var re = new RegExp(pat, FLAGS), m;
+            while ((m = re.exec(folded)) !== null) {
+              if (m[0].length === 0) { re.lastIndex++; continue; }
+              var s = m.index, e = m.index + m[0].length;
+              if (rule.suppress_if_protective && isProtective(D, folded, s)) { protective.push([s, e, original.slice(s, e)]); continue; }
+              if (rule.unless && rule.unless.length && benignContext(folded, s, e, rule)) continue;
+              spans.push([s, e, original.slice(s, e)]);
+            }
+          });
+        });
+      }
+      if (spans.length) {
+        var seen = {}, uniq = [];
+        spans.forEach(function (sp) { var k = sp[0] + ":" + sp[1] + ":" + sp[2]; if (!seen[k]) { seen[k] = 1; uniq.push(sp); } });
+        uniq.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+        findings.push({ id: rule.id, severity: rule.severity, title: rule.title, why: rule.why, advice: rule.advice, evidence: uniq });
+      }
+    });
+
+    var highs = findings.filter(function (f) { return f.severity === "high"; }).length;
+    var meds = findings.filter(function (f) { return f.severity === "medium"; }).length;
+    var lows = findings.filter(function (f) { return f.severity === "low"; }).length;
+    var nonlow = highs + meds, verdict;
+    if (highs >= 2 || (highs >= 1 && (nonlow >= 2 || lows >= 1)) || (meds >= 2 && lows >= 1)) verdict = "high";
+    else if (nonlow >= 1) verdict = "verify";
+    else verdict = "ok";
+    var order = { high: 0, medium: 1, low: 2 };
+    findings.sort(function (a, b) { return order[a.severity] - order[b.severity]; });
+    return { verdict: verdict, language: lang, findings: findings, protective: protective, text: original, folded: folded };
+  }
+
+  function highlightSpans(result) {
+    var spans = [];
+    result.findings.forEach(function (f) {
+      if (f.severity === "low") return;
+      f.evidence.forEach(function (e) { spans.push([e[0], e[1], f.severity]); });
+    });
+    spans.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+    var merged = [];
+    spans.forEach(function (sp) {
+      var last = merged[merged.length - 1];
+      if (last && sp[0] <= last[1]) {
+        last[1] = Math.max(last[1], sp[1]);
+        if (sp[2] === "high" || last[2] === "high") last[2] = "high";
+      } else merged.push([sp[0], sp[1], sp[2]]);
+    });
+    return merged;
+  }
+
+  function nextSteps(D, result, lang) {
+    var steps = [];
+    result.findings.forEach(function (f) {
+      if (f.severity !== "low" && steps.indexOf(f.advice[lang]) === -1) steps.push(f.advice[lang]);
+    });
+    D.general[lang].forEach(function (g) { if (steps.indexOf(g) === -1) steps.push(g); });
+    return steps;
+  }
+
+  var api = { fold: fold, analyze: analyze, highlightSpans: highlightSpans, nextSteps: nextSteps, detectLanguage: detectLanguage };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.KinyaDetector = api;
+})(typeof window !== "undefined" ? window : this);
+
+</script>
+<script>
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("ks-data").textContent);
+  var K = window.KinyaDetector;
+  var $ = function (id) { return document.getElementById(id); };
+  var store = {
+    get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* private mode: page still works */ } }
+  };
+  var SIZES = [100, 112, 125, 140], THEMES = ["auto", "light", "dark"];
+  var state = { lang: "en", tab: "check", last: null, exampleActive: false, size: 0, theme: "auto", fb: [], fbPicked: null };
+
+  function t(k) { var s = D.ui[state.lang][k]; return s === undefined ? D.ui.en[k] : s; }
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }
+  function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+
+  var ICONS = {
+    ok: '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l3 3 5-6"/></svg>',
+    verify: '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3L2.5 20h19L12 3z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>',
+    high: '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5h8L21.5 8v8L16 21.5H8L2.5 16V8z"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'
+  };
+
+  /* ---------- static text ---------- */
+  function renderStatic() {
+    document.documentElement.lang = state.lang;
+    $("tagline").textContent = t("tagline");
+    $("pasteLbl").textContent = t("paste");
+    $("msg").placeholder = t("placeholder");
+    $("privacy").textContent = t("privacy");
+    $("go").textContent = t("analyze");
+    $("clear").textContent = t("clear");
+    $("tab-check").textContent = t("tab_check"); $("tab-learn").textContent = t("tab_learn"); $("tab-about").textContent = t("tab_about");
+    $("langseg").setAttribute("aria-label", t("language"));
+    $("sizeBtn").textContent = "A+ " + SIZES[state.size] + "%"; $("sizeBtn").setAttribute("aria-label", t("text_size"));
+    $("themeBtn").textContent = t("theme") + ": " + t("theme_" + state.theme);
+    var note = $("draftNote"); note.hidden = state.lang === "en"; note.textContent = t("draft_note");
+    $("exTag").hidden = !state.exampleActive; $("exTag").textContent = t("example_note");
+    var seg = clear($("langseg"));
+    D.langs.forEach(function (l) {
+      var b = el("button", "", D.langNames[l]); b.type = "button"; b.setAttribute("lang", l);
+      b.setAttribute("aria-pressed", String(l === state.lang));
+      b.addEventListener("click", function () { setLang(l); });
+      seg.appendChild(b);
+    });
+    var sel = clear($("examples")), first = el("option", "", t("examples") + " …"); first.value = ""; sel.appendChild(first);
+    (D.examples[state.lang] || []).forEach(function (ex, i) {
+      var o = el("option", "", (ex.text.length > 58 ? ex.text.slice(0, 58) + "…" : ex.text)); o.value = String(i); sel.appendChild(o);
+    });
+    renderLearn(); renderAbout();
+  }
+
+  function renderLearn() {
+    var p = clear($("p-learn")), box = el("div"); box.style.cssText = "display:flex;flex-direction:column;gap:14px";
+    box.appendChild(el("h3", "", t("learn_title")));
+    var ol = el("ol", "steps"); t("tips").forEach(function (x) { ol.appendChild(el("li", "", x)); }); box.appendChild(ol);
+    box.appendChild(el("h3", "", t("scam_types_title")));
+    var grid = el("div", "scamlist");
+    D.rules.forEach(function (r) {
+      if (r.severity === "low") return;
+      var c = el("div", "card"); c.appendChild(el("span", "sev " + r.severity, t("sev_" + r.severity)));
+      c.appendChild(el("h4", "", r.title[state.lang])); c.appendChild(el("p", "", r.why[state.lang]));
+      var a = el("p", "small"); a.textContent = r.advice[state.lang]; c.appendChild(a); grid.appendChild(c);
+    });
+    box.appendChild(grid); p.appendChild(box);
+  }
+
+  function renderAbout() {
+    var p = clear($("p-about")), box = el("div"); box.style.cssText = "display:flex;flex-direction:column;gap:12px";
+    box.appendChild(el("h3", "", t("about_title")));
+    var ul = el("ul", "about plain"); t("about").forEach(function (x) { ul.appendChild(el("li", "", x)); }); box.appendChild(ul);
+    box.appendChild(el("p", "small", t("works_offline")));
+    box.appendChild(el("h3", "", t("sources_title")));
+    var s = el("ul", "sources plain");
+    D.sources.forEach(function (src) {
+      var li = el("li"); li.appendChild(el("strong", "", src.name)); li.appendChild(document.createTextNode(": " + (src.use[state.lang] || src.use.en)));
+      if (src.url) { li.appendChild(document.createTextNode(" ")); var c = el("code", "", src.url); li.appendChild(c); }
+      s.appendChild(li);
+    });
+    box.appendChild(s); box.appendChild(el("p", "small", t("sources_note")));
+    box.appendChild(el("p", "small", t("version") + " " + D.version + " · " + D.rules.length + " " + t("rules_count") + " · " + D.langs.join(" / ")));
+    p.appendChild(box);
+  }
+
+  /* ---------- result ---------- */
+  function renderResult(res) {
+    var out = clear($("result"));
+    if (!res) return;
+    var v = el("div", "verdict " + res.verdict);
+    var ic = el("div"); ic.innerHTML = ICONS[res.verdict]; v.appendChild(ic);
+    var vt = el("div"); vt.appendChild(el("h2", "", D.verdicts[res.verdict][state.lang])); vt.appendChild(el("p", "", D.noGuarantee[state.lang])); v.appendChild(vt);
+    out.appendChild(v);
+    out.appendChild(el("p", "small", t("detected") + ": " + D.langNames[res.language]));
+
+    var sec = el("div"); sec.appendChild(el("h3", "", t("evidence")));
+    var m = el("div", "msg"), pos = 0;
+    K.highlightSpans(res).forEach(function (sp) {
+      if (sp[0] > pos) m.appendChild(document.createTextNode(res.text.slice(pos, sp[0])));
+      m.appendChild(el("mark", sp[2], res.text.slice(sp[0], sp[1]))); pos = sp[1];
+    });
+    if (pos < res.text.length) m.appendChild(document.createTextNode(res.text.slice(pos)));
+    sec.appendChild(m); out.appendChild(sec);
+
+    var main = res.findings.filter(function (f) { return f.severity !== "low"; });
+    var low = res.findings.filter(function (f) { return f.severity === "low"; });
+    var fsec = el("div"); fsec.appendChild(el("h3", "", t("findings")));
+    var cards = el("div", "cards");
+    if (!main.length) cards.appendChild(el("div", "card", t("none_found")));
+    main.forEach(function (f) { cards.appendChild(card(f, true)); });
+    fsec.appendChild(cards); out.appendChild(fsec);
+    if (low.length) {
+      var lsec = el("div"); lsec.appendChild(el("h3", "", t("low")));
+      var lc = el("div", "cards"); low.forEach(function (f) { lc.appendChild(card(f, false)); }); lsec.appendChild(lc); out.appendChild(lsec);
+    }
+    if (res.protective.length) {
+      var psec = el("div"); psec.appendChild(el("h3", "", t("protective")));
+      var pc = el("div", "card"); res.protective.forEach(function (sp) { pc.appendChild(el("code", "", sp[2])); pc.appendChild(document.createTextNode(" ")); });
+      psec.appendChild(pc); out.appendChild(psec);
+    }
+    var ssec = el("div"); ssec.appendChild(el("h3", "", t("steps")));
+    var ol = el("ol", "steps"); K.nextSteps(D, res, state.lang).forEach(function (s) { ol.appendChild(el("li", "", s)); });
+    ssec.appendChild(ol); out.appendChild(ssec);
+
+    var act = el("div", "row"), cp = el("button", "btn ghost", t("copy_summary")); cp.type = "button";
+    cp.addEventListener("click", function () { copyText(summary(res), cp, t("copy_summary")); });
+    act.appendChild(cp); out.appendChild(act);
+    out.appendChild(feedbackBox(res));
+  }
+
+  function card(f, withEvidence) {
+    var c = el("div", "card"); c.appendChild(el("span", "sev " + f.severity, t("sev_" + f.severity)));
+    c.appendChild(el("h4", "", f.title[state.lang])); c.appendChild(el("p", "", f.why[state.lang]));
+    if (withEvidence) { var p = el("p"); f.evidence.slice(0, 3).forEach(function (e) { p.appendChild(el("code", "", e[2])); p.appendChild(document.createTextNode(" ")); }); c.appendChild(p); }
+    return c;
+  }
+
+  function summary(res) {
+    var lines = ["KinyaShield RW: " + D.verdicts[res.verdict][state.lang], ""];
+    var main = res.findings.filter(function (f) { return f.severity !== "low"; });
+    lines.push(t("reasons") + ":");
+    if (!main.length) lines.push("- " + t("no_reasons"));
+    main.forEach(function (f) { lines.push("- " + f.title[state.lang]); });
+    lines.push("", t("steps") + ":");
+    K.nextSteps(D, res, state.lang).forEach(function (s, i) { lines.push((i + 1) + ". " + s); });
+    lines.push("", D.noGuarantee[state.lang]);
+    return lines.join("\n");
+  }
+
+  function copyText(text, btn, label) {
+    function fallback() {
+      var ta = el("textarea", "exp"); ta.value = text; ta.readOnly = true; btn.parentNode.parentNode.appendChild(ta); ta.focus(); ta.select();
+      btn.textContent = t("copy_failed");
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { btn.textContent = t("copied"); setTimeout(function () { btn.textContent = label; }, 1800); }, fallback);
+      } else fallback();
+    } catch (e) { fallback(); }
+  }
+
+  /* ---------- feedback (stored on this device only) ---------- */
+  function loadFb() { try { state.fb = JSON.parse(store.get("ks_feedback") || "[]"); } catch (e) { state.fb = []; } if (!Array.isArray(state.fb)) state.fb = []; }
+  function csvCell(s) { s = String(s == null ? "" : s); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  function fbCsv() {
+    var head = ["time", "ui_language", "message_language", "verdict", "feedback", "rules", "text"];
+    return [head.join(",")].concat(state.fb.map(function (r) { return head.map(function (h) { return csvCell(r[h]); }).join(","); })).join("\n");
+  }
+  function feedbackBox(res) {
+    var box = el("div", "card"); box.appendChild(el("h4", "", t("feedback_q")));
+    var row = el("div", "fb"), picked = null, btns = [];
+    [["right", t("fb_right")], ["missed", t("fb_missed")], ["false_alarm", t("fb_false")]].forEach(function (o) {
+      var b = el("button", "chip", o[1]); b.type = "button"; b.setAttribute("aria-pressed", "false"); btns.push(b);
+      b.addEventListener("click", function () {
+        picked = o[0]; btns.forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        state.fb.push({ time: new Date().toISOString(), ui_language: state.lang, message_language: res.language, verdict: res.verdict, feedback: o[0],
+          rules: res.findings.map(function (f) { return f.id; }).join(" "), text: inc.checked ? res.text : "" });
+        store.set("ks_feedback", JSON.stringify(state.fb)); status.textContent = t("fb_thanks") + " (" + state.fb.length + " " + t("fb_count") + ")";
+      });
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+    var incRow = el("label", "small"); incRow.style.cssText = "display:flex;gap:8px;align-items:center;margin-top:10px";
+    var inc = el("input"); inc.type = "checkbox"; inc.id = "fbInclude"; incRow.appendChild(inc); incRow.appendChild(document.createTextNode(t("fb_include"))); box.appendChild(incRow);
+    var status = el("p", "small"); status.setAttribute("role", "status"); box.appendChild(status);
+    var ex = el("div", "row"), exp = el("button", "chip", t("fb_export")); exp.type = "button";
+    exp.addEventListener("click", function () { copyText(fbCsv(), exp, t("fb_export")); });
+    var clr = el("button", "chip", t("fb_clear")); clr.type = "button";
+    clr.addEventListener("click", function () { state.fb = []; store.set("ks_feedback", "[]"); status.textContent = ""; });
+    ex.appendChild(exp); ex.appendChild(clr); box.appendChild(ex);
+    box.appendChild(el("p", "small", t("fb_help")));
+    return box;
+  }
+
+  /* ---------- actions ---------- */
+  function run() {
+    var text = $("msg").value;
+    if (!text.trim()) { state.last = null; var o = clear($("result")); o.appendChild(el("div", "card", t("paste_first"))); return; }
+    state.last = K.analyze(D, text); renderResult(state.last);
+  }
+  function setLang(l) {
+    state.lang = l; store.set("ks_lang", l);
+    if (state.exampleActive) { loadExample(0); } else { renderStatic(); renderResult(state.last); }
+  }
+  function loadExample(i) {
+    var ex = (D.examples[state.lang] || [])[i]; if (!ex) { renderStatic(); return; }
+    $("msg").value = ex.text; state.exampleActive = true; renderStatic(); run();
+  }
+  function setTab(name) {
+    state.tab = name;
+    ["check", "learn", "about"].forEach(function (n) { $("p-" + n).hidden = n !== name; $("tab-" + n).setAttribute("aria-selected", String(n === name)); });
+  }
+  function applyTheme() {
+    var r = document.documentElement; if (state.theme === "auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", state.theme);
+  }
+
+  function init() {
+    loadFb();
+    var saved = store.get("ks_lang"), nav = ((navigator.language || "en") + "").slice(0, 2).toLowerCase();
+    state.lang = D.langs.indexOf(saved) >= 0 ? saved : (D.langs.indexOf(nav) >= 0 ? nav : "en");
+    var sz = parseInt(store.get("ks_size") || "0", 10); state.size = sz >= 0 && sz < SIZES.length ? sz : 0;
+    var th = store.get("ks_theme"); state.theme = THEMES.indexOf(th) >= 0 ? th : "auto";
+    document.documentElement.style.fontSize = SIZES[state.size] + "%"; applyTheme();
+    $("go").addEventListener("click", function () { state.exampleActive = false; $("exTag").hidden = true; run(); });
+    $("clear").addEventListener("click", function () { $("msg").value = ""; state.exampleActive = false; state.last = null; clear($("result")); $("exTag").hidden = true; $("msg").focus(); });
+    $("msg").addEventListener("input", function () { if (state.exampleActive) { state.exampleActive = false; $("exTag").hidden = true; } });
+    $("examples").addEventListener("change", function (e) { if (e.target.value !== "") loadExample(parseInt(e.target.value, 10)); });
+    $("sizeBtn").addEventListener("click", function () { state.size = (state.size + 1) % SIZES.length; store.set("ks_size", String(state.size)); document.documentElement.style.fontSize = SIZES[state.size] + "%"; renderStatic(); });
+    $("themeBtn").addEventListener("click", function () { state.theme = THEMES[(THEMES.indexOf(state.theme) + 1) % THEMES.length]; store.set("ks_theme", state.theme); applyTheme(); renderStatic(); });
+    ["check", "learn", "about"].forEach(function (n) { $("tab-" + n).addEventListener("click", function () { setTab(n); }); });
+    loadExample(0);
+  }
+  init();
+})();
+
+</script>
+</body>
+</html>

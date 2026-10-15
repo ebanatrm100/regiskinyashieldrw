@@ -1,0 +1,1971 @@
+{
+ "summary": {
+  "split": "dev",
+  "overall": {
+   "n": 153,
+   "accuracy": 1.0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "tp": 69,
+   "tn": 84,
+   "fp": 0,
+   "fn": 0
+  },
+  "by_language": {
+   "en": {
+    "n": 59,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 28,
+    "tn": 31,
+    "fp": 0,
+    "fn": 0
+   },
+   "rw": {
+    "n": 24,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 11,
+    "tn": 13,
+    "fp": 0,
+    "fn": 0
+   },
+   "fr": {
+    "n": 35,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 15,
+    "tn": 20,
+    "fp": 0,
+    "fn": 0
+   },
+   "sw": {
+    "n": 35,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 15,
+    "tn": 20,
+    "fp": 0,
+    "fn": 0
+   }
+  }
+ },
+ "items": [
+  {
+   "id": "D001",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "en",
+   "rules": [
+    "advance_fee",
+    "prize_claim"
+   ],
+   "text": "Congratulations! You have won 2,000,000 RWF in the MoMo lucky draw. Pay 15,000 RWF registration fee to receive your prize today."
+  },
+  {
+   "id": "D002",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "credential",
+   "language": "en",
+   "rules": [
+    "credential_request",
+    "account_threat",
+    "pressure"
+   ],
+   "text": "Dear customer, your MTN account will be suspended within 24 hours. Send your PIN to 0780000000 to verify."
+  },
+  {
+   "id": "D003",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "en",
+   "rules": [
+    "advance_fee"
+   ],
+   "text": "Your scholarship application is approved. To release your funds, send 20,000 RWF processing fee to the number below."
+  },
+  {
+   "id": "D004",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "mistaken_transfer",
+   "language": "en",
+   "rules": [
+    "mistaken_transfer"
+   ],
+   "text": "I sent you 50,000 RWF by mistake. Please send back the money to my number, I am in hospital."
+  },
+  {
+   "id": "D005",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "link",
+   "language": "en",
+   "rules": [
+    "account_threat",
+    "account_verification_request",
+    "risky_link",
+    "link_present"
+   ],
+   "text": "Click http://bit.ly/3xYzAbc to update your bank details or your card will be blocked."
+  },
+  {
+   "id": "D006",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "remote_access",
+   "language": "en",
+   "rules": [
+    "remote_access"
+   ],
+   "text": "Hello, this is IT support. Install AnyDesk and tell me the code on your screen so we can fix your account."
+  },
+  {
+   "id": "D007",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "too_good",
+   "language": "en",
+   "rules": [
+    "too_good_offer"
+   ],
+   "text": "Double your money in 3 days! Invest 100,000 RWF now, guaranteed returns."
+  },
+  {
+   "id": "D008",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "credential",
+   "language": "en",
+   "rules": [
+    "credential_request",
+    "prize_claim",
+    "account_verification_request"
+   ],
+   "text": "Congratulations, you were selected to receive a free laptop. Confirm your national ID number and reply with your OTP."
+  },
+  {
+   "id": "D009",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "en",
+   "rules": [
+    "advance_fee"
+   ],
+   "text": "Your parcel is held at customs. Pay a clearance fee of 8,000 RWF to collect your parcel."
+  },
+  {
+   "id": "D010",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "impersonation",
+   "language": "en",
+   "rules": [
+    "account_threat",
+    "account_verification_request",
+    "risky_link",
+    "pressure",
+    "link_present"
+   ],
+   "text": "Urgent: Your Irembo account has been locked. Verify your account at http://203.0.113.9/irembo immediately."
+  },
+  {
+   "id": "D011",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "credential",
+   "language": "en",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Give me your mobile money password so I can top up your airtime bonus."
+  },
+  {
+   "id": "D012",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "too_good",
+   "language": "en",
+   "rules": [
+    "too_good_offer",
+    "secrecy"
+   ],
+   "text": "Do not tell anyone about this offer. Send 5,000 RWF to join and earn 20,000 daily."
+  },
+  {
+   "id": "D013",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "impersonation",
+   "language": "en",
+   "rules": [
+    "account_verification_request",
+    "risky_link",
+    "link_present"
+   ],
+   "text": "Your RRA tax refund is ready. Confirm your bank details at https://rra-refund.top/claim"
+  },
+  {
+   "id": "D014",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "known_hard",
+   "language": "en",
+   "rules": [
+    "family_emergency_money",
+    "pressure"
+   ],
+   "text": "Brother, I am stuck at the border, send me 30,000 RWF urgently, I will pay back tomorrow."
+  },
+  {
+   "id": "D015",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "credential",
+   "language": "en",
+   "rules": [
+    "credential_request",
+    "prize_claim"
+   ],
+   "text": "WINNER! You've won a car. Reply with your full name and password to claim."
+  },
+  {
+   "id": "D016",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "en",
+   "rules": [],
+   "text": "Your OTP is 482913. Do not share it with anyone, including MTN staff."
+  },
+  {
+   "id": "D017",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "en",
+   "rules": [],
+   "text": "We will never ask you for your PIN or password by SMS or phone call."
+  },
+  {
+   "id": "D018",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "school",
+   "language": "en",
+   "rules": [],
+   "text": "Reminder: your school fees for Term 2 are due on 15 May. Pay at the bursar's office or through the school's official account."
+  },
+  {
+   "id": "D019",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "link_ok",
+   "language": "en",
+   "rules": [
+    "link_present"
+   ],
+   "text": "Hi, are you coming to the meeting at 3pm? I'll send the link on Teams: https://teams.microsoft.com/l/meetup-join/abc"
+  },
+  {
+   "id": "D020",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "en",
+   "rules": [],
+   "text": "You received 10,000 RWF from Alice Uwase. New balance 25,300 RWF."
+  },
+  {
+   "id": "D021",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "en",
+   "rules": [],
+   "text": "Please change your password every 90 days. Never send it to anyone."
+  },
+  {
+   "id": "D022",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "bank",
+   "language": "en",
+   "rules": [],
+   "text": "Your account statement for March is attached. If you have questions, visit your nearest branch."
+  },
+  {
+   "id": "D023",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "urgency_only",
+   "language": "en",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Urgent: the staff meeting has moved to 2pm today, please come immediately after lunch."
+  },
+  {
+   "id": "D024",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "congrats",
+   "language": "en",
+   "rules": [],
+   "text": "Congratulations on your graduation! So proud of you."
+  },
+  {
+   "id": "D025",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "en",
+   "rules": [],
+   "text": "To reset your password, open the official app and choose 'Forgot password'. Do not share the code with anyone."
+  },
+  {
+   "id": "D026",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "en",
+   "rules": [],
+   "text": "Your electricity token purchase of 5,000 RWF was successful. Token: 1234-5678-9012-3456."
+  },
+  {
+   "id": "D027",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "en",
+   "rules": [],
+   "text": "Beware of scams: no bank will ask you to send your PIN. Report suspicious messages to the NCSA."
+  },
+  {
+   "id": "D028",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "loan",
+   "language": "en",
+   "rules": [],
+   "text": "Your loan repayment of 40,000 RWF is due on Friday. Pay through the app or any agent."
+  },
+  {
+   "id": "D029",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "mistake_nonmoney",
+   "language": "en",
+   "rules": [],
+   "text": "I sent you the documents by mistake earlier, please ignore them."
+  },
+  {
+   "id": "D030",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "bank",
+   "language": "en",
+   "rules": [],
+   "text": "Dear customer, your card ending 4421 was used for 12,000 RWF at Simba Supermarket. If this was not you, call the number on the back of your card."
+  },
+  {
+   "id": "D031",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "event",
+   "language": "en",
+   "rules": [],
+   "text": "Free workshop on staying safe online this Saturday at 10am. Register at the library desk."
+  },
+  {
+   "id": "D032",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "email",
+   "language": "en",
+   "rules": [],
+   "text": "Verify your email address by clicking the link we just sent after you signed up at our website."
+  },
+  {
+   "id": "D033",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "urgency_only",
+   "language": "en",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Please send me the report by 5pm. I need it immediately."
+  },
+  {
+   "id": "D034",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "rw",
+   "rules": [
+    "advance_fee",
+    "prize_claim"
+   ],
+   "text": "Mwiriwe, watsindiye miliyoni 2 muri tombola ya MoMo. Ishyura amafaranga 15,000 Frw kugira ngo ubone igihembo cyawe."
+  },
+  {
+   "id": "D035",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "credential",
+   "language": "rw",
+   "rules": [
+    "credential_request",
+    "account_threat",
+    "pressure"
+   ],
+   "text": "Konti yawe ya MTN izafungwa mu masaha 24. Ohereza umubare w'ibanga wawe kuri 0780000000 ubu nonaha."
+  },
+  {
+   "id": "D036",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "mistaken_transfer",
+   "language": "rw",
+   "rules": [
+    "mistaken_transfer"
+   ],
+   "text": "Nakohereje amafaranga 50,000 Frw kubw'impanuka. Nsubiza amafaranga yanjye vuba."
+  },
+  {
+   "id": "D037",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "link",
+   "language": "rw",
+   "rules": [
+    "account_threat",
+    "account_verification_request",
+    "risky_link",
+    "link_present"
+   ],
+   "text": "Kanda hano https://bit.ly/abc123 wemeze konti yawe cyangwa izafungwa."
+  },
+  {
+   "id": "D038",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "credential",
+   "language": "rw",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Mpa kode wakiriye kuri telefoni yawe, ndi umukozi wa banki."
+  },
+  {
+   "id": "D039",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "rw",
+   "rules": [
+    "advance_fee",
+    "prize_claim"
+   ],
+   "text": "Watoranyijwe guhabwa buruse. Ohereza 20,000 Frw ya frais kugira ngo uhabwe amafaranga yawe."
+  },
+  {
+   "id": "D040",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "rw",
+   "rules": [],
+   "text": "Kode yawe ni 482913. Ntugasangize iyi kode n'undi muntu."
+  },
+  {
+   "id": "D041",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "rw",
+   "rules": [],
+   "text": "Ntituzigera tukubaza umubare w'ibanga wawe kuri telefoni cyangwa SMS."
+  },
+  {
+   "id": "D042",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "rw",
+   "rules": [],
+   "text": "Murakoze kwishyura. Wishyuye 5,000 Frw ku wa 12 Gicurasi."
+  },
+  {
+   "id": "D043",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "urgency_only",
+   "language": "rw",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Mwiriwe, inama izaba ejo saa tatu. Muze byihuse."
+  },
+  {
+   "id": "D044",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "rw",
+   "rules": [],
+   "text": "Wakiriye 10,000 Frw avuye kuri Alice. Amafaranga asigaye ni 25,300 Frw."
+  },
+  {
+   "id": "D045",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "event",
+   "language": "rw",
+   "rules": [],
+   "text": "Tuzakora ikiganiro ku mutekano wo kuri murandasi ku wa gatandatu. Muzaze mwese."
+  },
+  {
+   "id": "D046",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "rw",
+   "rules": [],
+   "text": "Ntukohereze PIN yawe cyangwa ijambo ry'ibanga kuri nimero itazwi."
+  },
+  {
+   "id": "D047",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "fr",
+   "rules": [
+    "advance_fee",
+    "prize_claim"
+   ],
+   "text": "Félicitations ! Vous avez gagné 2 000 000 RWF au tirage MoMo. Payez 15 000 RWF de frais d'inscription pour recevoir votre gain aujourd'hui."
+  },
+  {
+   "id": "D048",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "credential",
+   "language": "fr",
+   "rules": [
+    "credential_request",
+    "account_threat",
+    "pressure"
+   ],
+   "text": "Cher client, votre compte MTN sera suspendu dans les 24 heures. Envoyez votre code PIN au 0780000000 pour vérifier."
+  },
+  {
+   "id": "D049",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "fr",
+   "rules": [
+    "advance_fee"
+   ],
+   "text": "Votre bourse est approuvée. Pour débloquer vos fonds, envoyez 20 000 RWF de frais de dossier au numéro ci-dessous."
+  },
+  {
+   "id": "D050",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "mistaken_transfer",
+   "language": "fr",
+   "rules": [
+    "mistaken_transfer"
+   ],
+   "text": "Je vous ai envoyé 50 000 RWF par erreur. Renvoyez-moi l'argent s'il vous plaît, je suis à l'hôpital."
+  },
+  {
+   "id": "D051",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "link",
+   "language": "fr",
+   "rules": [
+    "account_threat",
+    "account_verification_request",
+    "risky_link",
+    "link_present"
+   ],
+   "text": "Cliquez sur http://bit.ly/3xYzAbc pour mettre à jour vos coordonnées bancaires, sinon votre carte sera bloquée."
+  },
+  {
+   "id": "D052",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "remote_access",
+   "language": "fr",
+   "rules": [
+    "remote_access"
+   ],
+   "text": "Bonjour, support informatique. Téléchargez AnyDesk et donnez-moi le code affiché sur votre écran."
+  },
+  {
+   "id": "D053",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "too_good",
+   "language": "fr",
+   "rules": [
+    "too_good_offer",
+    "pressure"
+   ],
+   "text": "Doublez votre argent en 3 jours ! Investissez 100 000 RWF maintenant, rendement garanti."
+  },
+  {
+   "id": "D054",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "impersonation",
+   "language": "fr",
+   "rules": [
+    "account_threat",
+    "account_verification_request",
+    "risky_link",
+    "pressure",
+    "link_present"
+   ],
+   "text": "Urgent : votre compte Irembo a été verrouillé. Vérifiez votre compte sur http://203.0.113.9/irembo immédiatement."
+  },
+  {
+   "id": "D055",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "fr",
+   "rules": [],
+   "text": "Votre code OTP est 482913. Ne le partagez avec personne, y compris le personnel MTN."
+  },
+  {
+   "id": "D056",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "fr",
+   "rules": [],
+   "text": "Nous ne vous demanderons jamais votre code PIN ni votre mot de passe par SMS ou par appel."
+  },
+  {
+   "id": "D057",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "school",
+   "language": "fr",
+   "rules": [],
+   "text": "Rappel : les frais de scolarité du trimestre 2 sont dus le 15 mai. Payez à la caisse de l'école ou sur le compte officiel."
+  },
+  {
+   "id": "D058",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "link_ok",
+   "language": "fr",
+   "rules": [
+    "link_present"
+   ],
+   "text": "Tu viens à la réunion de 15 h ? Je t'envoie le lien Teams : https://teams.microsoft.com/l/meetup-join/abc"
+  },
+  {
+   "id": "D059",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "fr",
+   "rules": [],
+   "text": "Vous avez reçu 10 000 RWF de Alice Uwase. Nouveau solde : 25 300 RWF."
+  },
+  {
+   "id": "D060",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "fr",
+   "rules": [],
+   "text": "Ne partagez jamais votre mot de passe. Changez-le tous les 90 jours."
+  },
+  {
+   "id": "D061",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "congrats",
+   "language": "fr",
+   "rules": [],
+   "text": "Félicitations pour ton diplôme ! Nous sommes fiers de toi."
+  },
+  {
+   "id": "D062",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "urgency_only",
+   "language": "fr",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Urgent : la réunion du personnel est avancée à 14 h, venez immédiatement après le déjeuner."
+  },
+  {
+   "id": "D063",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "fr",
+   "rules": [],
+   "text": "Aucune banque ne vous demandera d'envoyer votre PIN. Signalez les messages suspects."
+  },
+  {
+   "id": "D064",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "event",
+   "language": "fr",
+   "rules": [],
+   "text": "Atelier gratuit sur la sécurité en ligne samedi à 10 h. Inscription à l'accueil de la bibliothèque."
+  },
+  {
+   "id": "D065",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "email",
+   "language": "fr",
+   "rules": [],
+   "text": "Vérifiez votre adresse e-mail en cliquant sur le lien que nous venons d'envoyer après votre inscription."
+  },
+  {
+   "id": "D066",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "urgency_only",
+   "language": "fr",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Peux-tu m'envoyer le rapport avant 17 h ? J'en ai besoin immédiatement."
+  },
+  {
+   "id": "D067",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "mistake_nonmoney",
+   "language": "fr",
+   "rules": [],
+   "text": "Je t'ai envoyé les documents par erreur tout à l'heure, ignore-les."
+  },
+  {
+   "id": "D068",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "sw",
+   "rules": [
+    "advance_fee",
+    "prize_claim"
+   ],
+   "text": "Hongera! Umeshinda TSh 2,000,000 kwenye droo ya bahati nasibu ya M-Pesa. Lipa ada ya usajili ya TSh 15,000 ili upokee zawadi yako leo."
+  },
+  {
+   "id": "D069",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "credential",
+   "language": "sw",
+   "rules": [
+    "credential_request",
+    "account_threat",
+    "pressure"
+   ],
+   "text": "Mteja mpendwa, akaunti yako itafungwa ndani ya saa 24. Tuma PIN yako kwa 0780000000 ili kuthibitisha."
+  },
+  {
+   "id": "D070",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "sw",
+   "rules": [
+    "advance_fee"
+   ],
+   "text": "Maombi yako ya ufadhili yamekubaliwa. Ili upokee fedha zako, tuma ada ya usindikaji ya RWF 20,000 kwa namba iliyo hapa chini."
+  },
+  {
+   "id": "D071",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "mistaken_transfer",
+   "language": "sw",
+   "rules": [
+    "mistaken_transfer"
+   ],
+   "text": "Nimekutumia TSh 50,000 kimakosa. Tafadhali nirudishie pesa zangu, niko hospitalini."
+  },
+  {
+   "id": "D072",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "link",
+   "language": "sw",
+   "rules": [
+    "account_threat",
+    "account_verification_request",
+    "risky_link",
+    "link_present"
+   ],
+   "text": "Bonyeza http://bit.ly/3xYzAbc kusasisha taarifa zako za benki la sivyo kadi yako itafungwa."
+  },
+  {
+   "id": "D073",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "remote_access",
+   "language": "sw",
+   "rules": [
+    "credential_request",
+    "remote_access"
+   ],
+   "text": "Habari, huu ni msaada wa IT. Sakinisha AnyDesk kisha nipe msimbo unaoonekana kwenye skrini yako."
+  },
+  {
+   "id": "D074",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "too_good",
+   "language": "sw",
+   "rules": [
+    "too_good_offer"
+   ],
+   "text": "Ongeza pesa yako mara mbili ndani ya siku 3! Wekeza TSh 100,000 sasa, faida ya uhakika."
+  },
+  {
+   "id": "D075",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "impersonation",
+   "language": "sw",
+   "rules": [
+    "account_threat",
+    "account_verification_request",
+    "risky_link",
+    "pressure",
+    "link_present"
+   ],
+   "text": "Muhimu: Akaunti yako ya M-Pesa imezuiwa. Thibitisha akaunti yako kwenye http://203.0.113.9/mpesa mara moja."
+  },
+  {
+   "id": "D076",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "sw",
+   "rules": [],
+   "text": "Msimbo wako wa OTP ni 482913. Usimshirikishe mtu yeyote, ikiwemo wafanyakazi wa Vodacom."
+  },
+  {
+   "id": "D077",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "sw",
+   "rules": [],
+   "text": "Hatutakuomba kamwe PIN au nenosiri lako kwa SMS au simu."
+  },
+  {
+   "id": "D078",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "school",
+   "language": "sw",
+   "rules": [],
+   "text": "Kumbusho: ada ya shule ya muhula wa 2 inadaiwa tarehe 15 Mei. Lipa kwa karani wa shule au kupitia akaunti rasmi ya shule."
+  },
+  {
+   "id": "D079",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "link_ok",
+   "language": "sw",
+   "rules": [
+    "link_present"
+   ],
+   "text": "Unakuja kwenye mkutano saa 9? Nitatuma kiungo cha Teams: https://teams.microsoft.com/l/meetup-join/abc"
+  },
+  {
+   "id": "D080",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "sw",
+   "rules": [],
+   "text": "Umepokea TSh 10,000 kutoka kwa Alice. Salio jipya ni TSh 25,300."
+  },
+  {
+   "id": "D081",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "sw",
+   "rules": [],
+   "text": "Usishiriki nenosiri lako na mtu yeyote. Libadilishe kila siku 90."
+  },
+  {
+   "id": "D082",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "congrats",
+   "language": "sw",
+   "rules": [],
+   "text": "Hongera kwa kuhitimu! Tunajivunia sana."
+  },
+  {
+   "id": "D083",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "urgency_only",
+   "language": "sw",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Muhimu: mkutano wa wafanyakazi umehamishwa hadi saa 8, tafadhali njoo mara moja baada ya chakula cha mchana."
+  },
+  {
+   "id": "D084",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "sw",
+   "rules": [],
+   "text": "Hakuna benki itakayokuomba utume PIN yako. Ripoti ujumbe unaotia shaka."
+  },
+  {
+   "id": "D085",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "event",
+   "language": "sw",
+   "rules": [],
+   "text": "Warsha ya bure kuhusu usalama mtandaoni Jumamosi saa 4. Jisajili kwenye dawati la maktaba."
+  },
+  {
+   "id": "D086",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "email",
+   "language": "sw",
+   "rules": [],
+   "text": "Thibitisha barua pepe yako kwa kubofya kiungo tulichokutumia baada ya kujisajili."
+  },
+  {
+   "id": "D087",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "urgency_only",
+   "language": "sw",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Tafadhali nitumie ripoti kabla ya saa 11. Ninaihitaji haraka."
+  },
+  {
+   "id": "D088",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "mistake_nonmoney",
+   "language": "sw",
+   "rules": [],
+   "text": "Nilikutumia nyaraka kimakosa mapema, tafadhali zipuuze."
+  },
+  {
+   "id": "T001",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "prize",
+   "language": "en",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Dear user, your number has been chosen as a winner of the Airtel promo. Send your ID and PIN to claim 500,000 RWF."
+  },
+  {
+   "id": "T002",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "en",
+   "rules": [
+    "upfront_payment_offer"
+   ],
+   "text": "Job offer at a hotel in Dubai. Deposit 50,000 RWF for visa processing before you start."
+  },
+  {
+   "id": "T003",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "account_threat",
+   "language": "en",
+   "rules": [
+    "risky_link",
+    "link_present"
+   ],
+   "text": "Bank of Kigali alert: unusual activity. Your account is locked. Log in at https://bk-secure-login.xyz now."
+  },
+  {
+   "id": "T004",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "mistaken_transfer",
+   "language": "en",
+   "rules": [
+    "mistaken_transfer"
+   ],
+   "text": "Sorry, wrong number. I transferred 12,000 RWF to you in error, kindly refund me."
+  },
+  {
+   "id": "T005",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "credential",
+   "language": "en",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Customer care here. To cancel the wrong charge, please tell me the 6-digit code we texted you."
+  },
+  {
+   "id": "T006",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "remote_access",
+   "language": "en",
+   "rules": [
+    "remote_access"
+   ],
+   "text": "To fix your phone, download TeamViewer and give me the ID it shows."
+  },
+  {
+   "id": "T007",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "too_good",
+   "language": "en",
+   "rules": [
+    "too_good_offer"
+   ],
+   "text": "Earn 30,000 RWF every day from home, no experience needed. Message us to start."
+  },
+  {
+   "id": "T008",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "link",
+   "language": "en",
+   "rules": [
+    "risky_link",
+    "link_present"
+   ],
+   "text": "Your package could not be delivered. Reschedule here: http://185.44.12.7/track"
+  },
+  {
+   "id": "T009",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "impersonation",
+   "language": "en",
+   "rules": [
+    "account_verification_request"
+   ],
+   "text": "RSSB notice: confirm your national ID number today or your pension will stop."
+  },
+  {
+   "id": "T010",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "credential",
+   "language": "en",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Hello, I am from the police. Confirm your mobile money password to clear your name."
+  },
+  {
+   "id": "T011",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "en",
+   "rules": [
+    "upfront_payment_offer"
+   ],
+   "text": "You qualify for a 1,000,000 RWF loan. Pay 30,000 RWF insurance first and the money is released."
+  },
+  {
+   "id": "T012",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "known_hard",
+   "language": "en",
+   "rules": [
+    "family_emergency_money"
+   ],
+   "text": "Mum it is me, I changed my number. I need money for an emergency, please send to this number."
+  },
+  {
+   "id": "T013",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "known_hard",
+   "language": "en",
+   "rules": [
+    "offplatform_contact"
+   ],
+   "text": "Hi, I saw your CV. Please contact our recruiter on WhatsApp to continue."
+  },
+  {
+   "id": "T014",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "en",
+   "rules": [],
+   "text": "Reminder from your bank: never give your PIN to anyone, even someone claiming to work for us."
+  },
+  {
+   "id": "T015",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "en",
+   "rules": [],
+   "text": "Payment of 15,000 RWF to Kigali Water received. Thank you."
+  },
+  {
+   "id": "T016",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "school",
+   "language": "en",
+   "rules": [],
+   "text": "The school fees deadline is Friday. Please pay at the bank using the reference number on your invoice."
+  },
+  {
+   "id": "T017",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "work",
+   "language": "en",
+   "rules": [],
+   "text": "Please send me your updated CV by tomorrow, I want to forward it to the manager."
+  },
+  {
+   "id": "T018",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "password_help",
+   "language": "en",
+   "rules": [],
+   "text": "I forgot my Wi-Fi password, can you remind me what it is?"
+  },
+  {
+   "id": "T019",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "bank",
+   "language": "en",
+   "rules": [],
+   "text": "Your new card is ready for collection at the branch. Bring your national ID."
+  },
+  {
+   "id": "T020",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "promo",
+   "language": "en",
+   "rules": [
+    "pressure"
+   ],
+   "text": "MTN promo: buy 1GB for 1,000 RWF today only. Dial *345# on your own phone."
+  },
+  {
+   "id": "T021",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "family",
+   "language": "en",
+   "rules": [],
+   "text": "Brother, I am stuck in traffic, I will be 20 minutes late. Start without me."
+  },
+  {
+   "id": "T022",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "otp",
+   "language": "en",
+   "rules": [],
+   "text": "Use code 774215 to log in to your account. It expires in 10 minutes. Never share it."
+  },
+  {
+   "id": "T023",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "loan",
+   "language": "en",
+   "rules": [],
+   "text": "Your loan of 200,000 RWF has been approved and will be paid to your account on Monday."
+  },
+  {
+   "id": "T024",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "delivery",
+   "language": "en",
+   "rules": [],
+   "text": "Your parcel arrives tomorrow. Someone must be at home to receive it."
+  },
+  {
+   "id": "T025",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "urgency_only",
+   "language": "en",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Urgent: please sign the attendance sheet before you leave today."
+  },
+  {
+   "id": "T026",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "mistake_nonmoney",
+   "language": "en",
+   "rules": [],
+   "text": "Sorry, I sent that email to you by mistake. Please delete it."
+  },
+  {
+   "id": "T027",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "credential",
+   "language": "rw",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Mwiriwe, ndi umukozi wa MTN. Mbwira kode yaje kuri telefoni yawe turebe konti yawe."
+  },
+  {
+   "id": "T028",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "prize",
+   "language": "rw",
+   "rules": [
+    "advance_fee",
+    "prize_claim"
+   ],
+   "text": "Mwatoranyijwe gutsindira telefoni nshya. Ishyura amafaranga 10,000 Frw kugira ngo muyihabwe."
+  },
+  {
+   "id": "T029",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "account_threat",
+   "language": "rw",
+   "rules": [
+    "account_threat",
+    "account_verification_request",
+    "risky_link",
+    "link_present"
+   ],
+   "text": "Karita yawe ya banki yafunzwe. Emeza amakuru yawe kuri https://tinyurl.com/x9k2 uyu munsi."
+  },
+  {
+   "id": "T030",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "mistaken_transfer",
+   "language": "rw",
+   "rules": [
+    "mistaken_transfer"
+   ],
+   "text": "Nakohereje 20,000 Frw nabi, nyabuze. Nsubiza amafaranga yanjye."
+  },
+  {
+   "id": "T031",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "known_hard",
+   "language": "rw",
+   "rules": [
+    "family_emergency_money"
+   ],
+   "text": "Ndi mubyara wawe, nagize ikibazo, ohereza amafaranga kuri iyi nimero."
+  },
+  {
+   "id": "T032",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "rw",
+   "rules": [],
+   "text": "Banki ntizigera ikubaza PIN yawe. Ntuyihe umuntu uwo ari we wese."
+  },
+  {
+   "id": "T033",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "rw",
+   "rules": [],
+   "text": "Wishyuye ifatabuguzi rya 3,000 Frw. Murakoze."
+  },
+  {
+   "id": "T034",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "event",
+   "language": "rw",
+   "rules": [],
+   "text": "Mwiriwe neza, ibirori by'ishuri bizaba ku wa gatanu. Muze mwese."
+  },
+  {
+   "id": "T035",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "family",
+   "language": "rw",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Mama, ndakererewe gato, ndaza mu minota 30."
+  },
+  {
+   "id": "T036",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "bank",
+   "language": "rw",
+   "rules": [],
+   "text": "Ikarita yawe nshya yageze ku ishami rya banki. Zana indangamuntu."
+  },
+  {
+   "id": "T037",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "password_help",
+   "language": "rw",
+   "rules": [],
+   "text": "Wibagiwe ijambo ry'ibanga rya Wi-Fi? Nzakwibutsa nimugoroba."
+  },
+  {
+   "id": "T038",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "prize",
+   "language": "fr",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Cher utilisateur, votre numéro a été sélectionné pour la promo Airtel. Envoyez votre pièce d'identité et votre code PIN pour toucher 500 000 RWF."
+  },
+  {
+   "id": "T039",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "fr",
+   "rules": [
+    "upfront_payment_offer"
+   ],
+   "text": "Offre d'emploi dans un hôtel à Dubaï. Versez 50 000 RWF de frais de visa avant de commencer."
+  },
+  {
+   "id": "T040",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "account_threat",
+   "language": "fr",
+   "rules": [
+    "account_threat",
+    "risky_link",
+    "pressure",
+    "link_present"
+   ],
+   "text": "Alerte banque : activité inhabituelle. Votre compte est bloqué. Connectez-vous sur https://bk-secure-login.xyz maintenant."
+  },
+  {
+   "id": "T041",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "mistaken_transfer",
+   "language": "fr",
+   "rules": [
+    "mistaken_transfer"
+   ],
+   "text": "Désolé, mauvais numéro. J'ai transféré 12 000 RWF à votre compte par erreur, merci de me rembourser."
+  },
+  {
+   "id": "T042",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "credential",
+   "language": "fr",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Service client. Pour annuler le débit erroné, communiquez-nous le code à 6 chiffres reçu par SMS."
+  },
+  {
+   "id": "T043",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "remote_access",
+   "language": "fr",
+   "rules": [
+    "remote_access"
+   ],
+   "text": "Pour réparer votre téléphone, installez TeamViewer puis dites-moi l'identifiant affiché."
+  },
+  {
+   "id": "T044",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "known_hard",
+   "language": "fr",
+   "rules": [
+    "family_emergency_money"
+   ],
+   "text": "Maman, c'est moi, j'ai changé de numéro. J'ai besoin d'argent pour une urgence, envoie sur ce numéro."
+  },
+  {
+   "id": "T045",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "fr",
+   "rules": [],
+   "text": "Rappel de votre banque : ne donnez jamais votre code PIN à personne, même à quelqu'un qui prétend travailler chez nous."
+  },
+  {
+   "id": "T046",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "fr",
+   "rules": [],
+   "text": "Paiement de 15 000 RWF reçu par Kigali Water. Merci."
+  },
+  {
+   "id": "T047",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "work",
+   "language": "fr",
+   "rules": [],
+   "text": "Envoie-moi ton CV mis à jour demain, je veux le transmettre au directeur."
+  },
+  {
+   "id": "T048",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "password_help",
+   "language": "fr",
+   "rules": [],
+   "text": "J'ai oublié le mot de passe du Wi-Fi, tu peux me le rappeler ?"
+  },
+  {
+   "id": "T049",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "promo",
+   "language": "fr",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Promo MTN : 1 Go pour 1 000 RWF aujourd'hui seulement. Composez *345# sur votre propre téléphone."
+  },
+  {
+   "id": "T050",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "family",
+   "language": "fr",
+   "rules": [],
+   "text": "Frère, je suis coincé dans les embouteillages, j'aurai 20 minutes de retard. Commencez sans moi."
+  },
+  {
+   "id": "T051",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "otp",
+   "language": "fr",
+   "rules": [],
+   "text": "Utilisez le code 774215 pour vous connecter. Il expire dans 10 minutes. Ne le partagez jamais."
+  },
+  {
+   "id": "T052",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "prize",
+   "language": "sw",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Mpendwa mtumiaji, namba yako imechaguliwa kuwa mshindi wa promosheni ya Airtel. Tuma kitambulisho na PIN yako ili upate TSh 500,000."
+  },
+  {
+   "id": "T053",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "advance_fee",
+   "language": "sw",
+   "rules": [
+    "advance_fee",
+    "upfront_payment_offer"
+   ],
+   "text": "Nafasi ya kazi hotelini Dubai. Weka TSh 50,000 ya ada ya visa kabla ya kupokea kazi."
+  },
+  {
+   "id": "T054",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Multiple high-risk indicators detected",
+   "ok": true,
+   "category": "account_threat",
+   "language": "sw",
+   "rules": [
+    "account_threat",
+    "risky_link",
+    "pressure",
+    "link_present"
+   ],
+   "text": "Tahadhari ya benki: shughuli isiyo ya kawaida. Akaunti yako imefungwa. Ingia kwenye https://bk-secure-login.xyz sasa hivi."
+  },
+  {
+   "id": "T055",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "mistaken_transfer",
+   "language": "sw",
+   "rules": [
+    "mistaken_transfer"
+   ],
+   "text": "Samahani, namba mbaya. Nimetuma TSh 12,000 kwa akaunti yako kimakosa, tafadhali rudisha pesa."
+  },
+  {
+   "id": "T056",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "credential",
+   "language": "sw",
+   "rules": [
+    "credential_request"
+   ],
+   "text": "Huduma kwa wateja hapa. Ili kufuta makato yasiyo sahihi, tafadhali nitajie msimbo wa tarakimu 6 tuliokutumia."
+  },
+  {
+   "id": "T057",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "remote_access",
+   "language": "sw",
+   "rules": [
+    "remote_access"
+   ],
+   "text": "Ili kutengeneza simu yako, pakua TeamViewer kisha nipe namba inayoonekana."
+  },
+  {
+   "id": "T058",
+   "label": "suspicious",
+   "pred": "suspicious",
+   "verdict": "Verify before acting",
+   "ok": true,
+   "category": "known_hard",
+   "language": "sw",
+   "rules": [
+    "family_emergency_money"
+   ],
+   "text": "Mama ni mimi, nimebadilisha namba. Nahitaji pesa kwa dharura, tuma kwenye namba hii."
+  },
+  {
+   "id": "T059",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "security_notice",
+   "language": "sw",
+   "rules": [],
+   "text": "Ukumbusho kutoka benki yako: kamwe usimpe mtu PIN yako, hata anayedai kufanya kazi kwetu."
+  },
+  {
+   "id": "T060",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "payment",
+   "language": "sw",
+   "rules": [],
+   "text": "Malipo ya TSh 15,000 kwa Kigali Water yamepokelewa. Asante."
+  },
+  {
+   "id": "T061",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "work",
+   "language": "sw",
+   "rules": [],
+   "text": "Tafadhali nitumie wasifu wako wa kazi kesho, nataka kumpelekea meneja."
+  },
+  {
+   "id": "T062",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "password_help",
+   "language": "sw",
+   "rules": [],
+   "text": "Nimesahau nenosiri la Wi-Fi, unaweza kunikumbusha?"
+  },
+  {
+   "id": "T063",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "promo",
+   "language": "sw",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Promosheni ya Vodacom: GB 1 kwa TSh 1,000 leo tu. Piga *345# kwenye simu yako mwenyewe."
+  },
+  {
+   "id": "T064",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "family",
+   "language": "sw",
+   "rules": [],
+   "text": "Kaka, nimekwama kwenye foleni, nitachelewa dakika 20. Anzeni bila mimi."
+  },
+  {
+   "id": "T065",
+   "label": "legitimate",
+   "pred": "legitimate",
+   "verdict": "No known warning signs detected",
+   "ok": true,
+   "category": "otp",
+   "language": "sw",
+   "rules": [
+    "pressure"
+   ],
+   "text": "Tumia msimbo 774215 kuingia kwenye akaunti yako. Unaisha ndani ya dakika 10. Usiushiriki kamwe."
+  }
+ ]
+}

@@ -1,0 +1,66 @@
+id,text,label,category,language,reviewed_by_fluent_speaker,split
+T001,"Dear user, your number has been chosen as a winner of the Airtel promo. Send your ID and PIN to claim 500,000 RWF.",suspicious,prize,en,n/a,test
+T002,"Job offer at a hotel in Dubai. Deposit 50,000 RWF for visa processing before you start.",suspicious,advance_fee,en,n/a,test
+T003,Bank of Kigali alert: unusual activity. Your account is locked. Log in at https://bk-secure-login.xyz now.,suspicious,account_threat,en,n/a,test
+T004,"Sorry, wrong number. I transferred 12,000 RWF to you in error, kindly refund me.",suspicious,mistaken_transfer,en,n/a,test
+T005,"Customer care here. To cancel the wrong charge, please tell me the 6-digit code we texted you.",suspicious,credential,en,n/a,test
+T006,"To fix your phone, download TeamViewer and give me the ID it shows.",suspicious,remote_access,en,n/a,test
+T007,"Earn 30,000 RWF every day from home, no experience needed. Message us to start.",suspicious,too_good,en,n/a,test
+T008,Your package could not be delivered. Reschedule here: http://185.44.12.7/track,suspicious,link,en,n/a,test
+T009,RSSB notice: confirm your national ID number today or your pension will stop.,suspicious,impersonation,en,n/a,test
+T010,"Hello, I am from the police. Confirm your mobile money password to clear your name.",suspicious,credential,en,n/a,test
+T011,"You qualify for a 1,000,000 RWF loan. Pay 30,000 RWF insurance first and the money is released.",suspicious,advance_fee,en,n/a,test
+T012,"Mum it is me, I changed my number. I need money for an emergency, please send to this number.",suspicious,known_hard,en,n/a,test
+T013,"Hi, I saw your CV. Please contact our recruiter on WhatsApp to continue.",suspicious,known_hard,en,n/a,test
+T014,"Reminder from your bank: never give your PIN to anyone, even someone claiming to work for us.",legitimate,security_notice,en,n/a,test
+T015,"Payment of 15,000 RWF to Kigali Water received. Thank you.",legitimate,payment,en,n/a,test
+T016,The school fees deadline is Friday. Please pay at the bank using the reference number on your invoice.,legitimate,school,en,n/a,test
+T017,"Please send me your updated CV by tomorrow, I want to forward it to the manager.",legitimate,work,en,n/a,test
+T018,"I forgot my Wi-Fi password, can you remind me what it is?",legitimate,password_help,en,n/a,test
+T019,Your new card is ready for collection at the branch. Bring your national ID.,legitimate,bank,en,n/a,test
+T020,"MTN promo: buy 1GB for 1,000 RWF today only. Dial *345# on your own phone.",legitimate,promo,en,n/a,test
+T021,"Brother, I am stuck in traffic, I will be 20 minutes late. Start without me.",legitimate,family,en,n/a,test
+T022,Use code 774215 to log in to your account. It expires in 10 minutes. Never share it.,legitimate,otp,en,n/a,test
+T023,"Your loan of 200,000 RWF has been approved and will be paid to your account on Monday.",legitimate,loan,en,n/a,test
+T024,Your parcel arrives tomorrow. Someone must be at home to receive it.,legitimate,delivery,en,n/a,test
+T025,Urgent: please sign the attendance sheet before you leave today.,legitimate,urgency_only,en,n/a,test
+T026,"Sorry, I sent that email to you by mistake. Please delete it.",legitimate,mistake_nonmoney,en,n/a,test
+T027,"Mwiriwe, ndi umukozi wa MTN. Mbwira kode yaje kuri telefoni yawe turebe konti yawe.",suspicious,credential,rw,no,test
+T028,"Mwatoranyijwe gutsindira telefoni nshya. Ishyura amafaranga 10,000 Frw kugira ngo muyihabwe.",suspicious,prize,rw,no,test
+T029,Karita yawe ya banki yafunzwe. Emeza amakuru yawe kuri https://tinyurl.com/x9k2 uyu munsi.,suspicious,account_threat,rw,no,test
+T030,"Nakohereje 20,000 Frw nabi, nyabuze. Nsubiza amafaranga yanjye.",suspicious,mistaken_transfer,rw,no,test
+T031,"Ndi mubyara wawe, nagize ikibazo, ohereza amafaranga kuri iyi nimero.",suspicious,known_hard,rw,no,test
+T032,Banki ntizigera ikubaza PIN yawe. Ntuyihe umuntu uwo ari we wese.,legitimate,security_notice,rw,no,test
+T033,"Wishyuye ifatabuguzi rya 3,000 Frw. Murakoze.",legitimate,payment,rw,no,test
+T034,"Mwiriwe neza, ibirori by'ishuri bizaba ku wa gatanu. Muze mwese.",legitimate,event,rw,no,test
+T035,"Mama, ndakererewe gato, ndaza mu minota 30.",legitimate,family,rw,no,test
+T036,Ikarita yawe nshya yageze ku ishami rya banki. Zana indangamuntu.,legitimate,bank,rw,no,test
+T037,Wibagiwe ijambo ry'ibanga rya Wi-Fi? Nzakwibutsa nimugoroba.,legitimate,password_help,rw,no,test
+T038,"Cher utilisateur, votre numéro a été sélectionné pour la promo Airtel. Envoyez votre pièce d'identité et votre code PIN pour toucher 500 000 RWF.",suspicious,prize,fr,no,test
+T039,Offre d'emploi dans un hôtel à Dubaï. Versez 50 000 RWF de frais de visa avant de commencer.,suspicious,advance_fee,fr,no,test
+T040,Alerte banque : activité inhabituelle. Votre compte est bloqué. Connectez-vous sur https://bk-secure-login.xyz maintenant.,suspicious,account_threat,fr,no,test
+T041,"Désolé, mauvais numéro. J'ai transféré 12 000 RWF à votre compte par erreur, merci de me rembourser.",suspicious,mistaken_transfer,fr,no,test
+T042,"Service client. Pour annuler le débit erroné, communiquez-nous le code à 6 chiffres reçu par SMS.",suspicious,credential,fr,no,test
+T043,"Pour réparer votre téléphone, installez TeamViewer puis dites-moi l'identifiant affiché.",suspicious,remote_access,fr,no,test
+T044,"Maman, c'est moi, j'ai changé de numéro. J'ai besoin d'argent pour une urgence, envoie sur ce numéro.",suspicious,known_hard,fr,no,test
+T045,"Rappel de votre banque : ne donnez jamais votre code PIN à personne, même à quelqu'un qui prétend travailler chez nous.",legitimate,security_notice,fr,no,test
+T046,Paiement de 15 000 RWF reçu par Kigali Water. Merci.,legitimate,payment,fr,no,test
+T047,"Envoie-moi ton CV mis à jour demain, je veux le transmettre au directeur.",legitimate,work,fr,no,test
+T048,"J'ai oublié le mot de passe du Wi-Fi, tu peux me le rappeler ?",legitimate,password_help,fr,no,test
+T049,Promo MTN : 1 Go pour 1 000 RWF aujourd'hui seulement. Composez *345# sur votre propre téléphone.,legitimate,promo,fr,no,test
+T050,"Frère, je suis coincé dans les embouteillages, j'aurai 20 minutes de retard. Commencez sans moi.",legitimate,family,fr,no,test
+T051,Utilisez le code 774215 pour vous connecter. Il expire dans 10 minutes. Ne le partagez jamais.,legitimate,otp,fr,no,test
+T052,"Mpendwa mtumiaji, namba yako imechaguliwa kuwa mshindi wa promosheni ya Airtel. Tuma kitambulisho na PIN yako ili upate TSh 500,000.",suspicious,prize,sw,no,test
+T053,"Nafasi ya kazi hotelini Dubai. Weka TSh 50,000 ya ada ya visa kabla ya kupokea kazi.",suspicious,advance_fee,sw,no,test
+T054,Tahadhari ya benki: shughuli isiyo ya kawaida. Akaunti yako imefungwa. Ingia kwenye https://bk-secure-login.xyz sasa hivi.,suspicious,account_threat,sw,no,test
+T055,"Samahani, namba mbaya. Nimetuma TSh 12,000 kwa akaunti yako kimakosa, tafadhali rudisha pesa.",suspicious,mistaken_transfer,sw,no,test
+T056,"Huduma kwa wateja hapa. Ili kufuta makato yasiyo sahihi, tafadhali nitajie msimbo wa tarakimu 6 tuliokutumia.",suspicious,credential,sw,no,test
+T057,"Ili kutengeneza simu yako, pakua TeamViewer kisha nipe namba inayoonekana.",suspicious,remote_access,sw,no,test
+T058,"Mama ni mimi, nimebadilisha namba. Nahitaji pesa kwa dharura, tuma kwenye namba hii.",suspicious,known_hard,sw,no,test
+T059,"Ukumbusho kutoka benki yako: kamwe usimpe mtu PIN yako, hata anayedai kufanya kazi kwetu.",legitimate,security_notice,sw,no,test
+T060,"Malipo ya TSh 15,000 kwa Kigali Water yamepokelewa. Asante.",legitimate,payment,sw,no,test
+T061,"Tafadhali nitumie wasifu wako wa kazi kesho, nataka kumpelekea meneja.",legitimate,work,sw,no,test
+T062,"Nimesahau nenosiri la Wi-Fi, unaweza kunikumbusha?",legitimate,password_help,sw,no,test
+T063,"Promosheni ya Vodacom: GB 1 kwa TSh 1,000 leo tu. Piga *345# kwenye simu yako mwenyewe.",legitimate,promo,sw,no,test
+T064,"Kaka, nimekwama kwenye foleni, nitachelewa dakika 20. Anzeni bila mimi.",legitimate,family,sw,no,test
+T065,Tumia msimbo 774215 kuingia kwenye akaunti yako. Unaisha ndani ya dakika 10. Usiushiriki kamwe.,legitimate,otp,sw,no,test

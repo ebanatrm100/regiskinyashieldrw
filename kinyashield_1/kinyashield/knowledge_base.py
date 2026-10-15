@@ -411,7 +411,7 @@ _e("social_account", ["strong_passwords", "two_step", "whatsapp_hijack"],
 
 _e("about_kinyashield", ["phishing_basics", "verify_sender", "where_to_report"],
    ("What is KinyaShield and how accurate is it?", "Qu'est-ce que KinyaShield et quelle est sa fiabilité ?", "KinyaShield ni iki kandi yizewe ite?", "KinyaShield ni nini na ni sahihi kiasi gani?"),
-   ("kinyashield|how does this work|how it works|can you tell if safe|is this app accurate|how accurate|are you ai|are you chatgpt|who made this|is my message stored|privacy of messages|artificial intelligence|are you reliable|can i trust you",
+   ("kinyashield|how does this work|how it works|can you tell if safe|is this app accurate|how accurate|are you ai|are you chatgpt|who made this|is my message stored|privacy of messages|are you reliable|can i trust you",
     "kinyashield|comment ca marche|comment cela fonctionne|fiabilite|est-ce precis|etes-vous une ia|qui a cree|mon message est-il conserve|intelligence artificielle|puis-je vous faire confiance",
     "kinyashield|bikora bite|yizewe ite|ni ukuri se|uri ubwenge bw'ubukorano|ni nde wayikoze|ubutumwa bwanjye bubikwa|nakwizera",
     "kinyashield|inafanyaje kazi|ni sahihi kiasi gani|wewe ni ai|nani alitengeneza|ujumbe wangu unahifadhiwa|akili bandia|naweza kukuamini"),
@@ -425,4 +425,6 @@ _e("about_kinyashield", ["phishing_basics", "verify_sender", "where_to_report"],
     ["Tumia kichupo cha «Hakiki» kwa jumbe za kutiliwa shaka.", "Tumia «Uliza» kwa maswali ya usalama.", "Kwa jambo lolote muhimu, thibitisha na taasisi halisi.", "Tumia vitufe vya maoni inapokosea."])),
 ]
 
+from knowledge_general import ENTRIES_G
+ENTRIES = ENTRIES + ENTRIES_G
 BY_ID = {e["id"]: e for e in ENTRIES}

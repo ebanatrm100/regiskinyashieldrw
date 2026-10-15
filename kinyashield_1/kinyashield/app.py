@@ -114,13 +114,13 @@ with tab_chat:
 
     # KINYASHIELD_PART2_V1 : offline safety guide (no API key needed)
     _g_labels = {
-        "en": ("Safety guide (works offline)", "Ask a safety question, e.g. 'I shared my PIN'", "What to do", "Related questions",
+        "en": ("Quick answers: safety, study, money, farming, health, tech (works offline)", "Ask a question, e.g. 'I shared my PIN' or 'How do I write a CV?'", "What to do", "Related questions",
                "I do not have a reliable answer in my guide, so I will not guess. Try rewording it, or use the AI chat below."),
-        "fr": ("Guide de s\u00e9curit\u00e9 (hors ligne)", "Posez une question de s\u00e9curit\u00e9, ex. \u00ab j'ai donn\u00e9 mon PIN \u00bb", "Que faire", "Questions li\u00e9es",
+        "fr": ("R\u00e9ponses rapides : s\u00e9curit\u00e9, \u00e9tudes, argent, agriculture, sant\u00e9, tech (hors ligne)", "Posez une question, ex. \u00ab j'ai donn\u00e9 mon PIN \u00bb ou \u00ab comment \u00e9crire un CV ? \u00bb", "Que faire", "Questions li\u00e9es",
                "Je n'ai pas de r\u00e9ponse fiable dans mon guide, donc je ne vais pas deviner. Reformulez ou utilisez le chat IA ci-dessous."),
-        "rw": ("Igitabo cy'umutekano (gikora nta murandasi)", "Baza ikibazo cy'umutekano, urugero 'natanze PIN'", "Icyo gukora", "Ibibazo bifitanye isano",
+        "rw": ("Ibisubizo byihuse: umutekano, amashuri, amafaranga, ubuhinzi, ubuzima, ikoranabuhanga (nta murandasi)", "Baza ikibazo, urugero 'natanze PIN' cyangwa 'nandika nte CV?'", "Icyo gukora", "Ibibazo bifitanye isano",
                "Nta gisubizo cyizewe mfite mu gitabo cyanjye, ntabwo rero ndakeka. Ongera ubyandike, cyangwa ukoreshe ikiganiro cya AI hepfo."),
-        "sw": ("Mwongozo wa usalama (bila mtandao)", "Uliza swali la usalama, mf. 'nimetoa PIN'", "Cha kufanya", "Maswali yanayohusiana",
+        "sw": ("Majibu ya haraka: usalama, masomo, pesa, kilimo, afya, teknolojia (bila mtandao)", "Uliza swali, mf. 'nimetoa PIN' au 'ninawezaje kuandika CV?'", "Cha kufanya", "Maswali yanayohusiana",
                "Sina jibu la kuaminika kwenye mwongozo wangu, kwa hiyo sitakisia. Andika tofauti au tumia gumzo la AI hapa chini."),
     }
     _gl = _g_labels.get(str(lang).lower(), _g_labels["en"])

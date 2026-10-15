@@ -14,6 +14,20 @@ const cases=[
  ["Une vérification en deux étapes, c'est quoi ?","two_step","fr"],
  ["ndafite ubutumwa buvuga ko nsabwa kwishyura viza","job_visa_scam","rw"],
  ["Nawezaje kuepuka programu bandia","fake_apps","sw"],
+
+ ["How do I write a CV?","write_cv","en"],
+ ["How do I calculate 20 percent of a number","math_percentage","en"],
+ ["why do my tomatoes rot after harvest","post_harvest_fresh","en"],
+ ["How should I store maize safely","grain_storage","en"],
+ ["How can I make drinking water safe","clean_water","en"],
+ ["How do I start learning programming","learn_programming","en"],
+ ["What is artificial intelligence?","what_is_ai","en"],
+ ["Comment calculer un pourcentage ?","math_percentage","fr"],
+ ["Nawezaje kuanzisha biashara ndogo","start_business","sw"],
+ ["Nakwiga nte neza","study_tips","rw"],
+ ["Capital of Rwanda","rwanda_basics","en"],
+ ["What is the best football team",null,"en"],
+ ["solve x squared plus 3x equals 10",null,"en"],
 ];
 let bad=0;
 for(const [q,exp,l] of cases){const b=A.best(A.search(K,D.guide,q,l));const id=b?b.entry.id:null;

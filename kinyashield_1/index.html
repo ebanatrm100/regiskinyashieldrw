@@ -385,11 +385,13 @@ textarea.exp{min-height:6rem;font-family:var(--mono);font-size:.82rem}
     if (q.length < 2) return out;
     G.forEach(function (e) {
       var score = 0, hits = [];
+      /* Score each language on its own and keep the best, so a word that exists in all four languages is not counted four times. */
       Object.keys(e.keywords).forEach(function (l) {
-        var w = l === lang ? 1.25 : 1;
+        var w = l === lang ? 1.25 : 1, sub = 0, h = [];
         e.keywords[l].forEach(function (kw) {
-          if (kwRegex(kw).test(q)) { var n = kw.replace(/\*$/, "").split(" ").length; score += 2 * n * w; hits.push(kw); }
+          if (kwRegex(kw).test(q)) { var n = kw.replace(/\*$/, "").split(" ").length; sub += 2 * n * w; h.push(kw); }
         });
+        if (sub > score) { score = sub; hits = h; }
       });
       if (score > 0) out.push({ entry: e, score: score, hits: hits });
     });

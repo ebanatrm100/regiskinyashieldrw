@@ -15,6 +15,7 @@ const cases=[
  ["ndafite ubutumwa buvuga ko nsabwa kwishyura viza","job_visa_scam","rw"],
  ["Nawezaje kuepuka programu bandia","fake_apps","sw"],
 
+ ["I gave my PIN to someone who called","shared_pin","rw"],
  ["How do I write a CV?","write_cv","en"],
  ["How do I calculate 20 percent of a number","math_percentage","en"],
  ["why do my tomatoes rot after harvest","post_harvest_fresh","en"],

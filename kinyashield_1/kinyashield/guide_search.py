@@ -20,11 +20,14 @@ def search(query, lang="en"):
         return out
     for e in ENTRIES:
         score = 0.0
+        # Score each language on its own and keep the best, so a word that exists in all four languages is not counted four times.
         for l, kws in e["keywords"].items():
             w = 1.25 if l == lang else 1.0
+            sub = 0.0
             for kw in kws:
                 if _rx(kw).search(q):
-                    score += 2 * len(kw.rstrip("*").split(" ")) * w
+                    sub += 2 * len(kw.rstrip("*").split(" ")) * w
+            score = max(score, sub)
         if score > 0:
             out.append((score, e))
     out.sort(key=lambda x: -x[0])

@@ -427,4 +427,10 @@ _e("about_kinyashield", ["phishing_basics", "verify_sender", "where_to_report"],
 
 from knowledge_general import ENTRIES_G
 ENTRIES = ENTRIES + ENTRIES_G
+from knowledge_stem import ENTRIES_STEM
+ENTRIES = ENTRIES + ENTRIES_STEM
+from knowledge_code import ENTRIES_CODE
+ENTRIES = ENTRIES + ENTRIES_CODE
+from knowledge_life import ENTRIES_LIFE
+ENTRIES = ENTRIES + ENTRIES_LIFE
 BY_ID = {e["id"]: e for e in ENTRIES}

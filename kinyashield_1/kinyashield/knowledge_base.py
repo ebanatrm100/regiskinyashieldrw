@@ -435,4 +435,8 @@ from knowledge_life import ENTRIES_LIFE
 ENTRIES = ENTRIES + ENTRIES_LIFE
 from knowledge_more import ENTRIES_MORE
 ENTRIES = ENTRIES + ENTRIES_MORE
+from knowledge_cosmos import ENTRIES_COSMOS
+ENTRIES = ENTRIES + ENTRIES_COSMOS
+from knowledge_history import ENTRIES_HISTORY
+ENTRIES = ENTRIES + ENTRIES_HISTORY
 BY_ID = {e["id"]: e for e in ENTRIES}

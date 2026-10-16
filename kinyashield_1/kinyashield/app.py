@@ -161,6 +161,14 @@ with tab_chat:
     for _message in st.session_state[_history_key]:
         with st.chat_message(_message["role"]):
             st.markdown(_message["content"])
+            if _message.get("image"):  # photo for a computer answer (Wikimedia Commons); text above is complete without it
+                try:
+                    st.image(_message["image"]["url"], caption=_message["image"]["caption"], width=480)
+                    st.markdown(f"[Wikipedia / Wikimedia Commons]({_message['image']['page']})")
+                except Exception:
+                    st.caption(_message["image"].get("fallback", ""))
+            elif _message.get("image_note"):
+                st.caption(_message["image_note"])
 
     _clicked = None
     if _flow_ok:
@@ -197,7 +205,20 @@ with tab_chat:
             st.rerun()
         elif _routed["kind"] == "guide":
             _e = _routed["entry"]
-            _hist.append({"role": "assistant", "content": _format_guide(_e, _chat_lang, _T["steps"], _T["src"]), "kind": "note"})
+            _msg_out = {"role": "assistant", "content": _format_guide(_e, _chat_lang, _T["steps"], _T["src"]), "kind": "note"}
+            if _e.get("image_query"):
+                try:
+                    import computers_db as _cdb
+                    with st.spinner("…"):
+                        _img = _cdb.resolve_image(_e, _chat_lang)
+                    if _img:
+                        _img["fallback"] = _cdb.missing_photo_note(_chat_lang)
+                        _msg_out["image"] = _img
+                    else:
+                        _msg_out["image_note"] = _cdb.missing_photo_note(_chat_lang)
+                except Exception:
+                    pass
+            _hist.append(_msg_out)
             st.session_state[_rel_key] = _related(_e, _chat_lang)
             st.rerun()
         else:

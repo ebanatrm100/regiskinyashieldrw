@@ -14,6 +14,11 @@ try:
 except Exception:  # the name-meaning feature is optional; everything else keeps working
     _find_name = None
 
+try:
+    from computers_db import find as _find_computer
+except Exception:  # the computers feature is optional
+    _find_computer = None
+
 LANGS = ("en", "fr", "rw", "sw")
 SUGGESTED = ["shared_pin", "verify_sender", "strong_passwords", "lost_phone", "post_harvest_fresh", "write_cv"]
 MIN_MESSAGE_LEN = 50
@@ -57,6 +62,10 @@ def route(question, lang, force_ai=False):
             return {"kind": "guide", "entry": named}
     if not force_ai:
         entry = best(q, k)
+        comp = _find_computer(q, k) if _find_computer is not None else None
+        # A long question that the cyber/general guide also answers (e.g. "what do I do if my phone is stolen") stays with the guide.
+        if comp is not None and (entry is None or len(q.split()) <= 4):
+            return {"kind": "guide", "entry": comp}
         if entry is not None:
             return {"kind": "guide", "entry": entry}
     return {"kind": "ai"}

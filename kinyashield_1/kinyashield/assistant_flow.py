@@ -2,6 +2,7 @@
 
 Order of attempts for each question:
   1. Does it look like a suspicious message the user pasted?  -> the existing scam detector (unchanged).
+  1b. Is the whole message a greeting (hello, mwaramutse, bonjour, jambo, thank you ...)? -> a correct reply + explanation in four languages (greetings_db.py).
   2. Is it a question about the meaning of a known name?      -> name meaning (names_db.py, a curated list, not every name).
   2b. Is it just "what is X" for a listed term?                -> short definition (definitions_db.py, a curated bank, not every word).
   3. Does the offline guide have a reliable answer?           -> guide answer with steps and related questions.
@@ -14,6 +15,11 @@ try:
     from names_db import find as _find_name
 except Exception:  # the name-meaning feature is optional; everything else keeps working
     _find_name = None
+
+try:
+    from greetings_db import find as _find_greeting
+except Exception:  # the greetings feature is optional
+    _find_greeting = None
 
 try:
     from definitions_db import find as _find_definition
@@ -62,6 +68,10 @@ def route(question, lang, force_ai=False):
         res = analyze(q)
         if res.verdict != "ok":
             return {"kind": "scam", "result": res, "steps": next_steps(res, k)}
+    if not force_ai and _find_greeting is not None:
+        greeted = _find_greeting(q, k)
+        if greeted is not None:
+            return {"kind": "guide", "entry": greeted}
     if not force_ai and _find_name is not None:
         named = _find_name(q, k)
         if named is not None:

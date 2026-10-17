@@ -18,20 +18,18 @@ lang = st.sidebar.radio("Language", LANGS, format_func=lambda x: LANG_NAMES[x])
 t = ui.STR[lang]
 st.markdown(ui.CSS, unsafe_allow_html=True)
 st.markdown(ui.hero_html(lang), unsafe_allow_html=True)
-# KINYASHIELD_ROOM_V1: picture of a cybersecurity room under the title (photo from Wikimedia Commons when reachable, else an illustration)
+# KINYASHIELD_ROOM_V2: three pictures under the title: the two REGIS' WORLD images, then a cybersecurity room with computers only
 try:
     import room_banner as _room
 
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def _room_pick(_lang):
-        return _room.pick(_lang)
-
-    _rp = _room_pick(lang)
-    if _rp:
+    _pics = _room.gallery(lang)
+    if _pics:
         st.markdown("<style>div[data-testid='stImage'] img{border-radius:14px}</style>", unsafe_allow_html=True)
-        st.image(_rp["src"], caption=_rp["caption"], width=1200 if _rp["kind"] == "illustration" else 720)  # width is capped to the page width by Streamlit
-        if _rp["page"]:
-            st.caption(f"[Wikipedia]({_rp['page']})")
+        st.image(_pics[0]["src"], width=1200)  # width is capped to the page width by Streamlit
+        if len(_pics) > 1:
+            for _col, _pic in zip(st.columns(len(_pics) - 1), _pics[1:]):
+                with _col:
+                    st.image(_pic["src"], caption=_pic["caption"] or None, width=600)
 except Exception:
     pass
 if lang != "en":

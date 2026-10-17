@@ -24,6 +24,23 @@ class RoomBanner(unittest.TestCase):
         self.assertIn("Wikimedia Commons", p["caption"])
         self.assertEqual(p["page"], "https://en.wikipedia.org/wiki/X")
 
+    def test_gallery_has_three_pictures_in_order(self):
+        for l in ("en", "fr", "rw", "sw"):
+            g = R.gallery(l)
+            self.assertEqual(len(g), 3, l)
+            self.assertTrue(g[0]["src"].endswith("regis_world_1.jpg") and g[1]["src"].endswith("regis_world_2.jpg"))
+            self.assertTrue(os.path.isfile(g[0]["src"]) and os.path.isfile(g[1]["src"]))
+            self.assertEqual(g[2]["kind"], "illustration")
+            self.assertTrue(g[2]["src"].lstrip().startswith("<svg"))
+            self.assertTrue(g[2]["caption"])
+        self.assertNotEqual(R.gallery("en")[2]["caption"], R.gallery("rw")[2]["caption"])
+
+    def test_computers_only_picture_has_no_people(self):
+        svg = R.gallery("en")[2]["src"]
+        # analysts are drawn as dark circles + shoulder paths with this exact fill; the computers-only file must not contain it
+        self.assertNotIn('fill="#02060f"', svg)
+        self.assertIn('fill="#02060f"', R.illustration_svg())  # the other illustration does have analysts
+
     def _fresh(self):
         R._cache.update({"photo": None, "at": 0.0})
 

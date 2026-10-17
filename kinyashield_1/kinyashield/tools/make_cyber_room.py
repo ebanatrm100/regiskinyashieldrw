@@ -1,6 +1,7 @@
 """Generates assets/cyber_room.svg: an ORIGINAL illustration of a security operations room (not a photograph).
 Run: python tools/make_cyber_room.py"""
-import random, pathlib
+import random, pathlib, os
+COMPUTERS_ONLY = os.environ.get("COMPUTERS_ONLY") == "1"
 random.seed(7)
 W, H = 1200, 420
 o = []
@@ -74,12 +75,25 @@ def desk(cx, y, s, analyst=True):
             a(f'<circle cx="{hx:.0f}" cy="{y + 12*s:.0f}" r="{7*s:.1f}" fill="#02060f"/>')
             a(f'<path d="M{hx - 13*s:.0f} {y + 30*s:.0f} Q{hx:.0f} {y + 14*s:.0f} {hx + 13*s:.0f} {y + 30*s:.0f} Z" fill="#02060f"/>')
 for cx in (270, 600, 930):
-    desk(cx, 318, 1.15)
+    desk(cx, 318, 1.15, analyst=not COMPUTERS_ONLY)
 for cx in (150, 440, 760, 1050):
-    desk(cx, 292, 0.8)
+    desk(cx, 292, 0.8, analyst=not COMPUTERS_ONLY)
 for cx in (60, 1140):
     desk(cx, 372, 1.5, analyst=False)
+if COMPUTERS_ONLY:
+    # server racks along both side walls and tower computers under the desks: computers only, no people
+    for rx in (8, 1128):
+        a(f'<rect x="{rx}" y="96" width="64" height="196" rx="3" fill="#061327" stroke="#1d6fb0" stroke-width="1.5"/>')
+        for j in range(11):
+            yy = 104 + j * 17
+            a(f'<rect x="{rx + 5}" y="{yy}" width="54" height="12" rx="2" fill="#0b2a4a"/>')
+            for q in range(3):
+                a(f'<circle cx="{rx + 12 + q*9}" cy="{yy + 6}" r="2" fill="{random.choice(["#38f2b0", "#38f2b0", "#35c9ff", "#ffb020"])}"/>')
+            a(f'<rect x="{rx + 40}" y="{yy + 4}" width="14" height="4" rx="1" fill="#1d4f86"/>')
+    for cx in (270, 600, 930):
+        for dx in (-45, 45):
+            a(f'<rect x="{cx + dx - 11}" y="{318 + 14}" width="22" height="34" rx="3" fill="#0b2a4a" stroke="#1d6fb0" stroke-width="1"/><circle cx="{cx + dx}" cy="{318 + 24}" r="2.5" fill="#38f2b0"/>')
 a(f'<rect width="{W}" height="{H}" fill="url(#vig)"/>')
 a('</svg>')
-pathlib.Path(__file__).resolve().parent.parent.joinpath("assets", "cyber_room.svg").write_text("\n".join(o), encoding="utf-8")
+pathlib.Path(__file__).resolve().parent.parent.joinpath("assets", "cyber_room_computers.svg" if COMPUTERS_ONLY else "cyber_room.svg").write_text("\n".join(o), encoding="utf-8")
 print("ok")

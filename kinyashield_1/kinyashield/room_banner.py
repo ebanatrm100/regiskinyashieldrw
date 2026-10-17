@@ -9,7 +9,8 @@ import base64, html, pathlib, time
 from urllib.parse import quote
 
 ARTICLES = ["Security operations center", "Network operations center"]
-_ASSET = pathlib.Path(__file__).parent / "assets" / "cyber_room.svg"
+_ASSETS = pathlib.Path(__file__).parent / "assets"
+_ASSET = _ASSETS / "cyber_room.svg"
 _cache = {"photo": None, "at": 0.0}
 _RETRY_SECONDS = 600
 
@@ -79,3 +80,30 @@ def pick(lang="en", photo="auto"):
     except Exception:
         pass
     return None
+
+
+_COMPUTERS_TXT = {
+    "en": "Illustration: a cybersecurity room with computers only.",
+    "fr": "Illustration : une salle de cybersécurité avec uniquement des ordinateurs.",
+    "rw": "Igishushanyo: icyumba cy'umutekano wo kuri interineti gifite mudasobwa gusa.",
+    "sw": "Mchoro: chumba cha usalama wa mtandao chenye kompyuta tu.",
+}
+
+
+def gallery(lang="en"):
+    """The three pictures shown under the title, in order: the two REGIS' WORLD images the owner supplied, then an original illustration of a
+    cybersecurity room with computers only (no people). Returns a list of {'src': path or raw SVG, 'caption': str, 'kind': 'image'|'illustration'};
+    a missing file is skipped, so the page never breaks. Never raises."""
+    k = lang if lang in _COMPUTERS_TXT else "en"
+    out = []
+    try:
+        for name in ("regis_world_1.jpg", "regis_world_2.jpg"):
+            f = _ASSETS / name
+            if f.is_file():
+                out.append({"src": str(f), "caption": "", "kind": "image"})
+        f = _ASSETS / "cyber_room_computers.svg"
+        if f.is_file():
+            out.append({"src": f.read_text(encoding="utf-8"), "caption": _COMPUTERS_TXT[k], "kind": "illustration"})
+    except Exception:
+        pass
+    return out

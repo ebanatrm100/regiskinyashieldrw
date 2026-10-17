@@ -95,5 +95,20 @@ class Greetings(unittest.TestCase):
         self.assertEqual(route("hello", "en", force_ai=True)["kind"], "ai")
 
 
+class GreetingsExtras(unittest.TestCase):
+    def test_religious_greetings_are_answered(self):
+        from assistant_flow import route
+        for q, l, rid in [("Yezu ashimwe", "rw", "greeting_yezu_ashimwe"), ("Yesu asifiwe", "sw", "greeting_yesu_asifiwe")]:
+            r = route(q, l)
+            self.assertEqual(r["entry"]["id"], rid)
+            self.assertIn("Amen" if l == "rw" else "Amina", r["entry"]["answer"]["en"])
+
+    def test_bare_word_greetings_gives_the_overview_but_how_to_questions_do_not(self):
+        from assistant_flow import route
+        for q, l in [("greetings", "en"), ("salutations", "fr"), ("indamutso", "rw"), ("salamu", "sw")]:
+            self.assertEqual(route(q, l)["entry"]["id"], "greetings_overview", q)
+        self.assertNotEqual(route("how to say hello in swahili", "en")["entry"]["id"], "greetings_overview")
+
+
 if __name__ == "__main__":
     unittest.main()

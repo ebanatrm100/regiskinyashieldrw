@@ -66,6 +66,7 @@ EQ = {
     "respect": ("Shikamoo (respectful greeting to an elder)", "Shikamoo (salutation respectueuse à un aîné)", "Shikamoo (indamutso y'icyubahiro ku mukuru)", "Shikamoo"),
     "respectreply": ("Marahaba (the elder's reply)", "Marahaba (réponse de l'aîné)", "Marahaba (igisubizo cy'umukuru)", "Marahaba"),
     "salam": ("Peace be upon you", "Que la paix soit sur vous", "Amahoro abe kuri mwe", "Amani iwe juu yenu"),
+    "praise": ("Praise be to Jesus (Christian greeting)", "Louange à Jésus (salutation chrétienne)", "Yezu ashimwe", "Yesu asifiwe"),
     "salamreply": ("And upon you be peace", "Et sur vous la paix", "Namwe amahoro abe kuri mwe", "Nawe amani iwe juu yako"),
     "hellobye": ("Hello / Goodbye (informal)", "Salut (bonjour ou au revoir, familier)", "Muraho / Murabeho (mu buryo bworoheje)", "Hujambo / Kwaheri (kwa kawaida)"),
     "peace": ("Peace (hello / goodbye)", "Paix (bonjour / au revoir)", "Amahoro (muraho / murabeho)", "Amani (salamu / kwaheri)"),
@@ -173,6 +174,11 @@ KIND = {
               "Salutation de paix utilisée par les musulmans et dans de nombreux pays arabophones ; réponse : « wa alaykum as-salam ».",
               "Indamutso y'amahoro ikoreshwa n'Abayisilamu no mu bihugu byinshi bivuga icyarabu; igisubizo ni \"wa alaykum as-salam\".",
               "Salamu ya amani inayotumiwa na Waislamu na maeneo mengi ya Kiarabu; jibu ni \"wa alaykum as-salam\"."),
+    "praise": ("Christian greeting of praise", "Salutation chrétienne de louange", "Indamutso y'abakristu", "Salamu ya Wakristo",
+               "A greeting used among Christians, especially in Rwanda (\"Yezu ashimwe\") and East Africa (\"Yesu asifiwe\"). It means \"Praise be to Jesus\" and is answered with \"Iteka ryose\" / \"Milele\" (forever) and \"Amen\".",
+               "Salutation utilisée entre chrétiens, surtout au Rwanda (« Yezu ashimwe ») et en Afrique de l'Est (« Yesu asifiwe »). Elle signifie « Louange à Jésus » et on répond « Iteka ryose » / « Milele » (pour toujours) et « Amen ».",
+               "Indamutso ikoreshwa mu bakristu, cyane cyane mu Rwanda (\"Yezu ashimwe\") no muri Afurika y'Iburasirazuba (\"Yesu asifiwe\"). Isobanura \"Yezu ahabwe ishimwe\" kandi isubizwa \"Iteka ryose\" / \"Milele\" (iteka) na \"Amen\".",
+               "Salamu inayotumiwa kati ya Wakristo, hasa Rwanda (\"Yezu ashimwe\") na Afrika Mashariki (\"Yesu asifiwe\"). Inamaanisha \"Yesu asifiwe\" na hujibiwa \"Milele\" / \"Iteka ryose\" na \"Amina\"."),
     "salamreply": ("Reply to the greeting of peace", "Réponse à la salutation de paix", "Igisubizo ku ndamutso y'amahoro", "Jibu la salamu ya amani",
                    "The reply to \"as-salamu alaykum\".", "La réponse à « as-salamu alaykum ».", "Igisubizo kuri \"as-salamu alaykum\".", "Jibu la \"as-salamu alaykum\"."),
     "hellobye": ("Hello or goodbye (informal)", "Bonjour ou au revoir (familier)", "Muraho cyangwa murabeho (bworoheje)", "Salamu au kwaheri (kwa kawaida)",
@@ -339,6 +345,8 @@ afternoon ~ boa tarde ~ pt ~ Boa tarde! 🌤️
 night ~ boa noite ~ pt ~ Boa noite! 🌙
 bye ~ tchau,ate logo,ate amanha ~ pt ~ Tchau! 👋
 thanks ~ obrigado,obrigada,muito obrigado,muito obrigada ~ pt ~ De nada! 😊
+praise ~ yezu ashimwe,yezu kristu ashimwe,yesu ashimwe ~ rw ~ Iteka ryose. Amen! 🙏
+praise ~ yesu asifiwe,bwana yesu asifiwe ~ sw ~ Milele na milele. Amina! 🙏
 salam ~ as salamu alaykum,assalamu alaikum,assalamu alaykum,salam alaikum,salaam alaykum,salam alaykum,asalam alaikum,asalamu alaykum,assalamualaikum,peace be upon you,salam,salaam ~ ar ~ Wa alaykum as-salam wa rahmatullah! 🤝
 salamreply ~ wa alaykum as salam,wa alaikum assalam,walaykum assalam,waalaikumsalam,wa alaykum salam ~ ar ~ Wa alaykum as-salam! 🤝
 hello ~ marhaba,marhaban,ahlan,ahlan wa sahlan ~ ar ~ Marhaba! 👋
@@ -395,7 +403,7 @@ maana inamaanisha eleza tafsiri""".split())
 _OVERVIEW_WORDS = set("greeting greetings salutation salutations indamutso indamutso salamu".split())
 _OVERVIEW_ALL = set("all types kinds list every ubwoko bwose liste tous toutes aina orodha zote".split())
 _OVERVIEW_ORDER = ["hello", "morning", "afternoon", "evening", "night", "howareyou", "fine", "welcome", "nicemeet", "bye", "seeyou", "thanks", "youarewelcome",
-                   "sorry", "please", "congrats", "birthday", "newyear", "christmas", "easter", "eid", "getwell", "goodluck", "travel", "niceday", "respect", "salam"]
+                   "sorry", "please", "congrats", "birthday", "newyear", "christmas", "easter", "eid", "getwell", "goodluck", "travel", "niceday", "respect", "salam", "praise"]
 
 
 def _key(tokens, drop):
@@ -515,6 +523,8 @@ def find(question, lang="en"):
         return None
     toks = set(fold(q).split())
     if (toks & _OVERVIEW_WORDS) and (toks & _OVERVIEW_ALL) and len(toks) <= 8:
+        return _overview(lang)
+    if toks and toks <= (_OVERVIEW_WORDS | {"the", "my", "all", "les", "des", "des", "za", "ya"}) and toks & _OVERVIEW_WORDS:
         return _overview(lang)
     segs = _segments(q)
     if not segs or len(segs) > 3:

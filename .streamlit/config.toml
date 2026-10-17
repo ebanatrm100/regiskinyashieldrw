@@ -1,0 +1,7 @@
+# Streamlit Community Cloud reads this file from the repository root. A light theme keeps the text readable on the sky-picture background.
+[theme]
+base = "light"
+primaryColor = "#0b6e4f"
+textColor = "#10243a"
+[browser]
+gatherUsageStats = false

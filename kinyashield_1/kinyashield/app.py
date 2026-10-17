@@ -18,18 +18,13 @@ lang = st.sidebar.radio("Language", LANGS, format_func=lambda x: LANG_NAMES[x])
 t = ui.STR[lang]
 st.markdown(ui.CSS, unsafe_allow_html=True)
 st.markdown(ui.hero_html(lang), unsafe_allow_html=True)
-# KINYASHIELD_ROOM_V2: three pictures under the title: the two REGIS' WORLD images, then a cybersecurity room with computers only
+# KINYASHIELD_SKY_BG_V1: sky-and-clouds picture as the page background; content sits on a light panel so it stays readable
 try:
-    import room_banner as _room
+    import app_background as _bg
 
-    _pics = _room.gallery(lang)
-    if _pics:
-        st.markdown("<style>div[data-testid='stImage'] img{border-radius:14px}</style>", unsafe_allow_html=True)
-        st.image(_pics[0]["src"], width=1200)  # width is capped to the page width by Streamlit
-        if len(_pics) > 1:
-            for _col, _pic in zip(st.columns(len(_pics) - 1), _pics[1:]):
-                with _col:
-                    st.image(_pic["src"], caption=_pic["caption"] or None, width=600)
+    _bg_css = _bg.css()
+    if _bg_css:
+        st.markdown(_bg_css, unsafe_allow_html=True)
 except Exception:
     pass
 if lang != "en":

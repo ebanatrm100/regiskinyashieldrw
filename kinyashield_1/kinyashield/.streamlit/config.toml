@@ -1,4 +1,6 @@
 [theme]
+base = "light"
 primaryColor = "#0b6e4f"
+textColor = "#10243a"
 [browser]
 gatherUsageStats = false

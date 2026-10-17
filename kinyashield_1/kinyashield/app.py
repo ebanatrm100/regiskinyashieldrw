@@ -18,6 +18,22 @@ lang = st.sidebar.radio("Language", LANGS, format_func=lambda x: LANG_NAMES[x])
 t = ui.STR[lang]
 st.markdown(ui.CSS, unsafe_allow_html=True)
 st.markdown(ui.hero_html(lang), unsafe_allow_html=True)
+# KINYASHIELD_ROOM_V1: picture of a cybersecurity room under the title (photo from Wikimedia Commons when reachable, else an illustration)
+try:
+    import room_banner as _room
+
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def _room_pick(_lang):
+        return _room.pick(_lang)
+
+    _rp = _room_pick(lang)
+    if _rp:
+        st.markdown("<style>div[data-testid='stImage'] img{border-radius:14px}</style>", unsafe_allow_html=True)
+        st.image(_rp["src"], caption=_rp["caption"], width=1200 if _rp["kind"] == "illustration" else 720)  # width is capped to the page width by Streamlit
+        if _rp["page"]:
+            st.caption(f"[Wikipedia]({_rp['page']})")
+except Exception:
+    pass
 if lang != "en":
     st.info(t["draft_note"])
 

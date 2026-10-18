@@ -17,6 +17,11 @@ except Exception:  # the name-meaning feature is optional; everything else keeps
     _find_name = None
 
 try:
+    from owner_db import find as _find_owner
+except Exception:  # the owner answer is optional
+    _find_owner = None
+
+try:
     from greetings_db import find as _find_greeting
 except Exception:  # the greetings feature is optional
     _find_greeting = None
@@ -64,6 +69,8 @@ def related(entry, lang):
 def format_guide(entry, lang, steps_label, source_label):
     k = _lk(lang)
     steps_label = (entry.get("steps_label") or {}).get(k, steps_label)
+    if not entry["steps"][k]:  # a plain answer with no steps (for example the owner answer)
+        return f"**{entry['title'][k]}**\n\n{entry['answer'][k]}"
     lines = [f"**{entry['title'][k]}**", "", entry["answer"][k], "", f"*{steps_label}*"]
     lines += [f"{n}. {s}" for n, s in enumerate(entry["steps"][k], 1)]
     lines += ["", f"_{source_label}_"]
@@ -78,6 +85,10 @@ def route(question, lang, force_ai=False):
         res = analyze(q)
         if res.verdict != "ok":
             return {"kind": "scam", "result": res, "steps": next_steps(res, k)}
+    if not force_ai and _find_owner is not None:
+        owner = _find_owner(q, k)
+        if owner is not None:
+            return {"kind": "guide", "entry": owner}
     if not force_ai and _find_greeting is not None:
         greeted = _find_greeting(q, k)
         if greeted is not None:

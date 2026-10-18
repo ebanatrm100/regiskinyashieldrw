@@ -86,3 +86,99 @@ def locks_uri(horizontal=False):
 
 def servers_uri():
     return _uri(servers_svg())
+
+
+# ------------------------------------------------------------------ left side: tagline + locks + servers, and right side: cybersecurity room
+TAGLINE = "LET THE SKY NOT BE THE LIMIT"
+_FONT = "Arial, Helvetica, sans-serif"
+
+
+def _tagline_band(x, y, h, w=46):
+    """The tagline turned 90 degrees, on a navy band, drawn on top of the art (in front of it)."""
+    return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{w // 2}" fill="{NAVY}" fill-opacity=".86" stroke="{CYAN}" stroke-width="3"/>'
+            f'<text transform="translate({x + w / 2:.1f} {y + h / 2:.1f}) rotate(90)" text-anchor="middle" dominant-baseline="central" font-family="{_FONT}" '
+            f'font-weight="700" font-size="25" letter-spacing="5" fill="{WHITE}">{TAGLINE}</text>')
+
+
+def left_svg():
+    """Left side: five lock signs and a server stack, with the tagline turned 90 degrees in front of them."""
+    locks = "".join(f'<g transform="translate(58 {16 + i * 118}) scale(.62)">{_lock_cell(i)}</g>' for i in range(5))
+    servers = f'<g transform="translate(40 650) scale(.66)">{_rack(10, 10, 6, 160, with_lock=2) + _rack(190, 180, 4, 100)}</g>'
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 1000" width="260" height="1000">{_DEFS}'
+            f'<g filter="url(#s)">{locks}{servers}</g><g filter="url(#s)">{_tagline_band(8, 30, 940)}</g></svg>')
+
+
+def _screen(x, y, w, h, kind):
+    out = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="3" fill="#06182e" stroke="{CYAN}" stroke-width="1.6"/>']
+    if kind == "term":
+        for i in range(max(2, int((h - 6) // 6))):
+            ln = 8 + (i * 37) % int(max(10, w - 20))
+            out.append(f'<rect x="{x + 4}" y="{y + 4 + i * 6}" width="{min(ln, w - 8)}" height="2.2" fill="{GREEN if i % 4 else CYAN}" opacity=".9"/>')
+    elif kind == "graph":
+        pts = " ".join(f"{x + 4 + i * (w - 8) / 7:.1f},{y + h - 6 - ((i * 53) % 7 + 1) * (h - 14) / 9:.1f}" for i in range(8))
+        out.append(f'<polyline points="{pts}" fill="none" stroke="{GREEN}" stroke-width="1.8"/>')
+        for i in range(5):
+            out.append(f'<rect x="{x + 5 + i * (w - 10) / 5:.1f}" y="{y + h - 5 - (i * 29) % 9 - 3}" width="{(w - 10) / 5 - 3:.1f}" height="{(i * 29) % 9 + 3}" fill="{CYAN}" opacity=".7"/>')
+    else:  # network map: nodes and links
+        nodes = [(.2, .3), (.5, .2), (.8, .35), (.35, .65), (.7, .7), (.5, .5)]
+        for a, b in ((0, 1), (1, 2), (0, 3), (3, 5), (5, 2), (5, 4), (1, 5)):
+            out.append(f'<line x1="{x + nodes[a][0] * w:.1f}" y1="{y + nodes[a][1] * h:.1f}" x2="{x + nodes[b][0] * w:.1f}" y2="{y + nodes[b][1] * h:.1f}" stroke="{CYAN}" stroke-width="1" opacity=".8"/>')
+        for i, (nx, ny) in enumerate(nodes):
+            out.append(f'<circle cx="{x + nx * w:.1f}" cy="{y + ny * h:.1f}" r="2.6" fill="{AMBER if i == 4 else GREEN}"/>')
+    return "".join(out)
+
+
+def _workstation(cx, y, s, kinds):
+    """Desk with two monitors, keyboard, mouse, a computer tower and an office chair, in a frontal view."""
+    m = [_screen(-56, -50, 52, 40, kinds[0]), _screen(4, -50, 52, 40, kinds[1])]
+    return (f'<g transform="translate({cx} {y}) scale({s})">'
+            f'<rect x="-64" y="0" width="128" height="9" rx="3" fill="#2a5f9a" stroke="{CYAN}" stroke-width="1.4"/>'
+            f'<rect x="-60" y="9" width="6" height="34" fill="#16406f"/><rect x="54" y="9" width="6" height="34" fill="#16406f"/>'
+            f'<rect x="-30" y="-10" width="4" height="10" fill="#7fb0d8"/><rect x="30" y="-10" width="4" height="10" fill="#7fb0d8"/>'
+            f'{"".join(m)}'
+            f'<rect x="-24" y="-5" width="40" height="5" rx="1.5" fill="#cfe6f7"/><rect x="21" y="-4" width="7" height="4" rx="2" fill="#cfe6f7"/>'
+            f'<rect x="66" y="-26" width="20" height="35" rx="2.5" fill="#0e2f57" stroke="{CYAN}" stroke-width="1.2"/><circle cx="72" cy="-18" r="2" fill="{GREEN}"/><rect x="71" y="-8" width="10" height="2" fill="#6fa8d6"/><rect x="71" y="-3" width="10" height="2" fill="#6fa8d6"/>'
+            f'<rect x="-17" y="16" width="34" height="30" rx="9" fill="#0d3563" stroke="#4aa8d8" stroke-width="1.2"/><rect x="-3" y="46" width="6" height="12" fill="#55799c"/>'
+            f'<path d="M-20 62 H20 M0 58 V62" stroke="#55799c" stroke-width="3" stroke-linecap="round"/></g>')
+
+
+def room_svg():
+    """A security operations room: video wall, rows of analyst workstations with two monitors each, a server rack and a lit ceiling."""
+    wall = (f'<rect x="0" y="0" width="360" height="236" fill="url(#w)"/><rect x="0" y="236" width="360" height="284" fill="url(#f)"/>'
+            f'<rect x="20" y="8" width="320" height="6" rx="3" fill="{CYAN}" opacity=".55"/><rect x="20" y="22" width="320" height="3" rx="1.5" fill="{CYAN}" opacity=".3"/>'
+            f'{_screen(28, 40, 96, 74, "map")}'
+            f'<rect x="136" y="40" width="88" height="74" rx="3" fill="#06182e" stroke="{CYAN}" stroke-width="1.6"/>'
+            f'<g transform="translate(180 70) scale(.3)"><path d="M0 -70 L60 -44 V8 C60 50 30 72 0 90 C-30 72 -60 50 -60 8 V-44 Z" fill="{NAVY}" stroke="{CYAN}" stroke-width="7"/><path d="M-28 6 L-6 28 L32 -22" fill="none" stroke="{GREEN}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></g>'
+            f'<text x="180" y="109" text-anchor="middle" font-family="{_FONT}" font-size="8" letter-spacing="1.5" fill="{GREEN}">SYSTEM SECURE</text>'
+            f'{_screen(236, 40, 96, 74, "graph")}'
+            f'<rect x="28" y="124" width="304" height="3" fill="{CYAN}" opacity=".4"/>'
+            + "".join(f'<circle cx="{40 + i * 22}" cy="138" r="2.6" fill="{GREEN if i % 3 else AMBER}"/>' for i in range(10))
+            + f'<g transform="translate(272 136) scale(.3)">{_rack(0, 0, 4, 160, with_lock=None)}</g>'
+            f'<text x="28" y="226" text-anchor="start" font-family="{_FONT}" font-size="8.5" font-weight="700" letter-spacing="3" fill="{CYAN}" opacity=".85">SECURITY OPERATIONS ROOM</text>')
+    back = "".join(_workstation(cx, 292, .66, k) for cx, k in ((64, ("term", "graph")), (170, ("map", "term")), (276, ("graph", "map"))))
+    front = "".join(_workstation(cx, 420, .98, k) for cx, k in ((98, ("term", "map")), (252, ("graph", "term"))))
+    defs = ('<defs><linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2f5c"/><stop offset="1" stop-color="#071d3a"/></linearGradient>'
+            '<linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a2548"/><stop offset="1" stop-color="#04122a"/></linearGradient></defs>')
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 520" width="360" height="520">{_DEFS}{defs}'
+            f'<clipPath id="c"><rect x="0" y="0" width="360" height="520" rx="22"/></clipPath>'
+            f'<g filter="url(#s)"><g clip-path="url(#c)">{wall}{back}{front}</g>'
+            f'<rect x="1.5" y="1.5" width="357" height="517" rx="21" fill="none" stroke="{CYAN}" stroke-width="3"/></g></svg>')
+
+
+def left_uri():
+    return _uri(left_svg())
+
+
+def room_uri():
+    return _uri(room_svg())
+
+
+def locks_row_with_tagline_svg():
+    """Phone layout: five locks in a row with the tagline underneath."""
+    cells = "".join(f'<g transform="translate({i * 200} 0)" filter="url(#s)">{_lock_cell(i)}</g>' for i in range(5))
+    text = (f'<text x="500" y="262" text-anchor="middle" font-family="{_FONT}" font-weight="700" font-size="46" letter-spacing="9" fill="{WHITE}" stroke="{NAVY}" stroke-width="1.2" paint-order="stroke">{TAGLINE}</text>')
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 290" width="1000" height="290">{_DEFS}{cells}{text}</svg>'
+
+
+def locks_row_uri():
+    return _uri(locks_row_with_tagline_svg())

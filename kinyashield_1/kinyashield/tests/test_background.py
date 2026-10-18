@@ -26,12 +26,21 @@ class Background(unittest.TestCase):
     def test_lock_signs_left_and_servers_right_sit_behind_the_content(self):
         c = B.css()
         self.assertEqual(c.count("data:image/svg+xml;base64,") >= 4, True)
-        self.assertIn("right 1.5vw center", c)          # servers on the right
+        self.assertIn("right 1.5vw center", c)          # cybersecurity room on the right
         self.assertIn("left var(--ks-left) center", c)  # five locks on the left (shifted when the sidebar is open)
         self.assertNotIn("__", c)
         import security_art as A
         self.assertEqual(A.locks_svg().count("<g transform=\"translate(0 "), 5)
-        for svg in (A.locks_svg(), A.locks_svg(True), A.servers_svg()):
+        left = A.left_svg()                                # left: five locks + servers, tagline turned 90 degrees in front
+        self.assertIn("LET THE SKY NOT BE THE LIMIT", left)
+        self.assertIn("rotate(90)", left)
+        self.assertEqual(left.count('scale(.62)'), 5)
+        self.assertTrue(left.index("rotate(90)") > left.index('scale(.66)'))   # text is drawn after (in front of) locks and servers
+        room = A.room_svg()
+        self.assertIn("SECURITY OPERATIONS ROOM", room)
+        self.assertGreaterEqual(room.count('stroke="#6fe3ff" stroke-width="1.6"'), 9)   # monitors on the wall and at the desks
+        self.assertIn("LET THE SKY NOT BE THE LIMIT", A.locks_row_with_tagline_svg())
+        for svg in (A.locks_svg(), A.locks_svg(True), A.servers_svg(), A.left_svg(), A.room_svg(), A.locks_row_with_tagline_svg()):
             self.assertTrue(svg.startswith("<svg") and svg.endswith("</svg>"))
             self.assertNotIn("http://www.w3.org/1999/xlink", svg)
             self.assertNotIn("<image", svg)

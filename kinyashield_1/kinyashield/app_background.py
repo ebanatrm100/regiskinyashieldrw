@@ -14,17 +14,18 @@ _IMAGE = pathlib.Path(__file__).parent / "assets" / "sky_background.jpg"
 INK = "#10243a"          # text colour used on the panel (dark navy, high contrast on white)
 
 _RULES = """
-.stApp{--ks-left:1.5vw;--ks-h:min(78vh,720px,40vw);background-color:#1e88e5 !important;
-background-image:url("__SERVERS__"),url("__LOCKS__"),url("__IMG__") !important;
-background-size:auto min(66vh,560px,24vw),auto var(--ks-h),cover !important;
+.stApp{--ks-left:1.5vw;--ks-h:min(86vh,680px,44vw);background-color:#1e88e5 !important;
+background-image:url("__ROOM__"),url("__LEFT__"),url("__IMG__") !important;
+background-size:auto min(52vh,460px,18vw),auto var(--ks-h),cover !important;
 background-position:right 1.5vw center,left var(--ks-left) center,center top !important;
 background-repeat:no-repeat !important;background-attachment:fixed !important}
 .stApp:has([data-testid="stSidebar"][aria-expanded="true"]){--ks-left:calc(21rem + 1.5vw)}
-@media (max-width:1180px){.stApp{--ks-h:min(60vh,520px,40vw);background-size:auto min(48vh,400px,24vw),auto var(--ks-h),cover !important}}
-@media (max-width:820px){.stApp,.stApp:has([data-testid="stSidebar"][aria-expanded="true"]){
-background-image:url("__SERVERS__"),url("__LOCKSROW__"),url("__IMG__") !important;
-background-size:auto 130px,min(200px,50vw) auto,cover !important;
-background-position:right 6px bottom 6px,center 5px,center top !important}}
+.stApp:not(:has([data-testid="stSidebar"][aria-expanded="true"])){background-size:auto min(60vh,520px,26vw),auto var(--ks-h),cover !important}
+@media (max-width:1180px){.stApp,.stApp:not(:has([data-testid="stSidebar"][aria-expanded="true"])){--ks-h:min(76vh,600px,40vw);background-size:auto min(36vh,300px,20vw),auto var(--ks-h),cover !important}}
+@media (max-width:820px){.stApp,.stApp:has([data-testid="stSidebar"][aria-expanded="true"]),.stApp:not(:has([data-testid="stSidebar"][aria-expanded="true"])){
+background-image:url("__ROOM__"),url("__SERVERS__"),url("__LOCKSROW__"),url("__IMG__") !important;
+background-size:auto 120px,auto 110px,min(260px,64vw) auto,cover !important;
+background-position:right 6px bottom 6px,left 6px bottom 6px,center 5px,center top !important}}
 [data-testid="stAppViewContainer"],[data-testid="stMain"],[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stBottom"],
 [data-testid="stBottom"]>div{background:transparent !important}
 .stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{background:rgba(255,255,255,.93) !important;border-radius:22px;
@@ -41,6 +42,7 @@ box-shadow:0 12px 44px rgba(8,40,90,.28);border:1px solid rgba(255,255,255,.7);c
 .stApp .block-container [data-testid="stChatMessage"]{background:rgba(228,240,252,.9) !important;border-radius:14px}
 [data-testid="stElementContainer"]:has(style){display:none !important}
 @media (max-width:640px){.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{padding:1rem .9rem 1.8rem !important;border-radius:16px;margin-top:3rem !important}}
+@media (max-width:820px){.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{margin-top:5.4rem !important}}
 """
 
 _PLAIN = _RULES[:_RULES.index(".stApp{--ks-left")] + """.stApp{background-color:#1e88e5 !important;background-image:url("__IMG__") !important;background-size:cover !important;
@@ -65,10 +67,11 @@ def css():
         rules = _RULES
         if _art is not None:
             try:
-                rules = rules.replace("__SERVERS__", _art.servers_uri()).replace("__LOCKSROW__", _art.locks_uri(True)).replace("__LOCKS__", _art.locks_uri())
+                rules = (rules.replace("__SERVERS__", _art.servers_uri()).replace("__LOCKSROW__", _art.locks_row_uri())
+                         .replace("__LEFT__", _art.left_uri()).replace("__ROOM__", _art.room_uri()))
             except Exception:
                 _art_ok = False
-        if "__SERVERS__" in rules or "__LOCKS__" in rules:  # decorations unavailable: plain sky picture only
+        if "__SERVERS__" in rules or "__LEFT__" in rules or "__ROOM__" in rules:  # decorations unavailable: plain sky picture only
             rules = _PLAIN
         return "<style>" + rules.replace("__IMG__", img).replace("__INK__", INK).replace("\n", " ") + "</style>"
     except Exception:

@@ -31,6 +31,11 @@ try:
 except Exception:  # the computers feature is optional
     _find_computer = None
 
+try:
+    from phones_db import find as _find_phone
+except Exception:  # the phone-brands feature is optional
+    _find_phone = None
+
 LANGS = ("en", "fr", "rw", "sw")
 SUGGESTED = ["shared_pin", "verify_sender", "strong_passwords", "lost_phone", "post_harvest_fresh", "write_cv"]
 MIN_MESSAGE_LEN = 50
@@ -83,6 +88,10 @@ def route(question, lang, force_ai=False):
     if not force_ai:
         entry = best(q, k)
         comp = _find_computer(q, k) if _find_computer is not None else None
+        phone = _find_phone(q, k) if _find_phone is not None else None
+        # Phone brands / "list of phone brands": a list question is answered here; a single brand needs a short question or no better guide answer.
+        if phone is not None and (phone["kind"] == "phone_list" or entry is None or len(q.split()) <= 4):
+            return {"kind": "guide", "entry": phone}
         # A long question that the cyber/general guide also answers (e.g. "what do I do if my phone is stolen") stays with the guide.
         if comp is not None and (entry is None or len(q.split()) <= 4):
             return {"kind": "guide", "entry": comp}

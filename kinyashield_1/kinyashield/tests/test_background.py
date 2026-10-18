@@ -16,12 +16,38 @@ class Background(unittest.TestCase):
         self.assertTrue(c.startswith("<style>") and c.endswith("</style>"))
         self.assertIn("url(\"data:image/jpeg;base64,", c)
         self.assertIn(".stApp{", c)
-        self.assertIn("background-size:cover", c)
+        self.assertIn("cover !important", c)
         self.assertIn("rgba(255,255,255,.93)", c)         # content panel
         self.assertIn(B.INK, c)
         self.assertNotIn("__IMG__", c)
         self.assertNotIn("__INK__", c)
         self.assertNotIn("\n", c)
+
+    def test_lock_signs_left_and_servers_right_sit_behind_the_content(self):
+        c = B.css()
+        self.assertEqual(c.count("data:image/svg+xml;base64,") >= 4, True)
+        self.assertIn("right 1.5vw center", c)          # servers on the right
+        self.assertIn("left var(--ks-left) center", c)  # five locks on the left (shifted when the sidebar is open)
+        self.assertNotIn("__", c)
+        import security_art as A
+        self.assertEqual(A.locks_svg().count("<g transform=\"translate(0 "), 5)
+        for svg in (A.locks_svg(), A.locks_svg(True), A.servers_svg()):
+            self.assertTrue(svg.startswith("<svg") and svg.endswith("</svg>"))
+            self.assertNotIn("http://www.w3.org/1999/xlink", svg)
+            self.assertNotIn("<image", svg)
+            self.assertNotIn("<script", svg)
+
+    def test_art_failure_falls_back_to_plain_sky(self):
+        import security_art as A
+        old = B._art
+        try:
+            B._art = None
+            c = B.css()
+            self.assertIn("data:image/jpeg;base64,", c)
+            self.assertNotIn("svg+xml", c)
+            self.assertNotIn("__", c)
+        finally:
+            B._art = old
 
     def test_missing_picture_means_no_css_and_no_crash(self):
         old = B._IMAGE

@@ -178,6 +178,19 @@ with tab_chat:
                     st.caption(_message["image"].get("fallback", ""))
             elif _message.get("image_note"):
                 st.caption(_message["image_note"])
+            if _message.get("gallery"):  # photos for a phone-brands list (Wikimedia Commons); the text list above is complete without them
+                try:
+                    _g = _message["gallery"]
+                    for _row in range(0, len(_g), 4):
+                        _cols = st.columns(4)
+                        for _col, _it in zip(_cols, _g[_row:_row + 4]):
+                            with _col:
+                                st.image(_it["url"], caption=_it["name"], use_container_width=True)
+                                st.markdown(f"[Commons]({_it['page']})")
+                    if _message.get("gallery_note"):
+                        st.caption(_message["gallery_note"])
+                except Exception:
+                    pass
 
     _clicked = None
     if _flow_ok:
@@ -215,7 +228,32 @@ with tab_chat:
         elif _routed["kind"] == "guide":
             _e = _routed["entry"]
             _msg_out = {"role": "assistant", "content": _format_guide(_e, _chat_lang, _T["steps"], _T["src"]), "kind": "note"}
-            if _e.get("image_query"):
+            if _e.get("gallery"):
+                try:
+                    import phones_db as _pdb
+                    with st.spinner("…"):
+                        _g = _pdb.resolve_many(_e["gallery"], _chat_lang)
+                    if _g:
+                        _msg_out["gallery"] = _g
+                        if len(_g) < len(_e["gallery"]):
+                            _msg_out["gallery_note"] = _pdb.gallery_note(_chat_lang)
+                    else:
+                        _msg_out["image_note"] = _pdb.missing_photo_note(_chat_lang)
+                except Exception:
+                    pass
+            elif _e.get("kind") == "phone" and _e.get("image_query"):
+                try:
+                    import phones_db as _pdb
+                    with st.spinner("…"):
+                        _img = _pdb.resolve_image(_e, _chat_lang)
+                    if _img:
+                        _img["fallback"] = _pdb.missing_photo_note(_chat_lang)
+                        _msg_out["image"] = _img
+                    else:
+                        _msg_out["image_note"] = _pdb.missing_photo_note(_chat_lang)
+                except Exception:
+                    pass
+            elif _e.get("image_query"):
                 try:
                     import computers_db as _cdb
                     with st.spinner("…"):

@@ -36,6 +36,11 @@ try:
 except Exception:  # the phone-brands feature is optional
     _find_phone = None
 
+try:
+    from scams_db import find as _find_scam
+except Exception:  # the scam-methods catalogue is optional
+    _find_scam = None
+
 LANGS = ("en", "fr", "rw", "sw")
 SUGGESTED = ["shared_pin", "verify_sender", "strong_passwords", "lost_phone", "post_harvest_fresh", "write_cv"]
 MIN_MESSAGE_LEN = 50
@@ -89,6 +94,10 @@ def route(question, lang, force_ai=False):
         entry = best(q, k)
         comp = _find_computer(q, k) if _find_computer is not None else None
         phone = _find_phone(q, k) if _find_phone is not None else None
+        scam = _find_scam(q, k) if _find_scam is not None else None
+        # "Methods of scams": a list question is answered here; a single method needs a short question or no better guide answer.
+        if scam is not None and (scam["kind"] == "scam_list" or entry is None or len(q.split()) <= 4):
+            return {"kind": "guide", "entry": scam}
         # Phone brands / "list of phone brands": a list question is answered here; a single brand needs a short question or no better guide answer.
         if phone is not None and (phone["kind"] == "phone_list" or entry is None or len(q.split()) <= 4):
             return {"kind": "guide", "entry": phone}

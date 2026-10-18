@@ -42,6 +42,11 @@ except Exception:  # the phone-brands feature is optional
     _find_phone = None
 
 try:
+    from physics_db import find as _find_physics
+except Exception:  # the physics-formulas feature is optional
+    _find_physics = None
+
+try:
     from scams_db import find as _find_scam
 except Exception:  # the scam-methods catalogue is optional
     _find_scam = None
@@ -106,6 +111,10 @@ def route(question, lang, force_ai=False):
         comp = _find_computer(q, k) if _find_computer is not None else None
         phone = _find_phone(q, k) if _find_phone is not None else None
         scam = _find_scam(q, k) if _find_scam is not None else None
+        # Physics formulas: a question that names a formula (or asks for the formulas of a topic) is answered here before the general guide.
+        physics = _find_physics(q, k) if _find_physics is not None else None
+        if physics is not None:
+            return {"kind": "guide", "entry": physics}
         # "Methods of scams": a list question is answered here; a single method needs a short question or no better guide answer.
         if scam is not None and (scam["kind"] == "scam_list" or entry is None or len(q.split()) <= 4):
             return {"kind": "guide", "entry": scam}

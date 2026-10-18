@@ -25,9 +25,10 @@ class Background(unittest.TestCase):
 
     def test_lock_signs_left_and_servers_right_sit_behind_the_content(self):
         c = B.css()
-        self.assertEqual(c.count("data:image/svg+xml;base64,") >= 4, True)
+        self.assertEqual(c.count("data:image/svg+xml;base64,"), 4)   # each picture embedded once
         self.assertIn("right 1.5vw center", c)          # cybersecurity room on the right
-        self.assertIn("left var(--ks-left) center", c)  # five locks on the left (shifted when the sidebar is open)
+        self.assertIn("(100vw - var(--ks-sb) - 460px)", c)   # panel narrowed so the side columns stay free (art is never under the panel)
+        self.assertIn("left calc(var(--ks-sb) + 1.5vw) center", c)  # lock column on the left, moved right of the sidebar when it is open
         self.assertNotIn("__", c)
         import security_art as A
         self.assertEqual(A.locks_svg().count("<g transform=\"translate(0 "), 5)

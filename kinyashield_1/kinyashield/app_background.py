@@ -13,19 +13,40 @@ except Exception:  # the decorations are optional; the sky picture and the reada
 _IMAGE = pathlib.Path(__file__).parent / "assets" / "sky_background.jpg"
 INK = "#10243a"          # text colour used on the panel (dark navy, high contrast on white)
 
-_RULES = """
-.stApp{--ks-left:1.5vw;--ks-h:min(86vh,680px,44vw);background-color:#1e88e5 !important;
-background-image:url("__ROOM__"),url("__LEFT__"),url("__IMG__") !important;
-background-size:auto min(52vh,460px,18vw),auto var(--ks-h),cover !important;
-background-position:right 1.5vw center,left var(--ks-left) center,center top !important;
-background-repeat:no-repeat !important;background-attachment:fixed !important}
-.stApp:has([data-testid="stSidebar"][aria-expanded="true"]){--ks-left:calc(21rem + 1.5vw)}
-.stApp:not(:has([data-testid="stSidebar"][aria-expanded="true"])){background-size:auto min(60vh,520px,26vw),auto var(--ks-h),cover !important}
-@media (max-width:1180px){.stApp,.stApp:not(:has([data-testid="stSidebar"][aria-expanded="true"])){--ks-h:min(76vh,600px,40vw);background-size:auto min(36vh,300px,20vw),auto var(--ks-h),cover !important}}
-@media (max-width:820px){.stApp,.stApp:has([data-testid="stSidebar"][aria-expanded="true"]),.stApp:not(:has([data-testid="stSidebar"][aria-expanded="true"])){
-background-image:url("__ROOM__"),url("__SERVERS__"),url("__LOCKSROW__"),url("__IMG__") !important;
+# Layout idea: the pictures live in the free space BESIDE the white content panel, never under it. The panel is narrowed on mid-size windows to keep a
+# side column free; when the window is too small for side columns (phones, narrow windows) the pictures move to the top and bottom edges.
+# --ks-sb is the width of the open sidebar, --ks-m the free space on each side of the panel.
+_VARS = """
+.stApp{--ks-room:url("__ROOM__");--ks-servers:url("__SERVERS__");--ks-locksrow:url("__LOCKSROW__");--ks-left:url("__LEFT__");--ks-img:url("__IMG__")}
+"""
+_VARS_PLAIN = """
+.stApp{--ks-img:url("__IMG__")}
+"""
+
+_PLAIN_BG = """
+.stApp{background-color:#1e88e5 !important;background-image:var(--ks-img) !important;background-size:cover !important;
+background-position:center top !important;background-repeat:no-repeat !important;background-attachment:fixed !important}
+"""
+
+_ART_BASE = """
+.stApp{background-color:#1e88e5 !important;
+background-image:var(--ks-room),var(--ks-servers),var(--ks-locksrow),var(--ks-img) !important;
 background-size:auto 120px,auto 110px,min(260px,64vw) auto,cover !important;
-background-position:right 6px bottom 6px,left 6px bottom 6px,center 5px,center top !important}}
+background-position:right 6px bottom 6px,left 6px bottom 6px,center 5px,center top !important;
+background-repeat:no-repeat !important;background-attachment:fixed !important}
+"""
+
+_ART_FULL = """
+__SEL__{--ks-sb:__SB__;--ks-m:max(230px,calc((100vw - var(--ks-sb) - 736px) / 2));
+background-image:var(--ks-room),var(--ks-left),var(--ks-img) !important;
+background-size:auto min(64vh,560px,calc((var(--ks-m) - 2vw - 12px) / .692)),auto min(88vh,760px,calc((var(--ks-m) - 2vw - 12px) / .26)),cover !important;
+background-position:right 1.5vw center,left calc(var(--ks-sb) + 1.5vw) center,center top !important}
+__SEL__ .block-container,__SEL__ [data-testid="stMainBlockContainer"]{max-width:min(736px,calc(100vw - var(--ks-sb) - 460px)) !important;margin-top:3.4rem !important}
+"""
+_OPEN = '.stApp:has([data-testid="stSidebar"][aria-expanded="true"])'
+_CLOSED = '.stApp:not(:has([data-testid="stSidebar"][aria-expanded="true"]))'
+
+_PANEL = """
 [data-testid="stAppViewContainer"],[data-testid="stMain"],[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stBottom"],
 [data-testid="stBottom"]>div{background:transparent !important}
 .stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{background:rgba(255,255,255,.93) !important;border-radius:22px;
@@ -41,13 +62,21 @@ box-shadow:0 12px 44px rgba(8,40,90,.28);border:1px solid rgba(255,255,255,.7);c
 .stApp .block-container .ks-msg,.stApp .block-container .ks-card{background:#f1f6f9 !important;color:__INK__ !important}
 .stApp .block-container [data-testid="stChatMessage"]{background:rgba(228,240,252,.9) !important;border-radius:14px}
 [data-testid="stElementContainer"]:has(style){display:none !important}
-@media (max-width:640px){.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{padding:1rem .9rem 1.8rem !important;border-radius:16px;margin-top:3rem !important}}
-@media (max-width:820px){.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{margin-top:5.4rem !important}}
+@media (max-width:640px){.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{padding:1rem .9rem 1.8rem !important;border-radius:16px}}
+"""
+_COMPACT_MARGIN = """
+.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{margin-top:5.4rem !important}
 """
 
-_PLAIN = _RULES[:_RULES.index(".stApp{--ks-left")] + """.stApp{background-color:#1e88e5 !important;background-image:url("__IMG__") !important;background-size:cover !important;
-background-position:center top !important;background-repeat:no-repeat !important;background-attachment:fixed !important}
-""" + _RULES[_RULES.index('[data-testid="stAppViewContainer"]'):]
+
+def _full_rules():
+    one = _ART_FULL.replace("__SEL__", _CLOSED).replace("__SB__", "0px")
+    two = _ART_FULL.replace("__SEL__", _OPEN).replace("__SB__", "21rem")
+    return "@media (min-width:900px){" + one + "}\n@media (min-width:1240px){" + two + "}\n"
+
+
+_RULES = _VARS + _ART_BASE + _PANEL + _COMPACT_MARGIN + _full_rules()
+_PLAIN = _VARS_PLAIN + _PLAIN_BG + _PANEL
 
 
 @functools.lru_cache(maxsize=1)
@@ -70,7 +99,7 @@ def css():
                 rules = (rules.replace("__SERVERS__", _art.servers_uri()).replace("__LOCKSROW__", _art.locks_row_uri())
                          .replace("__LEFT__", _art.left_uri()).replace("__ROOM__", _art.room_uri()))
             except Exception:
-                _art_ok = False
+                pass
         if "__SERVERS__" in rules or "__LEFT__" in rules or "__ROOM__" in rules:  # decorations unavailable: plain sky picture only
             rules = _PLAIN
         return "<style>" + rules.replace("__IMG__", img).replace("__INK__", INK).replace("\n", " ") + "</style>"

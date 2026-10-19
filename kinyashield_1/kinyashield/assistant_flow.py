@@ -62,6 +62,7 @@ def _optional(module, name="find"):
 
 _find_tutor = _optional("tutor_db")        # worked maths solutions + pointer to the practice quiz
 _find_translate = _optional("translate_db")  # phrasebook: "how do you say X in Kinyarwanda"
+_find_clarify = _optional("intent", "clarify")  # too-vague opener ("help", "I have a problem") -> ask what is needed, with choices
 _find_trust = _optional("trust_db")        # privacy, limits, source policy, where to verify
 _find_writing = _optional("writing_db")    # templates: emails, CVs, applications, reports, proposals, messages
 
@@ -116,6 +117,13 @@ def route(question, lang, force_ai=False):
         named = _find_name(q, k)
         if named is not None:
             return {"kind": "guide", "entry": named}
+    if not force_ai and _find_clarify is not None:
+        try:
+            asked = _find_clarify(q, k)
+        except Exception:
+            asked = None
+        if asked is not None:
+            return {"kind": "guide", "entry": asked}
     if not force_ai:
         for _finder in (_find_trust, _find_tutor, _find_translate, _find_writing):
             if _finder is None:

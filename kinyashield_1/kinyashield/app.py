@@ -248,7 +248,14 @@ with tab_chat:
             st.rerun()
         elif _routed["kind"] == "guide":
             _e = _routed["entry"]
-            _msg_out = {"role": "assistant", "content": _format_guide(_e, _chat_lang, _T["steps"], _T["src"]), "kind": "note"}
+            _guide_text = _format_guide(_e, _chat_lang, _T["steps"], _T["src"])
+            try:  # sounds distressed or urgent? add one calm line / a time reminder around the offline answer
+                import intent as _intent
+                if _e.get("kind") != "intent":
+                    _guide_text = _intent.frame_guide_text(_guide_text, _q, [m_ for m_ in _hist[:-1] if m_.get("kind") != "note"], _chat_lang)
+            except Exception:
+                pass
+            _msg_out = {"role": "assistant", "content": _guide_text, "kind": "note"}
             if _e.get("gallery"):
                 try:
                     import phones_db as _pdb
@@ -290,6 +297,13 @@ with tab_chat:
             st.session_state[_rel_key] = _related(_e, _chat_lang)
             st.rerun()
         else:
+            def _intent_hint(_text, _past, _lg):
+                try:  # what is the person really trying to do? (urgent incident, distress, task type)
+                    import intent as _intent
+                    return _intent.hint(_intent.analyze(_text, [m_ for m_ in _past if m_.get("kind") != "note"], _lg)) or None
+                except Exception:
+                    return None
+
             with st.chat_message("user"):
                 st.markdown(_q)
             with st.chat_message("assistant"):
@@ -312,6 +326,7 @@ with tab_chat:
                             language_name=LANG_NAMES.get(lang, "English"),
                             use_search=_use_search,
                             term_mode=bool(_term),
+                            intent_hint=_intent_hint(_q, _hist[:-1], _chat_lang),
                             reference=(_wr.reference_text(_info) if _info else None),
                         )
                     if _info:

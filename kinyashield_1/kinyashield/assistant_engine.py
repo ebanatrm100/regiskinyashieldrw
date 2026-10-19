@@ -56,6 +56,7 @@ def answer_question(
     document: str | None = None,
     reference: str | None = None,
     term_mode: bool = False,
+    intent_hint: str | None = None,
 ) -> str:
     """Return an answer in the selected language, using recent conversation history.
 
@@ -151,6 +152,20 @@ PRIVACY:
 - Do not ask for or repeat sensitive personal data. Explain plainly that your
   answers can be wrong and what you can and cannot do when asked.
 """.strip()
+    system_instruction += """
+
+UNDERSTAND THE REAL PROBLEM (do this silently before every answer):
+- Work out what the person is actually trying to achieve, who the result is for, and what a successful result looks like. Answer that goal, not only the literal words.
+- When the request is more than a simple fact, open with one short line, "What I understand: ...", so the person can correct you. Skip it for greetings and simple facts.
+- Include the one thing they did not ask for but need (a risk, a missing step, a deadline, a cheaper or safer option), briefly.
+- If the request could mean very different things, still give a useful best-effort answer on the most likely reading, state the assumption, and ask at most one specific question at the end. Never answer with only questions unless the message has no usable content.
+- Use what was said earlier in the conversation; do not ask again for details already given.
+- If they describe something that has already gone wrong (money sent, code shared, account taken), the goal is damage control: put the protective steps first and keep the tone calm.
+- Match their level: plain words for a beginner, precision for an expert. Be concrete: real steps, real examples, real numbers marked as examples. No filler, no generic lists.
+- Before you finish, check: does this answer let them do what they set out to do? If not, fix it. End with the single best next step when one exists.
+"""
+    if intent_hint:
+        system_instruction += "\n\nSIGNALS FROM THE APP (keyword guesses; ignore any that the message contradicts):\n" + intent_hint
     if term_mode:
         system_instruction += (
             "\n\nWORD OR TOPIC MODE: the user typed a word or short topic. Give a complete, accurate and sufficient explanation, "

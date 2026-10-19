@@ -65,7 +65,8 @@
    "language": "en",
    "rules": [
     "advance_fee",
-    "prize_claim"
+    "prize_claim",
+    "fee_to_start"
    ],
    "text": "Congratulations! You have won 2,000,000 RWF in the MoMo lucky draw. Pay 15,000 RWF registration fee to receive your prize today."
   },
@@ -88,12 +89,13 @@
    "id": "D003",
    "label": "suspicious",
    "pred": "suspicious",
-   "verdict": "Verify before acting",
+   "verdict": "Multiple high-risk indicators detected",
    "ok": true,
    "category": "advance_fee",
    "language": "en",
    "rules": [
-    "advance_fee"
+    "advance_fee",
+    "fee_to_start"
    ],
    "text": "Your scholarship application is approved. To release your funds, send 20,000 RWF processing fee to the number below."
   },
@@ -130,11 +132,12 @@
    "id": "D006",
    "label": "suspicious",
    "pred": "suspicious",
-   "verdict": "Verify before acting",
+   "verdict": "Multiple high-risk indicators detected",
    "ok": true,
    "category": "remote_access",
    "language": "en",
    "rules": [
+    "credential_request",
     "remote_access"
    ],
    "text": "Hello, this is IT support. Install AnyDesk and tell me the code on your screen so we can fix your account."
@@ -171,12 +174,13 @@
    "id": "D009",
    "label": "suspicious",
    "pred": "suspicious",
-   "verdict": "Verify before acting",
+   "verdict": "Multiple high-risk indicators detected",
    "ok": true,
    "category": "advance_fee",
    "language": "en",
    "rules": [
-    "advance_fee"
+    "advance_fee",
+    "fee_to_start"
    ],
    "text": "Your parcel is held at customs. Pay a clearance fee of 8,000 RWF to collect your parcel."
   },
@@ -645,7 +649,8 @@
    "language": "fr",
    "rules": [
     "advance_fee",
-    "prize_claim"
+    "prize_claim",
+    "fee_to_start"
    ],
    "text": "Félicitations ! Vous avez gagné 2 000 000 RWF au tirage MoMo. Payez 15 000 RWF de frais d'inscription pour recevoir votre gain aujourd'hui."
   },
@@ -668,12 +673,13 @@
    "id": "D049",
    "label": "suspicious",
    "pred": "suspicious",
-   "verdict": "Verify before acting",
+   "verdict": "Multiple high-risk indicators detected",
    "ok": true,
    "category": "advance_fee",
    "language": "fr",
    "rules": [
-    "advance_fee"
+    "advance_fee",
+    "fee_to_start"
    ],
    "text": "Votre bourse est approuvée. Pour débloquer vos fonds, envoyez 20 000 RWF de frais de dossier au numéro ci-dessous."
   },
@@ -909,7 +915,8 @@
    "language": "sw",
    "rules": [
     "advance_fee",
-    "prize_claim"
+    "prize_claim",
+    "fee_to_start"
    ],
    "text": "Hongera! Umeshinda TSh 2,000,000 kwenye droo ya bahati nasibu ya M-Pesa. Lipa ada ya usajili ya TSh 15,000 ili upokee zawadi yako leo."
   },
@@ -932,12 +939,13 @@
    "id": "D070",
    "label": "suspicious",
    "pred": "suspicious",
-   "verdict": "Verify before acting",
+   "verdict": "Multiple high-risk indicators detected",
    "ok": true,
    "category": "advance_fee",
    "language": "sw",
    "rules": [
-    "advance_fee"
+    "advance_fee",
+    "fee_to_start"
    ],
    "text": "Maombi yako ya ufadhili yamekubaliwa. Ili upokee fedha zako, tuma ada ya usindikaji ya RWF 20,000 kwa namba iliyo hapa chini."
   },
@@ -1193,11 +1201,12 @@
    "id": "T003",
    "label": "suspicious",
    "pred": "suspicious",
-   "verdict": "Verify before acting",
+   "verdict": "Multiple high-risk indicators detected",
    "ok": true,
    "category": "account_threat",
    "language": "en",
    "rules": [
+    "account_threat",
     "risky_link",
     "link_present"
    ],
@@ -1635,12 +1644,13 @@
    "id": "T039",
    "label": "suspicious",
    "pred": "suspicious",
-   "verdict": "Verify before acting",
+   "verdict": "Multiple high-risk indicators detected",
    "ok": true,
    "category": "advance_fee",
    "language": "fr",
    "rules": [
-    "upfront_payment_offer"
+    "upfront_payment_offer",
+    "fee_to_start"
    ],
    "text": "Offre d'emploi dans un hôtel à Dubaï. Versez 50 000 RWF de frais de visa avant de commencer."
   },

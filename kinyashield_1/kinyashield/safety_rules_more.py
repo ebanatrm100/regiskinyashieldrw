@@ -1,0 +1,212 @@
+"""Extra detection rules and wider patterns for existing rules (added after testing on new, unseen messages).
+Loaded at the end of safety_rules.py. Same authoring rules: ASCII-only raw patterns, folded text, fr/rw/sw wording is DRAFT.
+These are warning signs, never proof: a flagged message is something to verify, not a verdict."""
+
+# Extra patterns for existing rules: rule id -> language -> list of patterns.
+EXTEND = {
+    "credential_request": {
+        "en": [r"\b(?:read|tell|give|send|share|reply with)\b[^.!?\n]{0,20}\b(?:me|us)\b[^.!?\n]{0,25}\b(?:code|otp|pin|password|passcode)\b",
+               r"\b(?:we|i) (?:need|want|require)\b[^.!?\n]{0,20}\byour (?:password|pin|otp|passcode|login details|one[- ]time code)\b"],
+        "fr": [r"\b(?:nous avons|j'ai) besoin de votre (?:mot de passe|code pin|pin|code secret|code otp)\b"],
+        "rw": [r"\b(?:mumpe|mumpa|mumbwire|muntumire|munyoherereze|mwohereze|mutange|mutubwire|dusangize)\b[^.!?\n]{0,40}\b(?:pin|kode|code|otp|ijambo ry'ibanga|umubare w'ibanga|password)\b"],
+        "sw": [r"\b(?:nahitaji|tunahitaji|tunaomba)\b[^.!?\n]{0,25}\b(?:nenosiri|pin|msimbo|nambari ya siri|namba ya siri)\b"],
+    },
+    "account_threat": {
+        "en": [r"\b(?:account|whatsapp|sim|line|card|wallet|momo|profile)\b[^.!?\n]{0,40}\b(?:is|are|will be|has been|is being|been|was|gets?)\s+(?:suspended|blocked|closed|deactivated|locked|terminated|deleted|banned|frozen)\b"],
+        "fr": [r"\b(?:compte|ligne|carte|portefeuille)\b[^.!?\n]{0,40}\b(?:est|sera|a ete|va etre)\s+(?:suspendu|bloque|ferme|desactive|verrouille|supprime|gele)\b"],
+        "rw": [], "sw": [],
+    },
+    "account_verification_request": {
+        "en": [r"\b(?:update|confirm|verify)\b[^.!?\n]{0,20}\b(?:your )?(?:billing|payment (?:details|method|information)|card (?:details|number))\b"],
+        "fr": [], "rw": [], "sw": [],
+    },
+}
+
+MORE = [
+    {
+        "id": "blackmail",
+        "severity": "high",
+        "suppress_if_protective": False,
+        "title": {"en": "Threatens to expose you unless you pay",
+                  "fr": "Menace de vous exposer si vous ne payez pas",
+                  "rw": "Iragutera ubwoba bwo kukumenyekanisha nutishyura",
+                  "sw": "Inatishia kukuanika usipolipa"},
+        "why": {"en": "Blackmail messages claim to have your photos, videos or secrets and demand money. Paying rarely stops it; the demands usually grow.",
+                "fr": "Ces messages de chantage prétendent avoir vos photos, vidéos ou secrets et exigent de l'argent. Payer arrête rarement le chantage.",
+                "rw": "Ubutumwa bw'iterabwoba buvuga ko bufite amafoto, amashusho cyangwa ibanga ryawe, bugasaba amafaranga. Kwishyura ntibihagarika, akenshi barushaho gusaba.",
+                "sw": "Ujumbe wa vitisho hudai kuwa na picha, video au siri zako na kudai pesa. Kulipa mara chache huzuia; madai huongezeka."},
+        "advice": {"en": "Do not pay and do not reply. Keep screenshots, block the sender, secure your accounts, and report it to the police or the platform. You are not at fault.",
+                   "fr": "Ne payez pas et ne répondez pas. Gardez des captures d'écran, bloquez l'expéditeur, sécurisez vos comptes et signalez-le à la police ou à la plateforme. Vous n'êtes pas en faute.",
+                   "rw": "Ntukishyure kandi ntusubize. Bika amafoto y'ubutumwa, uhagarike uwabwohereje, urinde konti zawe, ubimenyeshe polisi cyangwa urubuga. Nta kosa ufite.",
+                   "sw": "Usilipe wala usijibu. Hifadhi picha za skrini, mzuie mtumaji, linda akaunti zako, na ripoti polisi au jukwaa. Hujakosea."},
+        "patterns": {
+            "en": [r"\b(?:send|pay|transfer|deposit)\b[^.!?\n]{0,60}\bor\b[^.!?\n]{0,30}\b(?:i|we) (?:will|'ll|shall)\b[^.!?\n]{0,30}\b(?:send|share|post|leak|publish|expose|release|show)\b",
+                   r"\bi (?:recorded|filmed|hacked|have (?:recorded|filmed|hacked))\b[^.!?\n]{0,40}\b(?:you|your)\b"],
+            "fr": [r"\bsinon\b[^.!?\n]{0,40}\b(?:j'envoie|je (?:vais )?(?:envoyer|publier|diffuser|partager|montrer)|je publie|je diffuse)\b",
+                   r"\bj'ai (?:filme|enregistre|pirate)\b[^.!?\n]{0,40}\b(?:vous|votre)\b"],
+            "rw": [r"\b(?:utishyuye|nutishyura|bitaba ibyo|niba utishyuye)\b[^.!?\n]{0,60}\b(?:nzohereza|nzashyira|nzasakaza|nzamenyesha|nzerekana)\b"],
+            "sw": [r"\b(?:la sivyo|vinginevyo|usipolipa|usipotuma)\b[^.!?\n]{0,60}\b(?:nitatuma|nitaweka|nitasambaza|nitachapisha|nitaonyesha)\b"],
+        },
+    },
+    {
+        "id": "payment_redirect",
+        "severity": "high",
+        "suppress_if_protective": True,
+        "title": {"en": "Urgent payment to a new account, or a boss asking for secrecy",
+                  "fr": "Paiement urgent vers un nouveau compte, ou un chef qui demande le secret",
+                  "rw": "Kwishyura byihuse kuri konti nshya, cyangwa umuyobozi usaba ibanga",
+                  "sw": "Malipo ya haraka kwa akaunti mpya, au bosi anayeomba usiri"},
+        "why": {"en": "A common business fraud: someone pretends to be a manager, supplier or colleague and asks for an urgent transfer or a change of bank details.",
+                "fr": "Fraude courante en entreprise : quelqu'un se fait passer pour un chef, un fournisseur ou un collègue et demande un virement urgent ou un changement de coordonnées bancaires.",
+                "rw": "Uburiganya busanzwe mu bucuruzi: umuntu yiyita umuyobozi, utanga ibicuruzwa cyangwa mugenzi wawe agasaba kohereza amafaranga byihuse cyangwa guhindura konti.",
+                "sw": "Ulaghai wa kawaida wa biashara: mtu hujifanya meneja, msambazaji au mwenzako na kuomba uhamisho wa haraka au kubadilisha taarifa za benki."},
+        "advice": {"en": "Do not pay yet. Confirm the request by calling the person on a number you already know, and have a second person approve any change of bank details.",
+                   "fr": "Ne payez pas encore. Confirmez la demande en appelant la personne sur un numéro que vous connaissez déjà, et faites approuver tout changement de coordonnées par une seconde personne.",
+                   "rw": "Ntiwishyure ako kanya. Emeza icyo cyifuzo uhamagara uwo muntu kuri nimero usanzwe uzi, kandi umuntu wa kabiri yemeze impinduka zose za konti.",
+                   "sw": "Usilipe bado. Thibitisha ombi kwa kumpigia mtu huyo kwa namba unayoijua tayari, na mtu wa pili aidhinishe mabadiliko yoyote ya akaunti ya benki."},
+        "patterns": {
+            "en": [r"\b(?:new|different|changed|updated) (?:bank|account) (?:details|number|account)\b",
+                   r"\b(?:change(?:d)? (?:of )?|update(?:d)? )(?:our |my |the )?(?:bank|account) (?:details|number)\b",
+                   r"\b(?:wire|transfer|send|pay)\b[^.!?\n]{0,40}\b(?:urgent(?:ly)?|today|immediately|asap|right now)\b[^.!?\n]{0,60}\b(?:supplier|vendor|new account|confidential|new beneficiary)\b",
+                   r"\burgent(?:ly)?\b[^.!?\n]{0,40}\b(?:wire|transfer|payment)\b[^.!?\n]{0,60}\b(?:supplier|vendor|new account|new beneficiary)\b",
+                   r"\bkeep (?:this|it) (?:strictly )?(?:confidential|between us|secret)\b[^.!?\n]{0,80}\b(?:transfer|payment|wire|pay)\b"],
+            "fr": [r"\b(?:nouveau(?:x)? (?:rib|compte|coordonnees bancaires)|changement de (?:compte|coordonnees bancaires|rib))\b",
+                   r"\b(?:virement|transfert|paiement)\b[^.!?\n]{0,40}\b(?:urgent|aujourd'hui|immediatement)\b[^.!?\n]{0,60}\b(?:fournisseur|nouveau compte|confidentiel)\b"],
+            "rw": [r"\b(?:konti nshya|nimero nshya ya konti|konti ya banki nshya)\b[^.!?\n]{0,60}\b(?:ohereza|kohereza|ishyura|kwishyura|tanga)\b",
+                   r"\b(?:ohereza|kohereza|ishyura|kwishyura)\b[^.!?\n]{0,60}\b(?:konti nshya|nimero nshya ya konti)\b"],
+            "sw": [r"\b(?:akaunti mpya|namba mpya ya akaunti|taarifa mpya za benki)\b[^.!?\n]{0,60}\b(?:tuma|lipa|malipo|hamisha)\b",
+                   r"\b(?:tuma|lipa|hamisha)\b[^.!?\n]{0,60}\b(?:akaunti mpya|namba mpya ya akaunti)\b"],
+        },
+    },
+    {
+        "id": "fee_to_start",
+        "severity": "medium",
+        "suppress_if_protective": True,
+        "title": {"en": "Asks for a registration, processing or insurance fee",
+                  "fr": "Demande des frais d'inscription, de traitement ou d'assurance",
+                  "rw": "Irasaba amafaranga y'iyandikisha, yo gutunganya cyangwa y'ubwishingizi",
+                  "sw": "Inaomba ada ya usajili, usindikaji au bima"},
+        "why": {"en": "Fake jobs, loans, visas and scholarships often ask for a 'fee' first. Real schools and employers do charge fees sometimes, so confirm it independently.",
+                "fr": "Les faux emplois, prêts, visas et bourses demandent souvent d'abord des « frais ». De vrais établissements en demandent parfois aussi, alors vérifiez de façon indépendante.",
+                "rw": "Akazi, inguzanyo, viza na buruse by'uburiganya bisaba 'amafaranga' mbere. Ibigo nyakuri na byo rimwe na rimwe birayasaba, bityo ubigenzure ukwawe.",
+                "sw": "Kazi, mikopo, viza na ufadhili wa uongo mara nyingi huomba 'ada' kwanza. Taasisi halisi pia wakati mwingine hutoza ada, hivyo thibitisha kivyake."},
+        "advice": {"en": "Do not pay until you have confirmed the offer and the account details with the organisation, using contact details you find yourself.",
+                   "fr": "Ne payez pas avant d'avoir confirmé l'offre et les coordonnées de paiement auprès de l'organisme, avec des coordonnées que vous trouvez vous-même.",
+                   "rw": "Ntukishyure utarabanza kwemeza icyifuzo na konti bishyurirwaho n'ikigo ubwacyo, ukoresheje amakuru wibonera ubwawe.",
+                   "sw": "Usilipe hadi uthibitishe ofa na taarifa za malipo na taasisi, kwa mawasiliano unayoyapata mwenyewe."},
+        "patterns": {
+            "en": [r"\b(?:pay|send|deposit|transfer)\b[^.!?\n]{0,40}\b(?:registration|processing|insurance|administration|admin|activation|clearance|disbursement|release|visa|verification) (?:fee|fees|charge|charges|payment|deposit)\b"],
+            "fr": [r"\b(?:payez?|envoyez?|versez?|deposez?)\b[^.!?\n]{0,40}\bfrais (?:d'inscription|de dossier|de traitement|d'assurance|d'activation|de deblocage|de visa|administratifs)\b"],
+            "rw": [r"\b(?:ishyura|kwishyura|ohereza|tanga)\b[^.!?\n]{0,50}\b(?:iyandikisha|kwiyandikisha|ubwishingizi|gutunganya dosiye|kwemeza konti|gufungura konti)\b"],
+            "sw": [r"\b(?:lipa|tuma|weka)\b[^.!?\n]{0,40}\bada ya (?:usajili|bima|usindikaji|uthibitisho|uwezeshaji|viza)\b"],
+        },
+    },
+    {
+        "id": "new_number_money",
+        "severity": "medium",
+        "suppress_if_protective": False,
+        "title": {"en": "Says it is a family member or friend on a new number and asks for money",
+                  "fr": "Prétend être un proche avec un nouveau numéro et demande de l'argent",
+                  "rw": "Ivuga ko ari umuvandimwe cyangwa inshuti kuri nimero nshya ikagusaba amafaranga",
+                  "sw": "Inadai kuwa ndugu au rafiki kwa namba mpya na kuomba pesa"},
+        "why": {"en": "Scammers copy a profile photo, claim a lost phone or new number, and ask for urgent money.",
+                "fr": "Les escrocs copient une photo de profil, invoquent un téléphone perdu ou un nouveau numéro, et demandent de l'argent en urgence.",
+                "rw": "Abatekamutwe bakopera ifoto y'umwirondoro, bakavuga ko telefone yibwe cyangwa nimero ari nshya, bagasaba amafaranga byihuse.",
+                "sw": "Matapeli hunakili picha ya wasifu, hudai simu imepotea au namba mpya, na kuomba pesa haraka."},
+        "advice": {"en": "Call the person on their old number or ask a question only they can answer before sending anything.",
+                   "fr": "Appelez la personne sur son ancien numéro ou posez une question à laquelle seule elle peut répondre avant d'envoyer quoi que ce soit.",
+                   "rw": "Hamagara uwo muntu kuri nimero ye ya kera cyangwa umubaze ikibazo azi wenyine mbere yo kohereza ikintu.",
+                   "sw": "Mpigie mtu huyo kwa namba yake ya zamani au muulize swali analoweza kujibu yeye tu kabla ya kutuma chochote."},
+        "patterns": {
+            "en": [r"\b(?:new number|changed (?:my )?number|lost my phone|(?:my )?phone (?:was |got |has been )?(?:stolen|broken|lost))\b[^.!?\n]{0,80}\b(?:send|transfer|need|lend)\b[^.!?\n]{0,40}\b(?:money|cash|airtime|rwf|frw|momo|mobile money)\b"],
+            "fr": [r"\b(?:nouveau numero|j'ai change de numero|telephone (?:vole|perdu|casse)|perdu mon telephone)\b[^.!?\n]{0,80}\b(?:envoie|envoyez?|transfere|besoin)\b[^.!?\n]{0,40}\b(?:argent|fcfa|frw|rwf|momo|credit)\b"],
+            "rw": [r"\b(?:nimero nshya|telefone yanjye yibwe|telefone yanjye yarapfuye|nabuze telefone)\b[^.!?\n]{0,80}\b(?:ohereza|nyoherereza|nyohereze|mpa|nkeneye)\b[^.!?\n]{0,40}\b(?:amafaranga|momo|frw|rwf)\b"],
+            "sw": [r"\b(?:namba mpya|simu yangu (?:imeibiwa|imepotea|imeharibika)|nimepoteza simu)\b[^.!?\n]{0,80}\b(?:tuma|nitumie|nahitaji)\b[^.!?\n]{0,40}\b(?:pesa|fedha|mpesa|tsh|rwf|frw)\b"],
+        },
+    },
+    {
+        "id": "card_details_request",
+        "severity": "medium",
+        "suppress_if_protective": True,
+        "title": {"en": "Asks for your card or bank details",
+                  "fr": "Demande les détails de votre carte ou de votre banque",
+                  "rw": "Irasaba amakuru ya karita yawe cyangwa ya banki",
+                  "sw": "Inaomba taarifa za kadi au benki yako"},
+        "why": {"en": "Prizes, 'free' gifts and refunds are common excuses to collect card numbers. Anyone with your card details can spend your money.",
+                "fr": "Gains, cadeaux « gratuits » et remboursements sont des prétextes courants pour récupérer des numéros de carte. Avec vos informations, on peut dépenser votre argent.",
+                "rw": "Ibihembo, impano 'z'ubuntu' n'ibisubizwa ni urwitwazo ruzwi rwo gufata nimero za karita. Ufite amakuru yawe ashobora gukoresha amafaranga yawe.",
+                "sw": "Zawadi, vitu 'bure' na marejesho ni sababu za kawaida za kukusanya namba za kadi. Mwenye taarifa zako anaweza kutumia pesa zako."},
+        "advice": {"en": "Never type your card details into a link from a message. Open your bank's official app or website yourself.",
+                   "fr": "Ne saisissez jamais vos données de carte via un lien reçu par message. Ouvrez vous-même l'application ou le site officiel de votre banque.",
+                   "rw": "Ntuzigere ushyira amakuru ya karita yawe kuri link yaje mu butumwa. Funga wowe ubwawe porogaramu cyangwa urubuga rwemewe rwa banki.",
+                   "sw": "Kamwe usiweke taarifa za kadi kwenye kiungo cha ujumbe. Fungua mwenyewe programu au tovuti rasmi ya benki yako."},
+        "patterns": {
+            "en": [r"\b(?:enter|send|share|give|provide|submit|type)\b[^.!?\n]{0,30}\b(?:your )?(?:card (?:number|details|info)|credit card|debit card|bank (?:login|details|account number))\b"],
+            "fr": [r"\b(?:saisissez?|envoyez?|donnez?|communiquez?|fournissez?)\b[^.!?\n]{0,30}\b(?:numero de (?:votre )?carte|coordonnees bancaires|details de (?:votre )?carte|carte bancaire)\b"],
+            "rw": [r"\b(?:shyiramo|ohereza|mpa|mpe|tanga)\b[^.!?\n]{0,30}\b(?:nimero ya karita|amakuru ya karita|amakuru ya banki|nimero ya konti)\b"],
+            "sw": [r"\b(?:weka|tuma|toa|ingiza|nipe)\b[^.!?\n]{0,30}\b(?:namba ya kadi|taarifa za kadi|taarifa za benki)\b"],
+        },
+    },
+    {
+        "id": "lookalike_domain",
+        "severity": "medium",
+        "suppress_if_protective": False,
+        "title": {"en": "Link looks like a well-known brand but is a different address",
+                  "fr": "Le lien ressemble à une marque connue mais c'est une autre adresse",
+                  "rw": "Link isa n'iy'ikigo kizwi ariko ni indi aderesi",
+                  "sw": "Kiungo kinafanana na chapa maarufu lakini ni anwani nyingine"},
+        "why": {"en": "Scammers register names like 'netflix-billing-help.com' that look official but belong to someone else.",
+                "fr": "Les escrocs enregistrent des noms comme « netflix-billing-help.com » qui semblent officiels mais appartiennent à quelqu'un d'autre.",
+                "rw": "Abatekamutwe biyandikisha amazina nka 'netflix-billing-help.com' asa n'ayemewe ariko ari aya undi muntu.",
+                "sw": "Matapeli husajili majina kama 'netflix-billing-help.com' yanayoonekana rasmi lakini ni ya mtu mwingine."},
+        "advice": {"en": "Do not open it. Type the brand's real address yourself or use its official app.",
+                   "fr": "Ne l'ouvrez pas. Tapez vous-même la vraie adresse de la marque ou utilisez son application officielle.",
+                   "rw": "Ntukayifungure. Andika wowe aderesi nyayo y'ikigo cyangwa ukoreshe porogaramu yacyo yemewe.",
+                   "sw": "Usiifungue. Andika mwenyewe anwani halisi ya chapa au tumia programu yake rasmi."},
+        "patterns": {
+            "en": [r"\b[a-z0-9]*(?:netflix|paypal|momo|mtn|airtel|irembo|whatsapp|facebook|instagram|google|amazon|apple)[a-z0-9]*-[a-z0-9-]+\.(?:com|net|org|xyz|info|top|online|site|club|co)\b"],
+            "fr": [], "rw": [], "sw": [],
+        },
+    },
+    {
+        "id": "romance_money",
+        "severity": "medium",
+        "suppress_if_protective": False,
+        "title": {"en": "Romance or overseas story combined with a request for money",
+                  "fr": "Histoire sentimentale ou d'étranger combinée à une demande d'argent",
+                  "rw": "Inkuru y'urukundo cyangwa y'umuntu uri hanze ihujwe no gusaba amafaranga",
+                  "sw": "Hadithi ya mapenzi au ya nje ya nchi pamoja na ombi la pesa"},
+        "why": {"en": "Romance scammers build trust, often claiming to be a soldier, doctor or engineer abroad, then ask for money for tickets, visas or fees.",
+                "fr": "Les arnaqueurs sentimentaux gagnent votre confiance, se disant souvent soldat, médecin ou ingénieur à l'étranger, puis demandent de l'argent pour billets, visas ou frais.",
+                "rw": "Abatekamutwe b'urukundo baguhunda, akenshi biyita abasirikare, abaganga cyangwa ba injenyeri bari hanze, hanyuma bagasaba amafaranga y'itike, viza cyangwa frais.",
+                "sw": "Matapeli wa mapenzi hujenga imani, mara nyingi wakijidai kuwa askari, daktari au mhandisi nje ya nchi, kisha huomba pesa za tiketi, viza au ada."},
+        "advice": {"en": "Never send money to someone you have not met in person. Talk to a trusted friend and try a live video call.",
+                   "fr": "N'envoyez jamais d'argent à quelqu'un que vous n'avez jamais rencontré. Parlez-en à un proche de confiance et essayez un appel vidéo en direct.",
+                   "rw": "Ntuzigere wohereza amafaranga ku muntu mutarahura imbonankubone. Ganira n'inshuti wizeye, kandi ugerageze guhamagara kuri video.",
+                   "sw": "Kamwe usitume pesa kwa mtu ambaye hujakutana naye ana kwa ana. Ongea na rafiki unayemwamini na ujaribu simu ya video ya moja kwa moja."},
+        "groups": [
+            {"en": [r"\b(?:i(?: am|'m) (?:a |an )?(?:\w+ ){0,2}(?:soldier|widow|widower|doctor|engineer)|oil rig|peacekeeping|looking for (?:love|a (?:partner|wife|husband)))\b"],
+             "fr": [r"\b(?:soldat|plateforme petroliere|veuf|veuve|cherche l'amour|cherche (?:une|un) (?:partenaire|epouse|mari))\b"],
+             "rw": [r"\b(?:umusirikare|umupfakazi|ndashaka urukundo|ndashaka umukunzi)\b"],
+             "sw": [r"\b(?:askari|mjane|mgane|natafuta mapenzi|natafuta mchumba)\b"]},
+            {"en": [r"\b(?:need|send|help)\b[^.!?\n]{0,40}\b(?:money|funds|flight|visa|customs|fees?|cash)\b"],
+             "fr": [r"\b(?:besoin|envoyez?|aidez?)\b[^.!?\n]{0,40}\b(?:argent|fonds|billet|visa|douane|frais)\b"],
+             "rw": [r"\b(?:nkeneye|ohereza|mfasha)\b[^.!?\n]{0,40}\b(?:amafaranga|itike|viza|frais)\b"],
+             "sw": [r"\b(?:nahitaji|tuma|nisaidie)\b[^.!?\n]{0,40}\b(?:pesa|tiketi|viza|ada)\b"]},
+        ],
+    },
+]
+
+
+def apply(rules):
+    """Widen existing rules with EXTEND, then append MORE. Called once from safety_rules.py."""
+    by_id = {r["id"]: r for r in rules}
+    for rid, per_lang in EXTEND.items():
+        rule = by_id.get(rid)
+        if rule is None or "patterns" not in rule:
+            continue
+        for lang, pats in per_lang.items():
+            rule["patterns"].setdefault(lang, []).extend(pats)
+    existing = set(by_id)
+    rules.extend(r for r in MORE if r["id"] not in existing)
+    return rules

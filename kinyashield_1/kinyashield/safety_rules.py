@@ -576,3 +576,11 @@ NO_GUARANTEE = {
     "rw": "Iki ni igikoresho cyunganira ibyemezo, ntabwo ari ingwate. Ubutumwa butagaragaza ibimenyetso na bwo bushobora kuba uburiganya.",
     "sw": "Hiki ni kisaidizi cha uamuzi, si dhamana. Ujumbe usio na dalili bado unaweza kuwa utapeli.",
 }
+
+
+# Extra rules and wider patterns, added after testing on new, unseen messages (see safety_rules_more.py).
+try:
+    from safety_rules_more import apply as _apply_more
+    _apply_more(RULES)
+except ImportError:  # the extra rules are optional
+    pass

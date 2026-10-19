@@ -166,6 +166,18 @@ with tab_chat:
         st.rerun()
 
     _force_ai = st.checkbox(_T["force"], key=f"force_ai_{_chat_lang}", value=False)
+    _search_labels = {"en": "Search the web for current information and show sources (needs the AI key)",
+                      "fr": "Rechercher sur le web des informations récentes et montrer les sources (clé IA requise)",
+                      "rw": "Shakisha kuri interineti amakuru agezweho werekane amasoko (bisaba urufunguzo rwa AI)",
+                      "sw": "Tafuta wavuti kwa taarifa za sasa na uonyeshe vyanzo (inahitaji ufunguo wa AI)"}
+    _use_search = st.checkbox(_search_labels.get(_chat_lang, _search_labels["en"]), key=f"use_search_{_chat_lang}", value=False)
+    try:  # tutor quiz + document assistant (each works on its own; the chat below does not depend on them)
+        import study_ui as _study
+        from assistant_engine import answer_question as _answer_doc
+        _study.render_quiz(st, _chat_lang)
+        _study.render_docs(st, _chat_lang, lambda _qq, _dd: _answer_doc(question=_qq, history=[], language_name=LANG_NAMES.get(lang, "English"), document=_dd))
+    except Exception:
+        st.caption("…")
 
     for _message in st.session_state[_history_key]:
         with st.chat_message(_message["role"]):
@@ -280,6 +292,7 @@ with tab_chat:
                             question=_q,
                             history=[m_ for m_ in _hist[:-1] if m_.get("kind") != "note"],
                             language_name=LANG_NAMES.get(lang, "English"),
+                            use_search=_use_search,
                         )
                 except Exception as _chat_error:
                     _msg = _T["noai"] if _chat_error.__class__.__name__ == "MissingAPIKeyError" else _T["err"]

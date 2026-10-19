@@ -5,6 +5,7 @@ Order of attempts for each question:
   1b. Is the whole message a greeting (hello, mwaramutse, bonjour, jambo, thank you ...)? -> a correct reply + explanation in four languages (greetings_db.py).
   2. Is it a question about the meaning of a known name?      -> name meaning (names_db.py, a curated list, not every name).
   2b. Is it just "what is X" for a listed term?                -> short definition (definitions_db.py, a curated bank, not every word).
+  2c. Privacy/trust answers, worked maths, phrasebook, writing templates (trust_db, tutor_db, translate_db, writing_db).
   3. Does the offline guide have a reliable answer?           -> guide answer with steps and related questions.
   4. Otherwise                                                  -> caller sends it to the AI (Gemini) if configured.
 The scam detector, rules and Check tab are not modified by this module."""
@@ -50,6 +51,19 @@ try:
     from scams_db import find as _find_scam
 except Exception:  # the scam-methods catalogue is optional
     _find_scam = None
+
+def _optional(module, name="find"):
+    """Import a feature module's finder; the feature simply switches off if the module is missing or broken."""
+    try:
+        return getattr(__import__(module, fromlist=[name]), name)
+    except Exception:
+        return None
+
+
+_find_tutor = _optional("tutor_db")        # worked maths solutions + pointer to the practice quiz
+_find_translate = _optional("translate_db")  # phrasebook: "how do you say X in Kinyarwanda"
+_find_trust = _optional("trust_db")        # privacy, limits, source policy, where to verify
+_find_writing = _optional("writing_db")    # templates: emails, CVs, applications, reports, proposals, messages
 
 LANGS = ("en", "fr", "rw", "sw")
 SUGGESTED = ["shared_pin", "verify_sender", "strong_passwords", "lost_phone", "post_harvest_fresh", "write_cv"]
@@ -102,6 +116,16 @@ def route(question, lang, force_ai=False):
         named = _find_name(q, k)
         if named is not None:
             return {"kind": "guide", "entry": named}
+    if not force_ai:
+        for _finder in (_find_trust, _find_tutor, _find_translate, _find_writing):
+            if _finder is None:
+                continue
+            try:
+                hit = _finder(q, k)
+            except Exception:  # one broken feature must never break the chat
+                hit = None
+            if hit is not None:
+                return {"kind": "guide", "entry": hit}
     if not force_ai and _find_definition is not None:
         defined = _find_definition(q, k)
         if defined is not None:

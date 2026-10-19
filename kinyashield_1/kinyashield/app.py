@@ -32,7 +32,16 @@ if lang != "en":
 
 _chat_labels = {"en": "AI Assistant", "rw": "Umufasha wa AI", "sw": "Msaidizi wa AI", "fr": "Assistant IA"}
 _chat_label = _chat_labels.get(str(lang).lower(), "AI Assistant")
-tab_check, tab_learn, tab_about, tab_chat = st.tabs([t["tab_check"], t["tab_learn"], t["tab_about"], _chat_label])
+try:
+    import org_ui as _org
+    _org_label = _org.TAB.get(str(lang).lower(), _org.TAB["en"])
+except Exception:  # the business tab is optional; the other tabs never depend on it
+    _org = None
+    _org_label = None
+_tab_names = [t["tab_check"], t["tab_learn"], t["tab_about"], _chat_label] + ([_org_label] if _org else [])
+_tabs = st.tabs(_tab_names)
+tab_check, tab_learn, tab_about, tab_chat = _tabs[:4]
+tab_org = _tabs[4] if _org else None
 with tab_check:
     examples = {}
     p = pathlib.Path(__file__).parent / "data" / "dev_messages.csv"
@@ -299,3 +308,11 @@ with tab_chat:
                     _kind = "note"
                 _hist.append({"role": "assistant", "content": _msg, **({"kind": _kind} if _kind else {})})
             st.rerun()
+
+
+if tab_org is not None:
+    with tab_org:
+        try:
+            _org.render(st, str(lang).lower())
+        except Exception:
+            st.warning("Business & Schools tab could not load. The other tabs still work.")

@@ -294,6 +294,15 @@ with tab_chat:
                 st.markdown(_q)
             with st.chat_message("assistant"):
                 _msg, _kind = None, None
+                _term, _info, _wr = None, None, None
+                try:  # a bare word or short topic: fetch sourced reference text (Wikipedia/Wiktionary) so the answer is complete and checkable
+                    import webref as _wr
+                    _term = _wr.extract_term(_q)
+                    if _term:
+                        with st.spinner(_T["thinking"]):
+                            _info = _wr.lookup(_term, _chat_lang)
+                except Exception:
+                    _term, _info = None, None
                 try:
                     from assistant_engine import answer_question
                     with st.spinner(_T["thinking"]):
@@ -302,9 +311,16 @@ with tab_chat:
                             history=[m_ for m_ in _hist[:-1] if m_.get("kind") != "note"],
                             language_name=LANG_NAMES.get(lang, "English"),
                             use_search=_use_search,
+                            term_mode=bool(_term),
+                            reference=(_wr.reference_text(_info) if _info else None),
                         )
+                    if _info:
+                        _msg += _wr.source_line(_info, _chat_lang)
                 except Exception as _chat_error:
-                    _msg = _T["noai"] if _chat_error.__class__.__name__ == "MissingAPIKeyError" else _T["err"]
+                    if _info:  # no AI key or AI error: still give the sourced Wikipedia/Wiktionary answer
+                        _msg = _wr.format_answer(_info, _chat_lang)
+                    else:
+                        _msg = _T["noai"] if _chat_error.__class__.__name__ == "MissingAPIKeyError" else _T["err"]
                     _kind = "note"
                 _hist.append({"role": "assistant", "content": _msg, **({"kind": _kind} if _kind else {})})
             st.rerun()

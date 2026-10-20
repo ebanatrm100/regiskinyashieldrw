@@ -62,6 +62,8 @@ def _optional(module, name="find"):
 
 _find_tutor = _optional("tutor_db")        # worked maths solutions + pointer to the practice quiz
 _find_translate = _optional("translate_db")  # phrasebook: "how do you say X in Kinyarwanda"
+_parse_translation = _optional("meta_guard", "parse_translation")  # "Translate X into Kinyarwanda": X is material to translate, not a question to answer
+_is_wrapper = _optional("meta_guard", "is_wrapper")                # "Repeat / rewrite / correct: X"
 _find_clarify = _optional("intent", "clarify")  # too-vague opener ("help", "I have a problem") -> ask what is needed, with choices
 _find_trust = _optional("trust_db")        # privacy, limits, source policy, where to verify
 _find_writing = _optional("writing_db")    # templates: emails, CVs, applications, reports, proposals, messages
@@ -105,6 +107,27 @@ def route(question, lang, force_ai=False):
         res = analyze(q)
         if res.verdict != "ok":
             return {"kind": "scam", "result": res, "steps": next_steps(res, k)}
+    if not force_ai and _parse_translation is not None:
+        try:
+            tr = _parse_translation(q)
+        except Exception:
+            tr = None
+        if tr is not None:
+            hit = None
+            if _find_translate is not None:
+                try:
+                    hit = _find_translate(q, k)   # curated phrasebook first
+                except Exception:
+                    hit = None
+            if hit is not None:
+                return {"kind": "guide", "entry": hit}
+            return {"kind": "translate", "phrase": tr[0], "target": tr[1]}
+    if not force_ai and _is_wrapper is not None:
+        try:
+            if _is_wrapper(q):
+                return {"kind": "ai"}   # the quoted sentence is material to work on, never a question for the offline finders
+        except Exception:
+            pass
     if not force_ai and _find_owner is not None:
         owner = _find_owner(q, k)
         if owner is not None:

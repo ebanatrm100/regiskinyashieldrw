@@ -222,6 +222,7 @@ Anand|anand,ananda|sa|-|joy, bliss|joie, félicité|ibyishimo|furaha
 Arjun|arjun,arjuna|sa|-|bright, shining, white|brillant, lumineux, blanc|urabagirana, rwera|angavu, mweupe
 Aarav|aarav|sa|-|peaceful, calm|paisible, calme|w'amahoro, utuje|mwenye amani, mtulivu
 Ananya|ananya|sa|-|unique, without another|unique, sans pareil|udasanzwe, wihariye|wa pekee
+Regis|Régis|la|-|of the king (Latin rex = king)|du roi (latin rex = roi)|uw'umwami (Ikilatini rex = umwami)|wa mfalme (Kilatini rex = mfalme)
 Sakura|sakura|ja|-|cherry blossom|fleur de cerisier|ururabo rw'igiti cya cherry|ua la mcheri
 Yuki|yuki|ja|-|snow (also "happiness" depending on the characters)|neige (aussi « bonheur » selon les caractères)|urubura (rimwe na rimwe «ibyishimo»)|theluji (pia «furaha» kulingana na herufi)
 """.strip()
@@ -253,8 +254,8 @@ def _load():
 _load()
 COUNT = len(_NAMES)
 
-STRICT_CUES = {"name", "names", "izina", "amazina", "prenom", "prenoms", "nom", "jina", "majina"}
-_MEANING_WORDS = {"meaning", "mean", "means", "meant", "origin", "origins", "risobanura", "bisobanura", "bisobanuro", "signification",
+STRICT_CUES = {"name", "names", "izina", "amazina", "by'izina", "y'izina", "ry'izina", "prenom", "prenoms", "nom", "jina", "majina"}
+_MEANING_WORDS = {"ibisobanuro", "meaning", "mean", "means", "meant", "origin", "origins", "risobanura", "bisobanura", "bisobanuro", "signification",
                   "signifie", "signifient", "origine", "maana", "inamaanisha", "unamaanisha", "asili", "kimaanishi"}
 
 

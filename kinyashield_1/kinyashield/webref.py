@@ -150,6 +150,8 @@ def format_answer(info: dict, lang: str = "en") -> str:
         parts.append(w["extract"])
         if w["ambiguous"]:
             parts.append(f"_{L['amb']}_")
+        if info.get("closest"):
+            parts.append(f"_{closest_note(lang)}_")
         if w["lang"] != WIKI.get(lang, "en"):
             parts.append(f"_{L['en_fb']}_")
         parts.append(f"{L['src']}: [{w['title']} - Wikipedia]({w['url']})")
@@ -173,3 +175,109 @@ def source_line(info: dict, lang: str = "en"):
         return ""
     L = LABELS.get(lang, LABELS["en"])
     return f"\n\n{L['src']}: [{w['title']} - Wikipedia]({w['url']}) · _{L['lic']}_"
+
+
+# ---------------------------------------------------------------- names, closest match, honest fallback
+_NAME_RE = re.compile(r"(?:\bname|\bnames|\bprenom|\bprénom|\bnom|\bizina|\bamazina|\bjina|\bmajina)\s+[\"'“«]?(?P<n>[^\s?.!,\"'”»]+)", re.I)
+_NAME_STOP = {"mean", "means", "meaning", "of", "is", "for", "called", "the", "a", "an", "and", "or", "that", "this", "in", "my", "your", "his", "her", "to", "what", "who",
+              "signifie", "ni", "ry", "rya", "ni", "kuri", "ya", "wa", "la", "le", "du", "de"}
+
+
+def extract_name(question: str):
+    """The given name being asked about ('meaning of the name Regis' -> 'Regis'), or None."""
+    q = (question or "").strip()
+    if not q or len(q) > 120:
+        return None
+    for m in _NAME_RE.finditer(q):
+        n = m.group("n").strip("-'")
+        if 2 <= len(n) <= 30 and n.lower() not in _NAME_STOP and n.isalpha():
+            return n[:1].upper() + n[1:]
+    return None
+
+
+@lru_cache(maxsize=256)
+def lookup_name(name: str, lang: str = "en"):
+    """Wikipedia 'given name' page and English Wiktionary entry for a first name. Returns the same shape as lookup() or None."""
+    res = {"wiki": None, "dict": None}
+
+    def w():
+        try:
+            for q in (f"{name} given name", f"{name} (name)"):
+                page = wikipedia(q, lang if lang in WIKI else "en")
+                if page and name.lower() in page["title"].lower():
+                    res["wiki"] = page
+                    return
+            if lang != "en":
+                page = wikipedia(f"{name} given name", "en")
+                if page and name.lower() in page["title"].lower():
+                    res["wiki"] = page
+        except Exception:
+            pass
+
+    def d():
+        try:
+            res["dict"] = wiktionary(name)
+        except Exception:
+            pass
+
+    ts = [threading.Thread(target=w), threading.Thread(target=d)]
+    for t in ts:
+        t.start()
+    for t in ts:
+        t.join(TIMEOUT + 2)
+    if not res["wiki"] and not res["dict"]:
+        return None
+    return {"term": name, "wiki": res["wiki"], "dict": res["dict"], "name": True}
+
+
+@lru_cache(maxsize=256)
+def closest_match(question: str, lang: str = "en"):
+    """Best Wikipedia match for a whole question (used only when nothing better exists). Marked 'closest' so the answer says it may not fit."""
+    q = re.sub(r"\s+", " ", (question or "").strip().strip("?!. "))
+    if not q or len(q.split()) > 18:
+        return None
+    try:
+        page = wikipedia(q, lang if lang in WIKI else "en") or (wikipedia(q, "en") if lang != "en" else None)
+    except Exception:
+        return None
+    if not page or page["ambiguous"]:
+        return None
+    return {"term": page["title"], "wiki": page, "dict": None, "closest": True}
+
+
+_CLOSEST = {"en": "This is the closest match I found for your question. It may not answer exactly what you asked.",
+            "fr": "Voici la correspondance la plus proche trouvée pour votre question. Elle peut ne pas répondre exactement à ce que vous demandez.",
+            "rw": "Iki ni cyo cyegereye cyane nabonye ku kibazo cyawe. Gishobora kudasubiza neza icyo wabajije.",
+            "sw": "Hiki ndicho kinacholingana zaidi nilichopata kwa swali lako. Huenda kisijibu hasa ulichouliza."}
+_NONAME = {"en": "I could not find a reliable source for the meaning of this name. Name meanings often differ by language and family, so ask someone from that culture, or tell me the language it comes from.",
+           "fr": "Je n'ai pas trouvé de source fiable pour le sens de ce prénom. Les sens varient selon la langue et la famille ; demandez à quelqu'un de cette culture ou dites-moi sa langue d'origine.",
+           "rw": "Ntabashije kubona isoko yizewe ku bisobanuro by'iri zina. Ibisobanuro by'amazina biratandukana bitewe n'ururimi n'umuryango; baza umuntu wo muri uwo muco, cyangwa umbwire ururimi rikomokamo.",
+           "sw": "Sikupata chanzo cha kuaminika kuhusu maana ya jina hili. Maana za majina hutofautiana kwa lugha na familia; muulize mtu wa utamaduni huo, au niambie lugha inayotoka."}
+NO_ANSWER = {
+    "en": "I do not have an answer to that yet, and the online AI service is not available right now.\n\nWhat usually works:\n- Ask about one word or topic (for example “tomato” or “inflation”): I can look it up and show photos.\n- Ask about phones, scams, passwords, physics formulas, names, writing templates or practice quizzes.\n- Paste a suspicious message in the Check tab.\n- Try again later for open questions that need the AI.",
+    "fr": "Je n'ai pas encore de réponse à cela, et le service d'IA en ligne n'est pas disponible pour le moment.\n\nCe qui marche généralement :\n- Demandez un mot ou un sujet (par exemple « tomate » ou « inflation ») : je peux le chercher et montrer des photos.\n- Posez des questions sur les téléphones, les arnaques, les mots de passe, les formules de physique, les prénoms, les modèles de rédaction ou les quiz.\n- Collez un message suspect dans l'onglet Vérifier.\n- Réessayez plus tard pour les questions ouvertes qui demandent l'IA.",
+    "rw": "Nta gisubizo ndagira kuri ibyo ubu, kandi serivisi ya AI yo kuri interineti ntiboneka ubu.\n\nIbikunze gukora:\n- Baza ijambo rimwe cyangwa isomo (urugero «inyanya» cyangwa «inflation»): nshobora kurishakisha nkakwereka amafoto.\n- Baza ku matelefone, uburiganya, amagambo y'ibanga, formula za fizike, amazina, inyandikorugero cyangwa ibizamini byo kwitoza.\n- Shyira ubutumwa bukemangwa mu gice cya «Genzura».\n- Ongera ugerageze nyuma ku bibazo bifunguye bikeneye AI.",
+    "sw": "Sina jibu kwa hilo bado, na huduma ya AI mtandaoni haipatikani sasa.\n\nKinachofanya kazi kwa kawaida:\n- Uliza neno moja au mada (mfano «nyanya» au «inflation»): naweza kulitafuta na kuonyesha picha.\n- Uliza kuhusu simu, utapeli, nywila, fomula za fizikia, majina, violezo vya uandishi au maswali ya mazoezi.\n- Bandika ujumbe wa kutia shaka kwenye kichupo cha Hakiki.\n- Jaribu tena baadaye kwa maswali huru yanayohitaji AI.",
+}
+
+
+def no_answer(lang="en"):
+    return NO_ANSWER.get(lang, NO_ANSWER["en"])
+
+
+def no_name(lang="en"):
+    return _NONAME.get(lang, _NONAME["en"])
+
+
+def closest_note(lang="en"):
+    return _CLOSEST.get(lang, _CLOSEST["en"])
+
+
+_NOLOOKUP = {"en": "I could not look up “{t}” right now. The lookup needs an internet connection and may be busy. Please try again in a moment; I will then show the meaning, a source and photos.",
+             "fr": "Je n'ai pas pu rechercher « {t} » pour le moment. La recherche demande une connexion internet et peut être occupée. Réessayez dans un instant ; je montrerai alors le sens, une source et des photos.",
+             "rw": "Ntabashije gushakisha «{t}» ubu. Gushakisha bisaba interineti kandi bishobora kuba byuzuye. Ongera ugerageze nyuma gato; nzakwereka ibisobanuro, isoko n'amafoto.",
+             "sw": "Sikuweza kutafuta «{t}» sasa hivi. Utafutaji unahitaji mtandao na unaweza kuwa na shughuli nyingi. Jaribu tena baadaye kidogo; nitaonyesha maana, chanzo na picha."}
+
+
+def no_lookup(term, lang="en"):
+    return _NOLOOKUP.get(lang, _NOLOOKUP["en"]).format(t=term)

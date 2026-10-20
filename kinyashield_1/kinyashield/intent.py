@@ -26,6 +26,18 @@ URGENT = {
     "rw": ["yaribwe", "yibwe", "natekewe", "natekewe umutwe", "nohereje amafaranga", "nahaye pin", "nasangije kode", "nakanze", "nashyizeho", "amafaranga yanjye yagiye", "iterabwoba", "byihutirwa", "ubu nonaha", "konti yanjye yafashwe", "yafunzwe"],
     "sw": ["imedukuliwa", "imeibiwa", "nimetapeliwa", "nilituma pesa", "nilitoa pin", "nilishiriki msimbo", "nilibonyeza", "nilisakinisha", "pesa zimepotea", "vitisho", "dharura", "sasa hivi", "haraka", "akaunti imechukuliwa", "imefungwa"],
 }
+BEGINNER = {
+    "en": ["beginner", "i am new", "i'm new", "new to this", "simple words", "simple terms", "in simple", "explain like", "eli5", "for dummies", "i don't understand", "i do not understand", "i know nothing", "what does that mean", "i am a student", "layman"],
+    "fr": ["debutant", "je suis nouveau", "mots simples", "simplement", "je ne comprends pas", "je ne connais rien", "pour les nuls"],
+    "rw": ["natangiye", "ndi mushya", "mu magambo yoroshye", "yoroheje", "sinumva", "ntacyo menya", "ntabizi"],
+    "sw": ["mwanzo", "mimi ni mgeni", "maneno rahisi", "kwa urahisi", "sielewi", "sijui chochote"],
+}
+EXPERT = {
+    "en": ["technical", "in detail", "in depth", "advanced", "rigorous", "derive", "derivation", "protocol", "architecture", "implementation", "algorithm", "complexity", "specification", "rfc", "cryptographic", "asymptotic", "i am an engineer", "i'm an engineer", "i am a developer", "as a professional", "peer-reviewed"],
+    "fr": ["technique", "en detail", "approfondi", "avance", "demontrer", "protocole", "architecture", "implementation", "algorithme", "je suis ingenieur", "je suis developpeur"],
+    "rw": ["mu buryo bwa tekiniki", "birambuye", "ndi injeniyeri", "ndi umutekinisiye", "protocol", "architecture"],
+    "sw": ["kiufundi", "kwa undani", "kina", "mhandisi", "msanidi programu", "protokali"],
+}
 DISTRESS = {
     "en": ["scared", "afraid", "panic", "panicking", "ashamed", "embarrassed", "desperate", "worried", "stressed", "i don't know what to do", "i do not know what to do", "please help", "i'm lost", "crying", "devastated"],
     "fr": ["peur", "paniq", "honte", "desespere", "inquiet", "stresse", "je ne sais pas quoi faire", "aidez-moi", "au secours"],
@@ -70,6 +82,7 @@ class Intent:
     urgent: bool = False
     distressed: bool = False
     vague: bool = False
+    level: str = ""          # "beginner", "expert" or "" (unknown)
     signals: list = field(default_factory=list)
 
 
@@ -85,6 +98,10 @@ def analyze(question, history=None, lang="en") -> Intent:
             out.urgent = True
         if has_phrase(q, [fold(w) for w in DISTRESS[l]]):
             out.distressed = True
+    if has_phrase(q, [fold(w) for l in LANGS for w in EXPERT[l]]):
+        out.level = "expert"
+    elif has_phrase(q, [fold(w) for l in LANGS for w in BEGINNER[l]]):
+        out.level = "beginner"
     for task, words in TASKS.items():
         if has_phrase(q, [fold(w) for w in words]):
             out.task = task
@@ -124,6 +141,10 @@ def hint(it: Intent) -> str:
     parts = []
     if HINTS.get(it.task):
         parts.append("Likely task: " + HINTS[it.task])
+    if it.level == "beginner":
+        parts.append("The person signals they are a beginner: use plain everyday words and short sentences, one idea at a time, explain every technical term in brackets the first time, and use a familiar everyday comparison.")
+    elif it.level == "expert":
+        parts.append("The person signals technical knowledge: be precise, use the correct terminology without over-explaining basics, include mechanisms, constraints and edge cases, and say where the evidence is weak.")
     if it.urgent:
         parts.append("URGENT: this may be an incident that is happening or just happened. Put the first protective actions at the very top (stop further loss, secure accounts, contact the bank or provider through official channels, keep evidence), before any explanation.")
     if it.distressed:

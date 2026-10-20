@@ -180,6 +180,14 @@ with tab_chat:
                       "rw": "Shakisha kuri interineti amakuru agezweho werekane amasoko (bisaba urufunguzo rwa AI)",
                       "sw": "Tafuta wavuti kwa taarifa za sasa na uonyeshe vyanzo (inahitaji ufunguo wa AI)"}
     _use_search = st.checkbox(_search_labels.get(_chat_lang, _search_labels["en"]), key=f"use_search_{_chat_lang}", value=False)
+    _level_idx = 0
+    try:  # communicate naturally: the person can choose how simply or technically answers are written
+        import register as _reg
+        _lvl_label, _lvl_opts = _reg.label(_chat_lang)
+        _lvl_pick = st.radio(_lvl_label, _lvl_opts, horizontal=True, key=f"level_{_chat_lang}")
+        _level_idx = _lvl_opts.index(_lvl_pick)
+    except Exception:
+        _reg = None
     try:  # tutor quiz + document assistant (each works on its own; the chat below does not depend on them)
         import study_ui as _study
         from assistant_engine import answer_question as _answer_doc
@@ -202,12 +210,13 @@ with tab_chat:
             if _message.get("gallery"):  # photos for a phone-brands list (Wikimedia Commons); the text list above is complete without them
                 try:
                     _g = _message["gallery"]
-                    for _row in range(0, len(_g), 4):
-                        _cols = st.columns(4)
-                        for _col, _it in zip(_cols, _g[_row:_row + 4]):
+                    _ncol = 5 if len(_g) % 5 == 0 else 4
+                    for _row in range(0, len(_g), _ncol):
+                        _cols = st.columns(_ncol)
+                        for _col, _it in zip(_cols, _g[_row:_row + _ncol]):
                             with _col:
                                 st.image(_it["url"], caption=_it["name"], use_container_width=True)
-                                st.markdown(f"[Commons]({_it['page']})")
+                                st.markdown(f"[Commons]({_it['page']})" + (f" · {_it['license']}" if _it.get("license") else ""))
                     if _message.get("gallery_note"):
                         st.caption(_message["gallery_note"])
                 except Exception:
@@ -255,7 +264,31 @@ with tab_chat:
                     _guide_text = _intent.frame_guide_text(_guide_text, _q, [m_ for m_ in _hist[:-1] if m_.get("kind") != "note"], _chat_lang)
             except Exception:
                 pass
+            try:  # beginner-friendly: explain jargon found in the offline answer
+                import register as _reg2
+                _lv = _reg2.level_from_choice(_level_idx, _q, [m_ for m_ in _hist[:-1] if m_.get("kind") != "note"])
+                _guide_text = _reg2.add_glossary(_guide_text, _lv, _q, _chat_lang, _e.get("kind", ""))
+            except Exception:
+                pass
             _msg_out = {"role": "assistant", "content": _guide_text, "kind": "note"}
+            _photo_term = None
+            try:  # a keyword answer gets up to five real photos (Wikimedia Commons)
+                import webref as _wr0
+                if _e.get("kind") not in {"owner", "intent", "greeting", "trust", "translate", "phone", "name", "scam", "scam_list", "phone_list", "physics", "writing", "tutor", "formula"} \
+                        and not _e.get("gallery") and not _e.get("image_query"):
+                    _photo_term = _wr0.extract_term(_q)
+            except Exception:
+                _photo_term = None
+            if _photo_term:
+                try:
+                    import images_db as _img
+                    with st.spinner("…"):
+                        _ph = _img.photos(_photo_term, 5)
+                    if _ph:
+                        _msg_out["gallery"] = [{"name": x["caption"], "url": x["url"], "page": x["page"], "license": x.get("license", "")} for x in _ph]
+                        _msg_out["gallery_note"] = _img.note(_chat_lang)
+                except Exception:
+                    pass
             if _e.get("gallery"):
                 try:
                     import phones_db as _pdb
@@ -298,46 +331,93 @@ with tab_chat:
             st.rerun()
         else:
             def _intent_hint(_text, _past, _lg):
-                try:  # what is the person really trying to do? (urgent incident, distress, task type)
+                try:  # what is the person really trying to do? (urgent incident, distress, task type) and at what level to explain
                     import intent as _intent
-                    return _intent.hint(_intent.analyze(_text, [m_ for m_ in _past if m_.get("kind") != "note"], _lg)) or None
+                    _h = _intent.hint(_intent.analyze(_text, [m_ for m_ in _past if m_.get("kind") != "note"], _lg))
                 except Exception:
-                    return None
+                    _h = ""
+                try:
+                    import register as _r3
+                    _h = (_h + "\n" if _h else "") + _r3.hint(_r3.level_from_choice(_level_idx, _text, [m_ for m_ in _past if m_.get("kind") != "note"]))
+                except Exception:
+                    pass
+                return _h or None
 
             with st.chat_message("user"):
                 st.markdown(_q)
             with st.chat_message("assistant"):
-                _msg, _kind = None, None
-                _term, _info, _wr = None, None, None
-                try:  # a bare word or short topic: fetch sourced reference text (Wikipedia/Wiktionary) so the answer is complete and checkable
-                    import webref as _wr
-                    _term = _wr.extract_term(_q)
-                    if _term:
-                        with st.spinner(_T["thinking"]):
-                            _info = _wr.lookup(_term, _chat_lang)
-                except Exception:
-                    _term, _info = None, None
-                try:
+                _msg, _kind, _gallery, _gnote = None, None, None, None
+                _term, _name, _info, _wr = None, None, None, None
+                _history_ai = [m_ for m_ in _hist[:-1] if m_.get("kind") != "note"]
+                _ai_missing = False
+
+                def _ask_ai(**_kw):
                     from assistant_engine import answer_question
-                    with st.spinner(_T["thinking"]):
-                        _msg = answer_question(
-                            question=_q,
-                            history=[m_ for m_ in _hist[:-1] if m_.get("kind") != "note"],
-                            language_name=LANG_NAMES.get(lang, "English"),
-                            use_search=_use_search,
-                            term_mode=bool(_term),
-                            intent_hint=_intent_hint(_q, _hist[:-1], _chat_lang),
-                            reference=(_wr.reference_text(_info) if _info else None),
-                        )
-                    if _info:
-                        _msg += _wr.source_line(_info, _chat_lang)
-                except Exception as _chat_error:
-                    if _info:  # no AI key or AI error: still give the sourced Wikipedia/Wiktionary answer
-                        _msg = _wr.format_answer(_info, _chat_lang)
-                    else:
-                        _msg = _T["noai"] if _chat_error.__class__.__name__ == "MissingAPIKeyError" else _T["err"]
-                    _kind = "note"
-                _hist.append({"role": "assistant", "content": _msg, **({"kind": _kind} if _kind else {})})
+                    return answer_question(question=_q, history=_history_ai, language_name=LANG_NAMES.get(lang, "English"),
+                                           use_search=_use_search, intent_hint=_intent_hint(_q, _hist[:-1], _chat_lang), **_kw)
+
+                if _routed["kind"] == "translate":
+                    # "Translate X into Kinyarwanda": X is text to translate, never a question for the assistant itself
+                    try:
+                        import meta_guard as _mg
+                        try:
+                            with st.spinner(_T["thinking"]):
+                                _msg = _ask_ai()
+                        except Exception:
+                            with st.spinner(_T["thinking"]):
+                                _msg, _ok = _mg.translation_answer(_routed["phrase"], _routed["target"], _chat_lang)
+                            _kind = "note"
+                    except Exception:
+                        _msg, _kind = _T["err"], "note"
+                else:
+                    try:  # a name, or a bare word/short topic: fetch sourced reference text so the answer is complete and checkable
+                        import webref as _wr
+                        _name = _wr.extract_name(_q)
+                        _term = None if _name else _wr.extract_term(_q)
+                        with st.spinner(_T["thinking"]):
+                            if _name:
+                                _info = _wr.lookup_name(_name, _chat_lang)
+                            elif _term:
+                                _info = _wr.lookup(_term, _chat_lang)
+                            else:
+                                _info = _wr.closest_match(_q, _chat_lang)
+                    except Exception:
+                        _term, _name, _info = None, None, None
+                    try:
+                        with st.spinner(_T["thinking"]):
+                            _msg = _ask_ai(term_mode=bool(_term or _name), reference=(_wr.reference_text(_info) if _info else None))
+                        if _info:
+                            _msg += _wr.source_line(_info, _chat_lang)
+                    except Exception as _chat_error:
+                        _ai_missing = _chat_error.__class__.__name__ == "MissingAPIKeyError"
+                        _kind = "note"
+                        if _info:  # no AI key or AI error: still give the sourced Wikipedia/Wiktionary answer
+                            _msg = _wr.format_answer(_info, _chat_lang)
+                        elif _name and _wr is not None:
+                            _msg = _wr.no_name(_chat_lang)
+                        elif _term and _wr is not None:
+                            _msg = _wr.no_lookup(_term, _chat_lang)
+                        elif _wr is not None and _ai_missing:
+                            _msg = _wr.no_answer(_chat_lang)
+                        else:
+                            _msg = _T["noai"] if _ai_missing else _T["err"]
+                    _pterm = _term or (_info or {}).get("term") if (_term or (_info and not _info.get("closest") and not _name)) else None
+                    if _pterm:  # up to five real photos for the keyword
+                        try:
+                            import images_db as _img
+                            with st.spinner("…"):
+                                _ph = _img.photos(_pterm, 5)
+                            if _ph:
+                                _gallery = [{"name": x["caption"], "url": x["url"], "page": x["page"], "license": x.get("license", "")} for x in _ph]
+                                _gnote = _img.note(_chat_lang)
+                        except Exception:
+                            pass
+                _out = {"role": "assistant", "content": _msg}
+                if _kind:
+                    _out["kind"] = _kind
+                if _gallery:
+                    _out["gallery"], _out["gallery_note"] = _gallery, _gnote
+                _hist.append(_out)
             st.rerun()
 
 

@@ -10,8 +10,8 @@ NAMES = {"en": {"en": "English", "fr": "French", "rw": "Kinyarwanda", "sw": "Swa
          "fr": {"en": "anglais", "fr": "français", "rw": "kinyarwanda", "sw": "swahili"},
          "rw": {"en": "Icyongereza", "fr": "Igifaransa", "rw": "Ikinyarwanda", "sw": "Igiswahili"},
          "sw": {"en": "Kiingereza", "fr": "Kifaransa", "rw": "Kinyarwanda", "sw": "Kiswahili"}}
-_ALIASES = {"en": ("english", "anglais", "icyongereza", "cyongereza", "kiingereza", "englais"), "fr": ("french", "francais", "igifaransa", "gifaransa", "kifaransa"),
-            "rw": ("kinyarwanda", "ikinyarwanda", "kinyarwand", "rwanda language"), "sw": ("swahili", "kiswahili", "igiswahili", "giswahili", "swahili language")}
+_ALIASES = {"en": ("english", "anglais", "icyongereza", "cyongereza", "kiingereza", "englais", "en"), "fr": ("french", "francais", "igifaransa", "gifaransa", "kifaransa", "fr"),
+            "rw": ("kinyarwanda", "ikinyarwanda", "kinyarwand", "rwanda language", "rw", "kinya"), "sw": ("swahili", "kiswahili", "igiswahili", "giswahili", "swahili language", "sw")}
 
 # (en, fr, rw, sw, note-en)
 P = [
@@ -65,13 +65,53 @@ P = [
     ("I will call you back", "Je vous rappelle", "Ndagusubiza kuri telefone", "Nitakupigia tena", ""),
     ("My phone number is ...", "Mon numéro de téléphone est ...", "Nomero yanjye ya telefone ni ...", "Namba yangu ya simu ni ...", ""),
 ]
-_INDEX = {}
+try:  # the large curated bank (words, numbers, phrases, digital safety); rows already in P are not duplicated
+    from translation_bank import BANK as _BANK
+    _seen = {fold(r[0].split(" / ")[0]).strip(" ?.!") for r in P}
+    P += [r for r in _BANK if fold(r[0].split(" / ")[0]).strip(" ?.!") not in _seen]
+except ImportError:
+    pass
+try:  # more everyday words (food, animals, family, body, colours, numbers, time, places, transport, home, verbs); rows already present are not duplicated
+    from translation_words_2 import WORDS as _WORDS2
+    _seen = {fold(r[0].split(" / ")[0]).strip(" ?.!") for r in P}
+    for _r in _WORDS2:
+        _k = fold(_r[0].split(" / ")[0]).strip(" ?.!")
+        if _k not in _seen:
+            _seen.add(_k)
+            P.append(_r)
+except ImportError:
+    pass
+try:  # the word and short-phrase dictionary (computing, cybersecurity, money, school, work, everyday words); first entry wins
+    from translation_words import WORDS as _WORDS
+    _seen = {fold(r[0].split(" / ")[0]).strip(" ?.!") for r in P}
+    for _r in _WORDS:
+        _k = fold(_r[0].split(" / ")[0]).strip(" ?.!")
+        if _k not in _seen:
+            _seen.add(_k)
+            P.append(_r)
+except ImportError:
+    pass
+
+
+def _key(variant):
+    v = fold(re.sub(r"\(.*?\)", "", variant)).strip(" ?.!,;:\"'")
+    return re.sub(r"\s+", " ", v)
+
+
+_NS = {l: {} for l in LANGS}                 # per language: folded text without spaces -> row number ("uri uwande" finds "uri uwa nde")
+_INDEX = {}                                  # any language -> first row (kept for older callers)
+_IDX = {l: {} for l in LANGS}                # per language: folded text -> row number
 for i, row in enumerate(P):
     for j, l in enumerate(LANGS):
         for variant in row[j].split(" / "):
-            key = fold(re.sub(r"\(.*?\)", "", variant)).strip(" ?.!")
-            if key:
-                _INDEX.setdefault(key, i)
+            keys = [_key(variant)]
+            if l == "en" and keys[0].startswith("to ") and len(keys[0]) > 5:
+                keys.append(keys[0][3:])          # "to hack" is also found as "hack"
+            for key in keys:
+                if key:
+                    _INDEX.setdefault(key, i)
+                    _IDX[l].setdefault(key, i)
+                    _NS[l].setdefault(re.sub(r"[\s'’-]+", "", key), i)
 
 _LAB = {"en": "Translations", "fr": "Traductions", "rw": "Ubusobanuro", "sw": "Tafsiri"}
 _NOTE = {"en": "These are natural everyday phrases, not word-for-word translations. Kinyarwanda and Kiswahili are a draft: ask a fluent speaker to confirm important texts.",
@@ -133,16 +173,167 @@ def find(question, lang="en"):
         target = _lang_of(m.group("l"))
         if target is None:
             continue
-        phrase = fold(re.sub(r"\(.*?\)", "", m.group("p"))).strip(" ?.!'\"")
-        i = _INDEX.get(phrase)
-        if i is None:
-            return None   # not in the phrasebook: the AI (which translates for meaning) handles it when configured
-        ans, note = _render(i, target, k)
-        title = {l: f"“{P[i][LANGS.index(l)].split(' / ')[0]}” — {NAMES[l][target]}" for l in LANGS}
-        # one language per answer would repeat the same table; build each language's text with that language's labels
-        out = {}
-        for l in LANGS:
-            a, _ = _render(i, target, l)
-            out[l] = f"**{_LAB[l]}** (→ {NAMES[l][target]}):\n\n{a}" + (f"\n\n*{_NOTE_LAB[l]}:* {note}" if note and l == "en" else "") + f"\n\n_{_NOTE[l]}_"
-        return entry("translate_" + str(i), "translate", title, out)
+        res = translate(m.group("p"), target, k)
+        if res is None:
+            return None   # not in the bank: the AI (which translates for meaning) or the honest fallback handles it
+        return render(res, k)
     return None
+
+
+# ---------------------------------------------------------------------------------------------------------------------------
+# Exact lookup of a phrase in the curated bank, from any of the four languages into any of them.
+# A row is returned only when the text matches exactly (after removing punctuation, accents and a leading article), so nothing is guessed.
+_ART = {"en": ("the ", "a ", "an "), "fr": ("le ", "la ", "les ", "l'", "un ", "une ", "des "), "rw": (), "sw": ()}
+
+
+def _variants(text):
+    base = _key(text)
+    outs = [base]
+    for arts in _ART.values():
+        for a in arts:
+            if base.startswith(a) and len(base) > len(a) + 1:
+                outs.append(base[len(a):])
+    if base.startswith("to ") and len(base) > 4:
+        outs.append(base[3:])
+    for v in list(outs):   # plurals: "apples" -> "apple", "berries" -> "berry", "buses" -> "bus" (only tried after the exact text)
+        if len(v) > 3 and v.endswith("ies"):
+            outs.append(v[:-3] + "y")
+        if len(v) > 4 and v.endswith("es"):
+            outs.append(v[:-2])
+        if len(v) > 3 and v.endswith("s") and not v.endswith("ss"):
+            outs.append(v[:-1])
+    return list(dict.fromkeys(outs))
+
+
+def match(phrase, source_hint=None):
+    """(row index, source language) for an exact bank match, else None. English is tried first, then the interface language, then the others."""
+    order = ["en"] + [l for l in ([source_hint] if source_hint else []) if l != "en"] + [l for l in LANGS if l not in ("en", source_hint)]
+    for l in order:
+        for v in _variants(phrase):
+            i = _IDX[l].get(v)
+            if i is not None:
+                return i, l
+    for l in order:   # spacing and apostrophes ignored: "uri uwande" = "uri uwa nde", "ijambo ribanga" = "ijambo ry'ibanga" is NOT matched (letters differ)
+        for v in _variants(phrase):
+            v2 = re.sub(r"[\s'’-]+", "", v)
+            if len(v2) >= 5:
+                i = _NS[l].get(v2)
+                if i is not None:
+                    return i, l
+    return None
+
+
+def translate(phrase, target, ui_lang="en"):
+    """Dict with the main translation, the source language, the other languages and a usage note; or None when the phrase is not in the bank."""
+    hit = match(phrase, lk(ui_lang))
+    if hit is None:
+        return None
+    i, src = hit
+    row = P[i]
+    outs = {l: row[LANGS.index(l)] for l in LANGS}
+    others = []   # the same spelling can be a different word in another language ("bibi": Kinyarwanda "bad", Kiswahili "grandmother"): show those readings too
+    seen = {i}
+    for l in LANGS:
+        for v in _variants(phrase)[:1]:
+            j = _IDX[l].get(v)
+            if j is not None and j not in seen:
+                seen.add(j)
+                others.append({"row": j, "source": l, "text": {x: P[j][LANGS.index(x)] for x in LANGS}})
+    return {"row": i, "source": src, "target": target, "text": outs, "note": row[4], "others": others[:2]}
+
+
+def _words(text):
+    return {w for w in re.split(r"[^a-z0-9']+", fold(text)) if len(w) > 2}
+
+
+def suggest(phrase, n=3):
+    """Closest bank rows (English side) sharing words with the phrase: shown when there is no exact match, so the person can see what is available."""
+    ws = _words(phrase)
+    if not ws:
+        return []
+    scored = []
+    for i, row in enumerate(P):
+        overlap = len(ws & _words(row[0]))
+        if overlap:
+            scored.append((overlap / (len(_words(row[0])) or 1), -len(row[0]), i))
+    scored.sort(reverse=True)
+    return [i for _, _, i in scored[:n]]
+
+
+_BEST = {"en": "Translation", "fr": "Traduction", "rw": "Ubusobanuro", "sw": "Tafsiri"}
+_ALSO = {"en": "Also in", "fr": "Aussi en", "rw": "No mu", "sw": "Pia kwa"}
+_OTHER = {"en": "It can also mean", "fr": "Cela peut aussi signifier", "rw": "Bishobora no gusobanura", "sw": "Linaweza pia kumaanisha"}
+_ASKED = {"en": "Source", "fr": "Texte d'origine", "rw": "Inyandiko y'ibanze", "sw": "Maandishi asilia"}
+_MAYBE = {"en": "These are everyday translations written by hand, not machine output. Kinyarwanda and Kiswahili are a draft: ask a fluent speaker to confirm anything important.",
+          "fr": "Ce sont des traductions courantes écrites à la main, pas une traduction automatique. Le kinyarwanda et le swahili sont un brouillon : faites confirmer ce qui est important.",
+          "rw": "Ni ubusobanuro busanzwe bwanditswe n'intoki, si ubwa mudasobwa. Ikinyarwanda n'Igiswahili ni igerageza: saba umuvuga neza kwemeza ibiri ngombwa.",
+          "sw": "Hizi ni tafsiri za kawaida zilizoandikwa kwa mkono, si za mashine. Kinyarwanda na Kiswahili ni rasimu: mwombe mzungumzaji fasaha athibitishe jambo muhimu."}
+
+
+def render(result, ui_lang="en"):
+    """Guide-shaped entry for a bank translation, written in the interface language."""
+    t = result["target"]
+    row = result["row"]
+    out = {}
+    for l in LANGS:
+        first = lambda lang: result["text"][lang].split(" / ")[0]
+        alts = result["text"][t].split(" / ")
+        lines = [f"**{NAMES[l][t]}:** {alts[0]}"]
+        if len(alts) > 1:
+            lines.append("_" + " · ".join(alts[1:]) + "_")
+        src = result["source"]
+        if src != t:
+            lines.append(f"{_ASKED[l]} ({NAMES[l][src]}): {first(src)}")
+        others = [x for x in LANGS if x not in (t, src)]
+        if others:
+            lines.append(f"{_ALSO[l]}: " + "  ·  ".join(f"{NAMES[l][x]}: {first(x)}" for x in others))
+        for o in result.get("others", []):
+            lines.append(f"_{_OTHER[l]} ({NAMES[l][o['source']]}): “{o['text'][o['source']].split(' / ')[0]}” = {o['text'][t].split(' / ')[0]}_")
+        if result["note"] and l == "en":
+            lines.append(f"*{_NOTE_LAB[l]}:* {result['note']}")
+        lines.append(f"_{_MAYBE[l]}_")
+        out[l] = "\n\n".join(lines)
+    title = {l: f"{_BEST[l]}: {result['text'][t].split(' / ')[0]}" for l in LANGS}
+    return entry("translate_" + str(row), "translate", title, out)
+
+
+def render_suggestions(phrase, rows, ui_lang="en"):
+    """Honest 'not in my bank' answer with the closest entries."""
+    lines = {}
+    for l in LANGS:
+        head = {"en": "I do not have a checked translation of this in my bank, and I will not guess. Closest entries I do have:",
+                "fr": "Je n'ai pas de traduction vérifiée de ceci dans mon lexique, et je ne vais pas deviner. Entrées les plus proches :",
+                "rw": "Nta busobanuro bwemejwe bw'iyi nyandiko mfite mu gitabo cyanjye, kandi sinshaka kuvuga ibitari byo. Ibyegereye mfite:",
+                "sw": "Sina tafsiri iliyothibitishwa ya hili kwenye kitabu changu, na sitakisia. Maingizo yaliyo karibu zaidi:"}[l]
+        body = "\n".join("- " + "  ·  ".join(f"{P[i][LANGS.index(x)].split(' / ')[0]}" for x in LANGS) for i in rows)
+        tail = {"en": "For a full translation of your own text, tick “Always ask the AI” (needs the AI key) or ask a fluent speaker.",
+                "fr": "Pour une traduction complète de votre texte, cochez « Toujours demander à l'IA » (clé IA requise) ou demandez à un locuteur.",
+                "rw": "Ushaka ubusobanuro bwuzuye bw'inyandiko yawe, hitamo «Burigihe baza AI» (bisaba urufunguzo rwa AI) cyangwa ubaze umuvuga neza.",
+                "sw": "Kwa tafsiri kamili ya maandishi yako, chagua «Muulize AI kila mara» (inahitaji ufunguo wa AI) au mwombe mzungumzaji fasaha."}[l]
+        lines[l] = head + ("\n\n" + body if body else "") + "\n\n" + tail
+    title = {"en": "No checked translation", "fr": "Pas de traduction vérifiée", "rw": "Nta busobanuro bwemejwe", "sw": "Hakuna tafsiri iliyothibitishwa"}
+    return entry("translate_none", "translate", title, lines)
+
+
+def breakdown(phrase, target):
+    """Word-by-word help for a sentence that is not in the bank: [(piece of the sentence, translation)] for every word or short phrase the dictionary knows.
+    This is NOT a sentence translation (grammar, word order and endings differ between the languages); it only gives the meaning of the pieces that are known."""
+    toks = [t for t in re.split(r"\s+", (phrase or "").strip()) if t]
+    out, i = [], 0
+    while i < len(toks):
+        hit = None
+        for n in range(min(4, len(toks) - i), 0, -1):
+            piece = " ".join(toks[i:i + n])
+            m = match(piece)
+            if m is not None:
+                row = P[m[0]]
+                tr = row[LANGS.index(target)].split(" / ")[0].rstrip(" ?!.")
+                if _key(piece) != _key(tr):
+                    hit = (piece.strip(" ?.!,;:\"'"), tr, n)
+                break
+        if hit:
+            out.append(hit[:2])
+            i += hit[2]
+        else:
+            i += 1
+    return out

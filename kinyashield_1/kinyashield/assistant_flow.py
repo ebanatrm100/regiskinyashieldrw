@@ -10,6 +10,7 @@ Order of attempts for each question:
   4. Otherwise                                                  -> caller sends it to the AI (Gemini) if configured.
 The scam detector, rules and Check tab are not modified by this module."""
 from __future__ import annotations
+import re
 from detector import analyze, next_steps
 from guide_search import best, BY_ID
 try:
@@ -64,6 +65,7 @@ _find_tutor = _optional("tutor_db")        # worked maths solutions + pointer to
 _find_translate = _optional("translate_db")  # phrasebook: "how do you say X in Kinyarwanda"
 _parse_translation = _optional("meta_guard", "parse_translation")  # "Translate X into Kinyarwanda": X is material to translate, not a question to answer
 _is_wrapper = _optional("meta_guard", "is_wrapper")                # "Repeat / rewrite / correct: X"
+_find_cyber = _optional("cyber_db")  # cybersecurity terms (meaning, applications, photos)
 _find_clarify = _optional("intent", "clarify")  # too-vague opener ("help", "I have a problem") -> ask what is needed, with choices
 _find_trust = _optional("trust_db")        # privacy, limits, source policy, where to verify
 _find_writing = _optional("writing_db")    # templates: emails, CVs, applications, reports, proposals, messages
@@ -99,6 +101,17 @@ def format_guide(entry, lang, steps_label, source_label):
     return "\n".join(lines)
 
 
+def _attach_photo_query(entry):
+    """A scam method that is also a glossary term gets that term's photo subject, so it still shows up to five photos."""
+    try:
+        import cyber_db
+        row = cyber_db.lookup(entry["title"]["en"])
+        if row is not None and not entry.get("photo_query"):
+            entry["photo_query"] = row[4]
+    except Exception:
+        pass
+
+
 def route(question, lang, force_ai=False):
     """Return {'kind': 'scam'|'guide'|'ai', ...}. Never raises for ordinary text."""
     q = (question or "").strip()
@@ -114,9 +127,17 @@ def route(question, lang, force_ai=False):
             tr = None
         if tr is not None:
             hit = None
-            if _find_translate is not None:
+            try:  # curated bank first: exact, hand-written translations between the four languages
+                import translate_db as _td
+                _target = tr[1] or {"en": "rw", "rw": "en", "fr": "en", "sw": "en"}[k]
+                _res = _td.translate(tr[0], _target, k)
+                if _res is not None:
+                    hit = _td.render(_res, k)
+            except Exception:
+                hit = None
+            if hit is None and _find_translate is not None:
                 try:
-                    hit = _find_translate(q, k)   # curated phrasebook first
+                    hit = _find_translate(q, k)
                 except Exception:
                     hit = None
             if hit is not None:
@@ -140,6 +161,29 @@ def route(question, lang, force_ai=False):
         named = _find_name(q, k)
         if named is not None:
             return {"kind": "guide", "entry": named}
+    if not force_ai and _find_cyber is not None:   # "list all cybersecurity terms" / "malware terms": the glossary lists (unless the question is about scam METHODS)
+        try:
+            cyber_list = _find_cyber(q, k)
+        except Exception:
+            cyber_list = None
+        if cyber_list is not None and cyber_list["kind"] == "cyber_list" and not re.search(
+                r"scam|fraud|arnaque|uburiganya|ubutekamutwe|ulaghai|tapeli|method|methode|méthode|uburyo|mbinu|ways|techniques", q, re.I):
+            return {"kind": "guide", "entry": cyber_list}
+    if not force_ai and _find_scam is not None:    # the scam-methods catalogue (list, or one method by a short question) is richer than the glossary: description, example, protection
+        try:
+            scam0 = _find_scam(q, k)
+        except Exception:
+            scam0 = None
+        if scam0 is not None and (scam0["kind"] == "scam_list" or len(q.split()) <= 4):
+            _attach_photo_query(scam0)
+            return {"kind": "guide", "entry": scam0}
+    if not force_ai and _find_cyber is not None:   # cybersecurity glossary: meaning, applications and photos for a security term
+        try:
+            cyber = _find_cyber(q, k)
+        except Exception:
+            cyber = None
+        if cyber is not None:
+            return {"kind": "guide", "entry": cyber}
     if not force_ai and _find_clarify is not None:
         try:
             asked = _find_clarify(q, k)

@@ -274,8 +274,10 @@ with tab_chat:
             _photo_term = None
             try:  # a keyword answer gets up to five real photos (Wikimedia Commons)
                 import webref as _wr0
-                if _e.get("kind") not in {"owner", "intent", "greeting", "trust", "translate", "phone", "name", "scam", "scam_list", "phone_list", "physics", "writing", "tutor", "formula"} \
-                        and not _e.get("gallery") and not _e.get("image_query"):
+                if _e.get("photo_query"):      # a curated glossary term (cybersecurity): search for the photo subject chosen for that term
+                    _photo_term = _e["photo_query"]
+                elif _e.get("kind") not in {"owner", "intent", "greeting", "trust", "translate", "phone", "name", "scam", "scam_list", "phone_list", "physics", "writing", "tutor", "formula",
+                                            "cyber_list"} and not _e.get("gallery") and not _e.get("image_query"):
                     _photo_term = _wr0.extract_term(_q)
             except Exception:
                 _photo_term = None

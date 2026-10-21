@@ -9,10 +9,15 @@ import webref as W
 
 
 def test_translation_is_not_answered_as_a_question():
+    # a sentence in the curated bank is translated exactly (this was the "who owns you" bug: the reply was the owner answer, not a translation)
     r = F.route("Translate who owns you into Kinyarwanda", "en")
-    assert r["kind"] == "translate" and r["phrase"] == "who owns you" and r["target"] == "rw"
+    assert r["kind"] == "guide" and r["entry"]["id"].startswith("translate_")
+    assert "Uri uwa nde?" in r["entry"]["answer"]["en"] and "Regis" not in r["entry"]["answer"]["en"]
+    # a sentence that is not in the bank is still a translation task, never a question for the assistant
+    r = F.route("Translate the sky is very beautiful today into Kinyarwanda", "en")
+    assert r["kind"] == "translate" and r["target"] == "rw"
     for q in ["Translate who is your owner into French", "tafsiri who owns you kwa Kiswahili", "Traduis who owns you en kinyarwanda"]:
-        assert F.route(q, "en")["kind"] == "translate", q
+        assert F.route(q, "en")["entry"]["id"].startswith("translate_"), q
     # the owner question itself still gets the owner answer
     assert F.route("Who owns you?", "en")["entry"]["id"] == "owner"
     assert F.route("Who is your owner?", "en")["entry"]["id"] == "owner"

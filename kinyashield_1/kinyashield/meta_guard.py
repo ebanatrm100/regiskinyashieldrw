@@ -10,10 +10,10 @@ import urllib.request
 from textutil import fold
 
 LANG_WORDS = {
-    "rw": ["kinyarwanda", "ikinyarwanda", "kinyarwandaa"],
-    "fr": ["french", "francais", "français", "igifaransa", "kifaransa"],
-    "sw": ["swahili", "kiswahili", "igiswahili"],
-    "en": ["english", "anglais", "icyongereza", "kiingereza", "englishi"],
+    "rw": ["kinyarwanda", "ikinyarwanda", "kinyarwandaa", "kinya", "rw"],
+    "fr": ["french", "francais", "français", "igifaransa", "kifaransa", "fr"],
+    "sw": ["swahili", "kiswahili", "igiswahili", "kiswahilii", "sw"],
+    "en": ["english", "anglais", "icyongereza", "kiingereza", "englishi", "en"],
 }
 _LANG_ALT = "|".join(sorted((w for ws in LANG_WORDS.values() for w in ws), key=len, reverse=True))
 _Q = "[\"“”'«»]?"
@@ -80,8 +80,21 @@ def _guess_source(text):
         return "en"
 
 
+def _looks_like(text, target):
+    """True when the text plausibly is in the target language (stops MT returning English or gibberish as 'Kinyarwanda')."""
+    try:
+        from detector import detect_language, fold as dfold
+        got = detect_language(dfold(text))
+    except Exception:
+        return True
+    if got == target:
+        return True
+    # short texts carry few marker words: accept when no other language is clearly detected and it differs from the source text
+    return got == "en" and target != "en" and False
+
+
 def machine_translate(phrase, target, source=None, timeout=7):
-    """Translated text from MyMemory, or None. Never raises."""
+    """Translated text from MyMemory, or None. Never raises. Output in the wrong language, or unchanged, is rejected."""
     try:
         src = source or _guess_source(phrase)
         if target not in ("en", "fr", "rw", "sw") or src == target:
@@ -91,8 +104,10 @@ def machine_translate(phrase, target, source=None, timeout=7):
         with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310 (fixed https host)
             data = json.loads(r.read().decode("utf-8", "replace"))
         out = ((data.get("responseData") or {}).get("translatedText") or "").strip()
-        if not out or out.upper().startswith(("MYMEMORY WARNING", "INVALID", "PLEASE SELECT")) or out.lower() == phrase.lower():
+        if not out or out.upper().startswith(("MYMEMORY WARNING", "INVALID", "PLEASE SELECT", "QUERY LENGTH")) or out.lower() == phrase.lower():
             return None
+        if target == "rw" and set(out.lower().split()) & {"the", "is", "are", "of", "and", "you", "your", "who", "what"}:
+            return None          # English words inside a "Kinyarwanda" answer: reject instead of showing it
         return out
     except Exception:
         return None
@@ -110,12 +125,44 @@ MT_FAIL = {"en": "I could not translate that right now. Try again in a moment, o
            "sw": "Sikuweza kutafsiri hilo sasa hivi. Jaribu tena baadaye kidogo, au uliza kwa namna «… kwa Kinyarwanda ni nini»."}
 
 
+_PIECES = {"en": "Meaning of the words I know in your text (not a full sentence translation, because word order and endings differ between the languages)",
+           "fr": "Sens des mots que je connais dans votre texte (ce n'est pas une traduction de la phrase, car l'ordre des mots et les terminaisons diffèrent d'une langue à l'autre)",
+           "rw": "Ibisobanuro by'amagambo nzi mu nyandiko yawe (si ubusobanuro bw'interuro yose, kuko uko amagambo akurikirana n'iherezo ryayo bitandukana)",
+           "sw": "Maana ya maneno ninayoyajua kwenye maandishi yako (si tafsiri ya sentensi nzima, kwa sababu mpangilio wa maneno na miisho hutofautiana)"}
+_NEED_KEY = {"en": "For a full, natural translation of any sentence, the AI translator needs GEMINI_API_KEY in the app's Secrets. Until then I answer exactly what is in my hand-written bank, or ask in the form “How do you say … in Kinyarwanda”.",
+             "fr": "Pour une traduction complète et naturelle de n'importe quelle phrase, le traducteur IA a besoin de GEMINI_API_KEY dans les Secrets de l'application. D'ici là, je réponds exactement avec ma banque écrite à la main.",
+             "rw": "Kugira ngo mpindure interuro iyo ari yo yose neza kandi mu buryo busanzwe, umusemuzi wa AI akeneye GEMINI_API_KEY mu Secrets za porogaramu. Mbere y'aho, mpa ibisubizo biri mu bubiko bwanjye bwanditswe n'intoki gusa.",
+             "sw": "Ili kutafsiri sentensi yoyote kikamilifu na kwa asili, mfasiri wa AI anahitaji GEMINI_API_KEY kwenye Secrets za programu. Hadi hapo, ninajibu kile kilicho kwenye benki yangu iliyoandikwa kwa mkono tu."}
+
+
 def translation_answer(phrase, target, ui_lang):
-    """Plain, honest answer text for a translation request when no AI is available."""
+    """Answer text for a translation request when no AI is available. Order: curated bank (exact), checked machine translation, then the honest
+    fallback: the words I do know, word by word, with a clear note that this is not a sentence translation."""
     k = ui_lang if ui_lang in NAMES else "en"
     if not target:
         target = {"en": "rw", "rw": "en", "fr": "en", "sw": "en"}[k]
+    TD = None
+    try:
+        import translate_db as TD
+        res = TD.translate(phrase, target, k)
+        if res is not None:
+            return TD.render(res, k)["answer"][k], True
+    except Exception:
+        TD = None
     out = machine_translate(phrase, target)
-    if not out:
-        return MT_FAIL[k], False
-    return f"**{NAMES[k][target]}:** {out}\n\n_{MT_NOTE[k]}_", True
+    if out and target != "rw":     # Kinyarwanda machine output is too unreliable to present as an answer
+        return f"**{NAMES[k][target]}:** {out}\n\n_{MT_NOTE[k]}_", True
+    parts = []
+    if TD is not None:
+        try:
+            pieces = TD.breakdown(phrase, target)
+            if pieces:
+                parts.append(f"**{_PIECES[k]} → {NAMES[k][target]}:**\n\n" + "\n".join(f"- **{a}** → {b}" for a, b in pieces))
+            sug = TD.suggest(phrase)
+            if sug:
+                parts.append(TD.render_suggestions(phrase, sug, k)["answer"][k])
+        except Exception:
+            pass
+    if parts:
+        return "\n\n".join(parts) + f"\n\n_{_NEED_KEY[k]}_", False
+    return MT_FAIL[k] + f"\n\n_{_NEED_KEY[k]}_", False

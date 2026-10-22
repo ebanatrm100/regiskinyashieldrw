@@ -180,6 +180,14 @@ with tab_chat:
                       "rw": "Shakisha kuri interineti amakuru agezweho werekane amasoko (bisaba urufunguzo rwa AI)",
                       "sw": "Tafuta wavuti kwa taarifa za sasa na uonyeshe vyanzo (inahitaji ufunguo wa AI)"}
     _use_search = st.checkbox(_search_labels.get(_chat_lang, _search_labels["en"]), key=f"use_search_{_chat_lang}", value=False)
+    _auto_labels = {"en": "Auto-detect the language I write in", "fr": "Détecter automatiquement la langue que j'écris",
+                    "rw": "Menya ururimi nanditsemo ubwanjye", "sw": "Gundua lugha ninayoandika kiotomatiki"}
+    _auto_lang = st.checkbox(_auto_labels.get(_chat_lang, _auto_labels["en"]), key=f"auto_lang_{_chat_lang}", value=True)
+    try:
+        import usage as _usage
+        st.caption(_usage.caption(st.session_state, _chat_lang))
+    except Exception:
+        _usage = None
     _level_idx = 0
     try:  # communicate naturally: the person can choose how simply or technically answers are written
         import register as _reg
@@ -239,6 +247,14 @@ with tab_chat:
     _q = _clicked or _prompt
     if _q:
         _hist = st.session_state[_history_key]
+        if _auto_lang and not _clicked:
+            try:  # answer in the language the person actually wrote in (only when the evidence is clear)
+                import langdetect_lite as _ld
+                _det = _ld.detect_confident(_q)
+            except Exception:
+                _det = None
+            if _det and _det != _chat_lang and _det in _L:
+                _chat_lang, _lk, _T = _det, _det, _L[_det]
         _hist.append({"role": "user", "content": _q})
         _routed = _route(_q, _chat_lang, force_ai=_force_ai) if _flow_ok else {"kind": "ai"}
         st.session_state[_rel_key] = []
@@ -254,6 +270,8 @@ with tab_chat:
             _lines += [f"{n}. {s_}" for n, s_ in enumerate(_routed["steps"], 1)]
             _lines += ["", f"_{_T['more']}_"]
             _hist.append({"role": "assistant", "content": "\n".join(_lines), "kind": "note"})
+            if _usage is not None:
+                _usage.record(st.session_state, "scam")
             st.rerun()
         elif _routed["kind"] == "guide":
             _e = _routed["entry"]
@@ -271,6 +289,8 @@ with tab_chat:
             except Exception:
                 pass
             _msg_out = {"role": "assistant", "content": _guide_text, "kind": "note"}
+            if _usage is not None:
+                _usage.record(st.session_state, "offline")
             _photo_term = None
             try:  # a keyword answer gets up to five real photos (Wikimedia Commons)
                 import webref as _wr0
@@ -345,6 +365,9 @@ with tab_chat:
                     pass
                 return _h or None
 
+            if _usage is not None and not _usage.allowed(st.session_state):    # fair-use limit reached (AI_MESSAGES_PER_SESSION)
+                _hist.append({"role": "assistant", "content": _usage.over_message(_chat_lang), "kind": "note"})
+                st.rerun()
             with st.chat_message("user"):
                 st.markdown(_q)
             with st.chat_message("assistant"):
@@ -355,7 +378,7 @@ with tab_chat:
 
                 def _ask_ai(**_kw):
                     from assistant_engine import answer_question
-                    return answer_question(question=_q, history=_history_ai, language_name=LANG_NAMES.get(lang, "English"),
+                    return answer_question(question=_q, history=_history_ai, language_name=LANG_NAMES.get(_chat_lang, "English"), language_code=_chat_lang,
                                            use_search=_use_search, intent_hint=_intent_hint(_q, _hist[:-1], _chat_lang), **_kw)
 
                 if _routed["kind"] == "translate":
@@ -414,6 +437,8 @@ with tab_chat:
                                 _gnote = _img.note(_chat_lang)
                         except Exception:
                             pass
+                if _usage is not None and _kind != "note":
+                    _usage.record(st.session_state, "ai")
                 _out = {"role": "assistant", "content": _msg}
                 if _kind:
                     _out["kind"] = _kind

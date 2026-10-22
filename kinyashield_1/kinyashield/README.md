@@ -39,3 +39,8 @@ Blind test round 1: 79.7% accuracy, 88% precision, 68.8% recall on 64 fictional 
 - Main file path in Streamlit Cloud: `kinyashield_1/kinyashield/app.py`.
 - Add `GEMINI_API_KEY = "..."` in the app's Secrets (never in code). Without it, the AI chat shows "not configured"; the checker and the offline safety guide still work.
 - Browser-only version (no server, works offline): `kinyashield_1/index.html`.
+
+## Open-model option, evaluation and training (added with the 90-day plan)
+Gemini stays the default. Set `LLM_BASE_URL` (+ `LLM_PROVIDER`, `LLM_MODEL`, `LLM_ENGLISH_ONLY`, `TRANSLATOR`, `AI_MESSAGES_PER_SESSION`) in Streamlit Secrets to use a vLLM / llama.cpp / Ollama server instead: see `docs/OPEN_MODEL_GUIDE.md`.
+Evaluation: `python -I eval/run_eval.py` (routing + human review sheet), `python -I eval/eval_translation.py` (BLEU/chrF). Training data and a LoRA template (not run, no GPU): `training/`.
+What is built, what needs people/GPUs: `docs/ROADMAP_90_DAYS.md`.

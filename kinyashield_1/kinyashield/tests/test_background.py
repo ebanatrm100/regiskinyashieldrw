@@ -101,8 +101,9 @@ class Background(unittest.TestCase):
         h = B.rings_html()
         for corner in ("tl", "tr", "bl", "br"):
             self.assertIn(f'class="ks-ring {corner}"', h)
+        self.assertEqual(h.count('<i class="c"></i>'), 4)       # the crown sits with the ring in every corner
         c = B.css()
-        self.assertIn("data:image/png;base64,", c)
+        self.assertEqual(c.count("data:image/png;base64,"), 2)  # ring + crown, each embedded once
         self.assertIn("position:fixed", c)
         self.assertIn("pointer-events:none", c)             # never blocks a click
         for rule in (".ks-ring.tl{", ".ks-ring.tr{", ".ks-ring.bl{", ".ks-ring.br{"):

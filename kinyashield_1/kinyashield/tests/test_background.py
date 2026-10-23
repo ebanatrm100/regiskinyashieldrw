@@ -149,6 +149,12 @@ class Background(unittest.TestCase):
         self.assertIn('[data-testid="stAlert"] *{color:#ffcf33 !important', c)
         self.assertNotIn('[data-testid="stAlert"] *{color:#10243a', c)
 
+    def test_text_inside_the_light_result_cards_is_black_not_white(self):
+        c = B.css()
+        self.assertIn(":not(.ks-card):not(.ks-msg):not(.ks-card *):not(.ks-msg *),", c)   # the light-text rule skips everything inside the cards
+        self.assertIn(".ks-card *{color:" + B.INK + " !important", c.replace(".ks-msg *,.stApp .block-container .ks-card *", ".ks-card *"))
+        self.assertEqual(B.INK, "#05070f")
+
 
 class AppWiring(unittest.TestCase):
     def test_rings_are_in_their_own_element_not_inside_the_style_element(self):

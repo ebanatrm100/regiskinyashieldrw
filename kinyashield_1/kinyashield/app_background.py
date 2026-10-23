@@ -13,7 +13,7 @@ _IMAGE = pathlib.Path(__file__).parent / "assets" / "galaxy_background.jpg"
 _RING = pathlib.Path(__file__).parent / "assets" / "ring_small.png"
 _COLLAGE = pathlib.Path(__file__).parent / "assets" / "panel_collage.jpg"
 _CROWN = pathlib.Path(__file__).parent / "assets" / "crown_small.png"
-INK = "#10243a"          # dark text, used only on the light cards/chat bubbles
+INK = "#05070f"          # dark text, used only on the light cards/chat bubbles
 LIGHT = "#f2f7ff"        # text colour used directly on the galaxy
 
 # Layout idea: the pictures live in the free space BESIDE the white content panel, never under it. The panel is narrowed on mid-size windows to keep a
@@ -60,7 +60,7 @@ __SIDEBAR__
 .stApp .block-container h1,.stApp .block-container h2,.stApp .block-container h3,.stApp .block-container h4,
 .stApp .block-container label,.stApp .block-container [data-testid="stWidgetLabel"] *,
 .stApp .block-container [data-testid="stCaptionContainer"] *,.stApp .block-container button[role="tab"] *,
-.stApp .block-container [data-testid="stMarkdownContainer"]:not([data-testid="stAlert"] *):not([data-testid="stChatMessage"] *):not(.ks-card *):not(.ks-msg *) :not(a):not(code):not(mark),
+.stApp .block-container [data-testid="stMarkdownContainer"]:not([data-testid="stAlert"] *):not([data-testid="stChatMessage"] *):not(.ks-card *):not(.ks-msg *) :not(a):not(code):not(mark):not(.ks-card):not(.ks-msg):not(.ks-card *):not(.ks-msg *),
 .stApp .block-container [data-testid="stExpander"] summary *,
 [data-testid="stSidebar"] label,[data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,[data-testid="stSidebar"] p,
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] :not(a){color:__LIGHT__ !important;text-shadow:0 0 6px rgba(0,0,12,.95),0 1px 3px rgba(0,0,12,.95)}

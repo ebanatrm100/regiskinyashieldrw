@@ -135,6 +135,15 @@ class Background(unittest.TestCase):
         white_rows = [y for y in range(a.shape[0]) if (a[y, 20:470].min(axis=1) > 225).sum() > 40 and y not in range(525, 545)]
         self.assertEqual(white_rows, [])                          # no text band (the only light row is the divider)
 
+    def test_sidebar_shows_the_collage_and_language_choices_and_arrows_are_white(self):
+        c = B.css()
+        self.assertIn('[data-testid="stSidebar"]{background-color:#0a0828 !important;background-image:var(--ks-collage) !important', c)
+        self.assertIn('[data-testid="stRadio"] label{background:rgba(4,6,30,.88)', c)       # every language on a dark chip
+        self.assertIn("label:has(input:checked)", c)                                        # the chosen language is highlighted in gold
+        self.assertIn('[data-testid="stSidebarCollapsedControl"]', c)                      # the >> / << sidebar arrows
+        self.assertIn("color:#ffffff !important;fill:#ffffff !important", c)
+        self.assertNotIn("__SIDEBAR__", c)
+
 
 class AppWiring(unittest.TestCase):
     def test_rings_are_in_their_own_element_not_inside_the_style_element(self):

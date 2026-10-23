@@ -56,7 +56,7 @@ _PANEL = """
 background-size:100% auto !important;background-repeat:repeat-y !important;border-radius:22px;
 padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width:calc(100% - 1.2rem) !important;
 box-shadow:0 0 44px rgba(130,90,255,.55);border:2px solid rgba(220,230,255,.75);color:__LIGHT__}
-[data-testid="stSidebar"]>div:first-child{background:rgba(5,11,30,.72) !important}
+__SIDEBAR__
 .stApp .block-container h1,.stApp .block-container h2,.stApp .block-container h3,.stApp .block-container h4,
 .stApp .block-container label,.stApp .block-container [data-testid="stWidgetLabel"] *,
 .stApp .block-container [data-testid="stCaptionContainer"] *,.stApp .block-container button[role="tab"] *,
@@ -95,6 +95,23 @@ CHIPS = (",".join(f".stApp .block-container {_EXC} > {t}" for t in _BLOCKS) + "{
          ".stApp .block-container .ks-steps,.stApp .block-container .ks-note,.stApp .block-container [data-testid=\"stExpander\"] summary{" + _CHIP_BG + "}\n"
          ".stApp .block-container [data-baseweb=\"tab-list\"]{background:rgba(4,6,30,.85) !important;border-radius:14px;padding:4px 8px;box-shadow:0 0 0 1px rgba(200,215,255,.3)}\n"
          ".stApp .block-container .ks-hero,.stApp .block-container .ks-verdict{background:rgba(4,6,30,.86) !important;box-shadow:0 0 0 1px rgba(200,215,255,.3)}\n")
+SIDEBAR = """
+[data-testid="stSidebar"]{background-color:#0a0828 !important;background-image:var(--ks-collage) !important;background-size:100% auto !important;
+background-repeat:repeat-y !important;border-right:2px solid rgba(220,230,255,.75);box-shadow:0 0 34px rgba(130,90,255,.55)}
+[data-testid="stSidebar"]>div:first-child,[data-testid="stSidebarContent"],[data-testid="stSidebarHeader"]{background:transparent !important}
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"]{background:rgba(4,6,30,.88) !important;border-radius:10px;padding:.2em .7em !important;width:fit-content;box-shadow:0 0 0 1px rgba(200,215,255,.35)}
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] *{color:#ffffff !important;font-weight:700 !important;text-shadow:none !important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label{background:rgba(4,6,30,.88) !important;border-radius:12px;padding:.35em .9em !important;margin:.25em 0 !important;
+box-shadow:0 0 0 1px rgba(200,215,255,.4)}
+[data-testid="stSidebar"] [data-testid="stRadio"] label *{color:#ffffff !important;font-weight:700 !important;font-size:1.05rem !important;text-shadow:none !important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){background:rgba(255,196,40,.30) !important;box-shadow:0 0 0 2px #ffd23f,0 0 14px rgba(255,210,63,.6)}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) *{color:#fff6cf !important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked)>div:first-child{background-color:#ffd23f !important;border-color:#ffd23f !important}
+[data-testid="stSidebarCollapsedControl"],[data-testid="stExpandSidebarButton"],[data-testid="stSidebarCollapseButton"] button,[data-testid="stSidebarCollapseButton"]{
+background:rgba(4,6,30,.88) !important;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.7)}
+[data-testid="stSidebarCollapsedControl"] *,[data-testid="stExpandSidebarButton"] *,[data-testid="stSidebarCollapseButton"] *,
+[data-testid="stHeader"] button *,[data-testid="stToolbar"] button *{color:#ffffff !important;fill:#ffffff !important;stroke:#ffffff}
+"""
 _COMPACT_MARGIN = """
 .stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{margin-top:5.4rem !important}
 """
@@ -106,7 +123,7 @@ def _full_rules():
     return "@media (min-width:900px){" + one + "}\n@media (min-width:1240px){" + two + "}\n"
 
 
-_PANEL = _PANEL.replace("__CHIPS__", CHIPS)
+_PANEL = _PANEL.replace("__CHIPS__", CHIPS).replace("__SIDEBAR__", SIDEBAR)
 _RULES = _VARS + _ART_BASE + _PANEL + _COMPACT_MARGIN + _full_rules()
 _PLAIN = _VARS_PLAIN + _PLAIN_BG + _PANEL
 

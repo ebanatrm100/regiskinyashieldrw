@@ -1,0 +1,9 @@
+# CPU or small-GPU server using llama.cpp with a GGUF file. Put the file in ./models and set GGUF_FILE in .env.
+#   docker compose -f deploy/docker-compose.llamacpp.yml up -d
+services:
+  llm:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: unless-stopped
+    ports: ["127.0.0.1:8080:8080"]
+    volumes: ["./models:/models"]
+    command: ["-m", "/models/${GGUF_FILE}", "--host", "0.0.0.0", "--port", "8080", "--api-key", "${MODEL_API_KEY}", "-c", "4096"]

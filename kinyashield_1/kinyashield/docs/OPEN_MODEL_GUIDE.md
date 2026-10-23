@@ -36,3 +36,9 @@ When `LLM_ENGLISH_ONLY=1` and the user writes in French / Kinyarwanda / Kiswahil
 
 ## 5. Privacy
 Only the local/offline answers stay inside the app. Gemini, Wikipedia/Wiktionary lookups and any translation service you configure receive the text of the question. Say so honestly to users; do not claim "fully local" unless you run everything yourself.
+
+## 6. One-command setup (files in `deploy/`)
+1. `cp deploy/env.example .env` and fill in `MODEL_ID` and a long random `MODEL_API_KEY`.
+2. GPU: `docker compose -f deploy/docker-compose.vllm.yml up -d` · CPU: `docker compose -f deploy/docker-compose.llamacpp.yml up -d`.
+3. Put HTTPS in front, copy `deploy/secrets.example.toml` into Streamlit Secrets with your real values.
+4. Verify: `python -I deploy/check_endpoint.py`, then `python -I eval/run_eval.py --live`.

@@ -70,7 +70,9 @@ __SIDEBAR__
 .stApp .block-container .ks-msg,.stApp .block-container .ks-card{background:#f1f6f9 !important;color:__INK__ !important;text-shadow:none}
 .stApp .block-container .ks-msg *,.stApp .block-container .ks-card *{color:__INK__ !important;text-shadow:none}
 .stApp .block-container [data-testid="stChatMessage"]{background:rgba(228,240,252,.92) !important;border-radius:14px}
-.stApp .block-container [data-testid="stChatMessage"] *,.stApp .block-container [data-testid="stAlert"] *{color:__INK__ !important;text-shadow:none}
+.stApp .block-container [data-testid="stChatMessage"] *{color:__INK__ !important;text-shadow:none}
+.stApp .block-container [data-testid="stAlert"],.stApp .block-container [data-testid="stAlert"]>div{background:rgba(4,6,30,.90) !important;border-radius:12px;box-shadow:0 0 0 2px #ffcf33}
+.stApp .block-container [data-testid="stAlert"] *{color:#ffcf33 !important;fill:#ffcf33 !important;font-weight:600;text-shadow:none}
 [data-testid="stElementContainer"]:has(style){display:none !important}
 __CHIPS__
 .ks-ring{position:fixed;width:min(400px,32vw);aspect-ratio:472/190;pointer-events:none;z-index:1;opacity:.96;filter:drop-shadow(0 0 7px rgba(255,200,40,.6))}

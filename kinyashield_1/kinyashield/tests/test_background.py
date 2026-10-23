@@ -144,6 +144,11 @@ class Background(unittest.TestCase):
         self.assertIn("color:#ffffff !important;fill:#ffffff !important", c)
         self.assertNotIn("__SIDEBAR__", c)
 
+    def test_alert_notes_such_as_the_draft_translation_note_are_ring_yellow_on_dark(self):
+        c = B.css()
+        self.assertIn('[data-testid="stAlert"] *{color:#ffcf33 !important', c)
+        self.assertNotIn('[data-testid="stAlert"] *{color:#10243a', c)
+
 
 class AppWiring(unittest.TestCase):
     def test_rings_are_in_their_own_element_not_inside_the_style_element(self):

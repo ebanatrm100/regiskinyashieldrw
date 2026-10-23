@@ -115,7 +115,7 @@ class Background(unittest.TestCase):
         except Exception:
             self.skipTest("Pillow not installed")
         im = Image.open(os.path.join(HERE, "assets", "galaxy_background.jpg"))
-        self.assertGreater(im.height, im.width)             # the portrait galaxy photo
+        self.assertGreater(im.width, 600)                   # the nebula photo
         self.assertLess(sum(im.convert("L").resize((1, 1)).getdata()), 90)   # dark enough for light text
 
 

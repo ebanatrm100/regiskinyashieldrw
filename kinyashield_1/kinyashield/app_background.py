@@ -60,10 +60,10 @@ padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width
 .stApp .block-container [data-testid="stMarkdownContainer"]:not([data-testid="stAlert"] *):not([data-testid="stChatMessage"] *):not(.ks-card *):not(.ks-msg *) :not(a):not(code):not(mark),
 .stApp .block-container [data-testid="stExpander"] summary *,
 [data-testid="stSidebar"] label,[data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] :not(a){color:__LIGHT__ !important;text-shadow:0 1px 3px rgba(0,0,12,.85)}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] :not(a){color:__LIGHT__ !important;text-shadow:0 0 6px rgba(0,0,12,.95),0 1px 3px rgba(0,0,12,.95)}
 .stApp .block-container a{color:#9fd0ff !important}
 .stApp .block-container .ks-hero,.stApp .block-container .ks-verdict{background:rgba(5,11,30,.62) !important;color:__LIGHT__ !important}
-.stApp .block-container .ks-steps,.stApp .block-container .ks-note{color:__LIGHT__ !important;text-shadow:0 1px 3px rgba(0,0,12,.85)}
+.stApp .block-container .ks-steps,.stApp .block-container .ks-note{color:__LIGHT__ !important;text-shadow:0 0 6px rgba(0,0,12,.95),0 1px 3px rgba(0,0,12,.95)}
 .stApp .block-container .ks-msg,.stApp .block-container .ks-card{background:#f1f6f9 !important;color:__INK__ !important;text-shadow:none}
 .stApp .block-container .ks-msg *,.stApp .block-container .ks-card *{color:__INK__ !important;text-shadow:none}
 .stApp .block-container [data-testid="stChatMessage"]{background:rgba(228,240,252,.92) !important;border-radius:14px}

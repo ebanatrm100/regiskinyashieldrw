@@ -44,3 +44,5 @@ Blind test round 1: 79.7% accuracy, 88% precision, 68.8% recall on 64 fictional 
 Gemini stays the default. Set `LLM_BASE_URL` (+ `LLM_PROVIDER`, `LLM_MODEL`, `LLM_ENGLISH_ONLY`, `TRANSLATOR`, `AI_MESSAGES_PER_SESSION`) in Streamlit Secrets to use a vLLM / llama.cpp / Ollama server instead: see `docs/OPEN_MODEL_GUIDE.md`.
 Evaluation: `python -I eval/run_eval.py` (routing + human review sheet), `python -I eval/eval_translation.py` (BLEU/chrF). Training data and a LoRA template (not run, no GPU): `training/`.
 What is built, what needs people/GPUs: `docs/ROADMAP_90_DAYS.md`.
+
+AI Technical Guide coverage (explainers, glossary, runnable demos, behaviour rules): `docs/AI_GUIDE_COVERAGE.md`; code in `ai_guide_db.py` and `ai_lab.py`; tests in `tests/test_ai_guide.py`.

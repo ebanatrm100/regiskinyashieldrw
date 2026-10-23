@@ -70,3 +70,27 @@ rw,Kuki ikirere ari ubururu?,ai,qa
 en,Translate 'the meeting starts at nine tomorrow' into Kinyarwanda,translate,translate_long
 en,Translate 'please call me when you arrive' into French,translate,translate_long
 fr,Traduis 'merci beaucoup pour votre aide' en swahili,translate,translate_long
+en,How does an AI assistant work?,guide,ai_explainer
+fr,Comment fonctionne une IA ?,guide,ai_explainer
+sw,AI inafanyaje kazi?,guide,ai_explainer
+rw,AI ikora ite?,guide,ai_explainer
+en,What is a token in an AI model?,guide,ai_explainer
+en,What is attention in AI?,guide,ai_explainer
+en,What is a logit?,guide,ai_explainer
+en,Does the AI know every document it was trained on?,guide,ai_explainer
+en,Does one chat retrain the model?,guide,ai_explainer
+en,Is AI conscious?,guide,ai_explainer
+en,What is prompt injection?,guide,ai_explainer
+en,Why does AI make things up?,guide,ai_explainer
+fr,Pourquoi l'IA se trompe ?,guide,ai_explainer
+en,How is an AI evaluated?,guide,ai_explainer
+en,How do I learn AI step by step?,guide,ai_explainer
+en,List AI terms,guide,ai_explainer
+en,What does chmod 640 report.txt do?,guide,ai_lab
+en,count tokens: Unbelievable cybersecurity,guide,ai_lab
+en,attention demo,guide,ai_lab
+en,gradient descent demo,guide,ai_lab
+en,loss 0.8,guide,ai_lab
+en,calculate 12*(3+4),guide,ai_lab
+fr,calcule 12*(3+4),guide,ai_lab
+en,next word demo,guide,ai_lab

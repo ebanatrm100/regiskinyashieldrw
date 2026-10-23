@@ -155,6 +155,13 @@ class Background(unittest.TestCase):
         self.assertIn(".ks-card *{color:" + B.INK + " !important", c.replace(".ks-msg *,.stApp .block-container .ks-card *", ".ks-card *"))
         self.assertEqual(B.INK, "#05070f")
 
+    def test_chat_box_is_pink_with_dark_typed_text(self):
+        c = B.css()
+        self.assertIn('[data-testid="stChatInput"],[data-testid="stChatInput"]>div', c)
+        self.assertIn("background:#ffc9e0 !important", c)
+        self.assertIn("-webkit-text-fill-color:#2b0719 !important", c)         # what you type is dark, never white-on-light
+        self.assertIn('[data-testid="stChatInput"] textarea::placeholder', c)
+
 
 class AppWiring(unittest.TestCase):
     def test_rings_are_in_their_own_element_not_inside_the_style_element(self):

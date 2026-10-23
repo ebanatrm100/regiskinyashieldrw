@@ -56,6 +56,16 @@ _PANEL = """
 background-size:100% auto !important;background-repeat:repeat-y !important;border-radius:22px;
 padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width:calc(100% - 1.2rem) !important;
 box-shadow:0 0 44px rgba(130,90,255,.55);border:2px solid rgba(220,230,255,.75);color:__LIGHT__}
+[data-testid="stChatInput"],[data-testid="stChatInput"]>div,[data-testid="stChatInput"] [data-baseweb="textarea"],[data-testid="stChatInput"] [data-baseweb="base-input"]{
+background:#ffc9e0 !important;border-radius:16px}
+[data-testid="stChatInput"]{box-shadow:0 0 0 2px #ff5fa2,0 0 18px rgba(255,95,162,.6)}
+[data-testid="stChatInput"] textarea,[data-testid="stChatInputTextArea"],[data-testid="stChatInput"] textarea:focus{background:transparent !important;color:#2b0719 !important;
+-webkit-text-fill-color:#2b0719 !important;caret-color:#2b0719 !important;font-weight:600;text-shadow:none !important}
+[data-testid="stChatInput"] textarea::placeholder{color:#8a3a62 !important;-webkit-text-fill-color:#8a3a62 !important;opacity:1}
+[data-testid="stChatInput"] button{background:#ff5fa2 !important;color:#ffffff !important;border-radius:12px}
+[data-testid="stChatInput"] button *{color:#ffffff !important;fill:#ffffff !important}
+.stApp textarea,.stApp input[type="text"],.stApp [data-baseweb="select"] *{text-shadow:none !important}
+.stApp .block-container textarea,.stApp .block-container input{color:#05070f !important;-webkit-text-fill-color:#05070f !important}
 __SIDEBAR__
 .stApp .block-container h1,.stApp .block-container h2,.stApp .block-container h3,.stApp .block-container h4,
 .stApp .block-container label,.stApp .block-container [data-testid="stWidgetLabel"] *,

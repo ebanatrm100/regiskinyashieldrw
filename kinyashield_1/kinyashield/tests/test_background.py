@@ -119,5 +119,14 @@ class Background(unittest.TestCase):
         self.assertLess(sum(im.convert("L").resize((1, 1)).getdata()), 90)   # dark enough for light text
 
 
+
+class AppWiring(unittest.TestCase):
+    def test_rings_are_in_their_own_element_not_inside_the_style_element(self):
+        src = open(os.path.join(HERE, "app.py"), encoding="utf-8").read()
+        self.assertIn("st.markdown(_bg.rings_html(), unsafe_allow_html=True)", src)
+        self.assertNotIn("_bg_css + _bg.rings_html()", src)   # that hid them: elements containing <style> are display:none
+        self.assertNotIn("<style", B.rings_html())
+
+
 if __name__ == "__main__":
     unittest.main()

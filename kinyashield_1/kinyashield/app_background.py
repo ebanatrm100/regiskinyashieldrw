@@ -41,7 +41,7 @@ background-repeat:no-repeat !important;background-attachment:fixed !important}
 _ART_FULL = """
 __SEL__{--ks-sb:__SB__;--ks-m:max(230px,calc((100vw - var(--ks-sb) - 736px) / 2));
 background-image:var(--ks-room),var(--ks-left),var(--ks-img) !important;
-background-size:auto min(64vh,560px,calc((var(--ks-m) - 2vw - 12px) / .692)),auto min(68vh,640px,calc((var(--ks-m) - 2vw - 12px) / .26)),cover !important;
+background-size:auto min(50vh,500px,calc((var(--ks-m) - 2vw - 12px) / .692)),auto min(46vh,520px,calc((var(--ks-m) - 2vw - 12px) / .26)),cover !important;
 background-position:right 1.5vw center,left calc(var(--ks-sb) + 1.5vw) center,center top !important}
 __SEL__ .block-container,__SEL__ [data-testid="stMainBlockContainer"]{max-width:min(736px,calc(100vw - var(--ks-sb) - 460px)) !important;margin-top:3.4rem !important}
 """
@@ -69,7 +69,7 @@ padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width
 .stApp .block-container [data-testid="stChatMessage"]{background:rgba(228,240,252,.92) !important;border-radius:14px}
 .stApp .block-container [data-testid="stChatMessage"] *,.stApp .block-container [data-testid="stAlert"] *{color:__INK__ !important;text-shadow:none}
 [data-testid="stElementContainer"]:has(style){display:none !important}
-.ks-ring{position:fixed;width:min(230px,24vw);aspect-ratio:472/190;pointer-events:none;z-index:0;opacity:.96;filter:drop-shadow(0 0 7px rgba(255,200,40,.6))}
+.ks-ring{position:fixed;width:min(400px,32vw);aspect-ratio:472/190;pointer-events:none;z-index:1;opacity:.96;filter:drop-shadow(0 0 7px rgba(255,200,40,.6))}
 .ks-ring i{position:absolute;display:block;background-repeat:no-repeat;background-size:contain}
 .ks-ring .r{left:0;right:0;bottom:0;height:51.6%;background-image:var(--ks-ringimg);background-position:center}
 .ks-ring .c{width:34%;aspect-ratio:132/88;bottom:44%;background-image:var(--ks-crownimg)}
@@ -77,7 +77,7 @@ padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width
 .ks-ring.tr .r{transform:scaleX(-1)}.ks-ring.bl .r{transform:scaleY(-1)}.ks-ring.br .r{transform:scale(-1,-1)}
 .ks-ring.tl{top:3.4rem;left:10px}.ks-ring.tr{top:3.4rem;right:10px}.ks-ring.bl{bottom:10px;left:10px}.ks-ring.br{bottom:10px;right:10px}
 @media (min-width:900px){.stApp:has([data-testid="stSidebar"][aria-expanded="true"]) .ks-ring.tl,.stApp:has([data-testid="stSidebar"][aria-expanded="true"]) .ks-ring.bl{left:calc(21rem + 10px)}}
-@media (max-width:640px){.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{padding:1rem .9rem 1.8rem !important}.ks-ring{width:22vw;opacity:.55}}
+@media (max-width:640px){.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{padding:1rem .9rem 1.8rem !important}.ks-ring{width:30vw;opacity:.6}}
 """
 _COMPACT_MARGIN = """
 .stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{margin-top:5.4rem !important}

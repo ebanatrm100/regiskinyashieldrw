@@ -24,7 +24,9 @@ try:
 
     _bg_css = _bg.css()
     if _bg_css:
-        st.markdown(_bg_css + _bg.rings_html(), unsafe_allow_html=True)
+        st.markdown(_bg_css, unsafe_allow_html=True)
+        # the rings must be in their OWN element: any element that contains a <style> is hidden by the background rules
+        st.markdown(_bg.rings_html(), unsafe_allow_html=True)
 except Exception:
     pass
 if lang != "en":

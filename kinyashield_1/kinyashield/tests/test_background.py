@@ -18,7 +18,7 @@ class Background(unittest.TestCase):
         self.assertIn(".stApp{", c)
         self.assertIn("cover !important", c)
         self.assertNotIn("rgba(255,255,255,.93)", c)     # the white layer is gone
-        self.assertIn("background:transparent !important;border-radius:0", c)
+        self.assertIn("var(--ks-collage)", c)                # the middle column shows the four-picture collage
         self.assertIn(B.LIGHT, c)                        # light text straight on the galaxy
         self.assertIn(B.INK, c)
         self.assertNotIn("__IMG__", c)
@@ -118,6 +118,22 @@ class Background(unittest.TestCase):
         self.assertGreater(im.width, 600)                   # the nebula photo
         self.assertLess(sum(im.convert("L").resize((1, 1)).getdata()), 90)   # dark enough for light text
 
+
+    def test_collage_is_in_the_middle_column_without_any_text_and_text_gets_dark_chips(self):
+        c = B.css()
+        self.assertIn("background-size:100% auto !important", c)
+        self.assertIn("rgba(4,6,30,.80) !important", c)             # dark chip behind every text block
+        self.assertIn("[data-baseweb=\"tab-list\"]", c)
+        try:
+            from PIL import Image
+        except Exception:
+            self.skipTest("Pillow not installed")
+        im = Image.open(os.path.join(HERE, "assets", "panel_collage.jpg"))
+        self.assertEqual(im.size, (990, 1072))                    # four panes only: the title strip and label strips were cut away
+        import numpy as np
+        a = np.asarray(im.convert("RGB")).astype(int)
+        white_rows = [y for y in range(a.shape[0]) if (a[y, 20:470].min(axis=1) > 225).sum() > 40 and y not in range(525, 545)]
+        self.assertEqual(white_rows, [])                          # no text band (the only light row is the divider)
 
 
 class AppWiring(unittest.TestCase):

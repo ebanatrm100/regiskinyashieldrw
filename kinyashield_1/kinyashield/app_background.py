@@ -11,6 +11,7 @@ except Exception:  # the decorations are optional; the sky picture and the reada
 
 _IMAGE = pathlib.Path(__file__).parent / "assets" / "galaxy_background.jpg"
 _RING = pathlib.Path(__file__).parent / "assets" / "ring_small.png"
+_COLLAGE = pathlib.Path(__file__).parent / "assets" / "panel_collage.jpg"
 _CROWN = pathlib.Path(__file__).parent / "assets" / "crown_small.png"
 INK = "#10243a"          # dark text, used only on the light cards/chat bubbles
 LIGHT = "#f2f7ff"        # text colour used directly on the galaxy
@@ -19,10 +20,10 @@ LIGHT = "#f2f7ff"        # text colour used directly on the galaxy
 # side column free; when the window is too small for side columns (phones, narrow windows) the pictures move to the top and bottom edges.
 # --ks-sb is the width of the open sidebar, --ks-m the free space on each side of the panel.
 _VARS = """
-.stApp{--ks-ringimg:url("__RING__");--ks-crownimg:url("__CROWN__");--ks-room:url("__ROOM__");--ks-servers:url("__SERVERS__");--ks-locksrow:url("__LOCKSROW__");--ks-left:url("__LEFT__");--ks-img:url("__IMG__")}
+.stApp{--ks-ringimg:url("__RING__");--ks-crownimg:url("__CROWN__");--ks-collage:url("__COLLAGE__");--ks-room:url("__ROOM__");--ks-servers:url("__SERVERS__");--ks-locksrow:url("__LOCKSROW__");--ks-left:url("__LEFT__");--ks-img:url("__IMG__")}
 """
 _VARS_PLAIN = """
-.stApp{--ks-ringimg:url("__RING__");--ks-crownimg:url("__CROWN__");--ks-img:url("__IMG__")}
+.stApp{--ks-ringimg:url("__RING__");--ks-crownimg:url("__CROWN__");--ks-collage:url("__COLLAGE__");--ks-img:url("__IMG__")}
 """
 
 _PLAIN_BG = """
@@ -51,8 +52,10 @@ _CLOSED = '.stApp:not(:has([data-testid="stSidebar"][aria-expanded="true"]))'
 _PANEL = """
 [data-testid="stAppViewContainer"],[data-testid="stMain"],[data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stBottom"],
 [data-testid="stBottom"]>div{background:transparent !important}
-.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{background:transparent !important;border-radius:0;
-padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width:calc(100% - 1.2rem) !important;box-shadow:none;border:0;color:__LIGHT__}
+.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{background-color:#0a0828 !important;background-image:var(--ks-collage) !important;
+background-size:100% auto !important;background-repeat:repeat-y !important;border-radius:22px;
+padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width:calc(100% - 1.2rem) !important;
+box-shadow:0 0 44px rgba(130,90,255,.55);border:2px solid rgba(220,230,255,.75);color:__LIGHT__}
 [data-testid="stSidebar"]>div:first-child{background:rgba(5,11,30,.72) !important}
 .stApp .block-container h1,.stApp .block-container h2,.stApp .block-container h3,.stApp .block-container h4,
 .stApp .block-container label,.stApp .block-container [data-testid="stWidgetLabel"] *,
@@ -69,6 +72,7 @@ padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width
 .stApp .block-container [data-testid="stChatMessage"]{background:rgba(228,240,252,.92) !important;border-radius:14px}
 .stApp .block-container [data-testid="stChatMessage"] *,.stApp .block-container [data-testid="stAlert"] *{color:__INK__ !important;text-shadow:none}
 [data-testid="stElementContainer"]:has(style){display:none !important}
+__CHIPS__
 .ks-ring{position:fixed;width:min(400px,32vw);aspect-ratio:472/190;pointer-events:none;z-index:1;opacity:.96;filter:drop-shadow(0 0 7px rgba(255,200,40,.6))}
 .ks-ring i{position:absolute;display:block;background-repeat:no-repeat;background-size:contain}
 .ks-ring .r{left:0;right:0;bottom:0;height:51.6%;background-image:var(--ks-ringimg);background-position:center}
@@ -79,6 +83,18 @@ padding:1.4rem 1.6rem 2.2rem !important;margin:3.4rem auto 7rem !important;width
 @media (min-width:900px){.stApp:has([data-testid="stSidebar"][aria-expanded="true"]) .ks-ring.tl,.stApp:has([data-testid="stSidebar"][aria-expanded="true"]) .ks-ring.bl{left:calc(21rem + 10px)}}
 @media (max-width:640px){.stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{padding:1rem .9rem 1.8rem !important}.ks-ring{width:30vw;opacity:.6}}
 """
+_EXC = ('[data-testid="stMarkdownContainer"]:not([data-testid="stAlert"] *):not([data-testid="stChatMessage"] *):not(.ks-card *):not(.ks-msg *)'
+        ':not([data-testid="stWidgetLabel"] *):not([data-testid="stCaptionContainer"] *):not([data-testid="stCheckbox"] *):not([data-testid="stRadio"] *)'
+        ':not([data-baseweb="tab-list"] *):not(.ks-hero *):not(.ks-verdict *)')
+_BLOCKS = ("p", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol")
+_CHIP_BG = "background:rgba(4,6,30,.80) !important;border-radius:10px;padding:.15em .6em !important;width:fit-content;max-width:100%;box-shadow:0 0 0 1px rgba(200,215,255,.25)"
+CHIPS = (",".join(f".stApp .block-container {_EXC} > {t}" for t in _BLOCKS) + "{" + _CHIP_BG + "}\n"
+         ".stApp .block-container [data-testid=\"stMarkdownContainer\"] > ul,.stApp .block-container [data-testid=\"stMarkdownContainer\"] > ol{padding-left:1.8em !important}\n"
+         ".stApp .block-container [data-testid=\"stWidgetLabel\"],.stApp .block-container [data-testid=\"stCaptionContainer\"],"
+         ".stApp .block-container [data-testid=\"stCheckbox\"] label,.stApp .block-container [data-testid=\"stRadio\"] label,"
+         ".stApp .block-container .ks-steps,.stApp .block-container .ks-note,.stApp .block-container [data-testid=\"stExpander\"] summary{" + _CHIP_BG + "}\n"
+         ".stApp .block-container [data-baseweb=\"tab-list\"]{background:rgba(4,6,30,.85) !important;border-radius:14px;padding:4px 8px;box-shadow:0 0 0 1px rgba(200,215,255,.3)}\n"
+         ".stApp .block-container .ks-hero,.stApp .block-container .ks-verdict{background:rgba(4,6,30,.86) !important;box-shadow:0 0 0 1px rgba(200,215,255,.3)}\n")
 _COMPACT_MARGIN = """
 .stApp .block-container,.stApp [data-testid="stMainBlockContainer"]{margin-top:5.4rem !important}
 """
@@ -90,6 +106,7 @@ def _full_rules():
     return "@media (min-width:900px){" + one + "}\n@media (min-width:1240px){" + two + "}\n"
 
 
+_PANEL = _PANEL.replace("__CHIPS__", CHIPS)
 _RULES = _VARS + _ART_BASE + _PANEL + _COMPACT_MARGIN + _full_rules()
 _PLAIN = _VARS_PLAIN + _PLAIN_BG + _PANEL
 
@@ -106,6 +123,13 @@ def data_uri():
 def ring_uri():
     try:
         return "data:image/png;base64," + base64.b64encode(_RING.read_bytes()).decode("ascii")
+    except Exception:
+        return ""
+
+
+def collage_uri():
+    try:
+        return "data:image/jpeg;base64," + base64.b64encode(_COLLAGE.read_bytes()).decode("ascii")
     except Exception:
         return ""
 
@@ -139,6 +163,6 @@ def css():
                 pass
         if "__SERVERS__" in rules or "__LEFT__" in rules or "__ROOM__" in rules:  # decorations unavailable: plain sky picture only
             rules = _PLAIN
-        return "<style>" + rules.replace("__IMG__", img).replace("__RING__", ring_uri()).replace("__CROWN__", crown_uri()).replace("__LIGHT__", LIGHT).replace("__INK__", INK).replace("\n", " ") + "</style>"
+        return "<style>" + rules.replace("__IMG__", img).replace("__RING__", ring_uri()).replace("__CROWN__", crown_uri()).replace("__COLLAGE__", collage_uri()).replace("__LIGHT__", LIGHT).replace("__INK__", INK).replace("\n", " ") + "</style>"
     except Exception:
         return ""

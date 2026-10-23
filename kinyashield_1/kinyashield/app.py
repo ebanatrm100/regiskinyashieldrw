@@ -24,7 +24,7 @@ try:
 
     _bg_css = _bg.css()
     if _bg_css:
-        st.markdown(_bg_css, unsafe_allow_html=True)
+        st.markdown(_bg_css + _bg.rings_html(), unsafe_allow_html=True)
 except Exception:
     pass
 if lang != "en":

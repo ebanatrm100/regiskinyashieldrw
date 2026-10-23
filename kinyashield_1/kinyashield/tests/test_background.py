@@ -7,7 +7,7 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Background(unittest.TestCase):
     def test_picture_is_bundled_and_light_enough_to_embed(self):
-        p = os.path.join(HERE, "assets", "sky_background.jpg")
+        p = os.path.join(HERE, "assets", "galaxy_background.jpg")
         self.assertTrue(os.path.isfile(p))
         self.assertLess(os.path.getsize(p), 400_000)
 
@@ -17,7 +17,9 @@ class Background(unittest.TestCase):
         self.assertIn("url(\"data:image/jpeg;base64,", c)
         self.assertIn(".stApp{", c)
         self.assertIn("cover !important", c)
-        self.assertIn("rgba(255,255,255,.93)", c)         # content panel
+        self.assertNotIn("rgba(255,255,255,.93)", c)     # the white layer is gone
+        self.assertIn("background:transparent !important;border-radius:0", c)
+        self.assertIn(B.LIGHT, c)                        # light text straight on the galaxy
         self.assertIn(B.INK, c)
         self.assertNotIn("__IMG__", c)
         self.assertNotIn("__INK__", c)
@@ -94,6 +96,26 @@ class Background(unittest.TestCase):
         self.assertGreater((tagline > 235).sum(), 300)                 # the small tagline is still there
         plane = im[470:520, 1060:1125].max(axis=2)
         self.assertGreater((plane > 235).sum(), 100)                   # paper plane too
+
+    def test_gold_ring_in_all_four_corners(self):
+        h = B.rings_html()
+        for corner in ("tl", "tr", "bl", "br"):
+            self.assertIn(f'class="ks-ring {corner}"', h)
+        c = B.css()
+        self.assertIn("data:image/png;base64,", c)
+        self.assertIn("position:fixed", c)
+        self.assertIn("pointer-events:none", c)             # never blocks a click
+        for rule in (".ks-ring.tl{", ".ks-ring.tr{", ".ks-ring.bl{", ".ks-ring.br{"):
+            self.assertIn(rule, c)
+
+    def test_galaxy_is_the_page_background(self):
+        try:
+            from PIL import Image
+        except Exception:
+            self.skipTest("Pillow not installed")
+        im = Image.open(os.path.join(HERE, "assets", "galaxy_background.jpg"))
+        self.assertGreater(im.height, im.width)             # the portrait galaxy photo
+        self.assertLess(sum(im.convert("L").resize((1, 1)).getdata()), 90)   # dark enough for light text
 
 
 if __name__ == "__main__":

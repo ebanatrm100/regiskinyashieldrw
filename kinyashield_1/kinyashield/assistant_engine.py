@@ -34,6 +34,21 @@ def _get_api_key() -> str | None:
     return value or None
 
 
+def _get_api_keys() -> list[str]:
+    """GEMINI_API_KEY plus optional GEMINI_API_KEY_2 ... _4 (several free keys share the load when one hits its quota)."""
+    out = []
+    for name in ("GEMINI_API_KEY", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3", "GEMINI_API_KEY_4"):
+        v = os.getenv(name, "").strip()
+        if not v:
+            try:
+                v = str(st.secrets.get(name, "")).strip()
+            except Exception:
+                v = ""
+        if v and v not in out:
+            out.append(v)
+    return out
+
+
 def _sources_from(response) -> list[tuple[str, str]]:
     """(title, url) pairs the model actually used, read from Gemini's grounding data. Nothing is ever invented here."""
     out, seen = [], set()
@@ -69,13 +84,17 @@ def answer_question(
     term_mode: the user typed just a word or short topic; give a complete explanation.
     reference: Wikipedia/Wiktionary text for that term (untrusted data; may be incomplete or about another meaning)."""
     prov = _llm.provider()          # "gemini" (default), "openai" (your own vLLM / llama.cpp / Ollama server) or "" (nothing configured)
-    api_key = _get_api_key() if prov == "gemini" else None
-    if prov == "" or (prov == "gemini" and not api_key):
+    api_keys = _get_api_keys() if prov in ("gemini", "") else []
+    has_backup = bool(_llm.backups())
+    if prov == "" and api_keys:
+        prov = "gemini"
+    if (prov == "" or (prov == "gemini" and not api_keys)) and not has_backup:
         raise MissingAPIKeyError(
             "GEMINI_API_KEY is not configured. Add it as a Codespaces secret, "
             "or add it in Streamlit Community Cloud app secrets after deployment "
-            "(or set LLM_BASE_URL and LLM_MODEL to use your own open-model server)."
+            "(or set LLM_BASE_URL and LLM_MODEL to use your own open-model server, or add GROQ_API_KEY / OPENROUTER_API_KEY as a backup)."
         )
+    api_key = api_keys[0] if api_keys else None
 
     clean_question = question.strip()
     if not clean_question:
@@ -219,8 +238,19 @@ UNDERSTAND THE REAL PROBLEM (do this silently before every answer):
             "<<<DOCUMENT\n" + document[:60000] + "\nDOCUMENT>>>"
         )
 
+    def _backup():
+        label, text = _llm.backup_chat(system_instruction, history, clean_question)
+        return text
+
     if prov == "openai":
-        return _open_model.answer(system_instruction, history, clean_question, language_name, language_code, use_search)
+        try:
+            return _open_model.answer(system_instruction, history, clean_question, language_name, language_code, use_search)
+        except Exception:
+            if has_backup:
+                return _backup()
+            raise
+    if prov != "gemini":          # nothing but backup services configured
+        return _backup()
 
     # Limit the amount of conversation sent with each request to control latency
     # and avoid sending an unlimited session history to the model.
@@ -241,10 +271,17 @@ UNDERSTAND THE REAL PROBLEM (do this silently before every answer):
         types.Content(role="user", parts=[types.Part.from_text(text=clean_question)])
     )
 
-    model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip() or "gemini-3.8-flash"
-    client = genai.Client(api_key=api_key)
+    wanted = os.getenv("GEMINI_MODEL", "").strip()
+    try:
+        wanted = wanted or str(st.secrets.get("GEMINI_MODEL", "")).strip()
+    except Exception:
+        pass
+    models = []
+    for m in [wanted, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-2.5-flash-lite"]:
+        if m and m not in models:
+            models.append(m)
 
-    def _call(with_search: bool):
+    def _call(client, model, with_search: bool):
         cfg = dict(system_instruction=system_instruction, temperature=0.4, max_output_tokens=1800)
         if with_search:
             cfg["tools"] = [types.Tool(google_search=types.GoogleSearch())]
@@ -252,15 +289,32 @@ UNDERSTAND THE REAL PROBLEM (do this silently before every answer):
 
     search_note = ""
     searched = False
-    if use_search:
-        try:
-            response = _call(True)
-            searched = True
-        except Exception:
-            response = _call(False)  # search not available for this key/model: answer without it and say so
-            search_note = "\n\n_Web search was not available, so this answer is not based on live sources. Check important facts with an official source._"
-    else:
-        response = _call(False)
+    response, last_error = None, None
+    for key in api_keys:                       # every key, every model, until one answers
+        client = genai.Client(api_key=key)
+        for model in models:
+            try:
+                if use_search:
+                    try:
+                        response = _call(client, model, True)
+                        searched = True
+                    except Exception:
+                        response = _call(client, model, False)  # search not available for this key/model: answer without it and say so
+                        search_note = "\n\n_Web search was not available, so this answer is not based on live sources. Check important facts with an official source._"
+                else:
+                    response = _call(client, model, False)
+                if (getattr(response, "text", None) or "").strip():
+                    break
+                response = None
+            except Exception as e:
+                last_error = e
+                response = None
+        if response is not None:
+            break
+    if response is None:
+        if has_backup:                         # Gemini unavailable (quota, key, outage): use a backup service
+            return _backup()
+        raise last_error or RuntimeError("The AI could not answer. Please try again.")
     answer = (getattr(response, "text", None) or "").strip()
     if not answer:
         raise RuntimeError(

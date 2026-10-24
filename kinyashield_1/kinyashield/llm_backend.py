@@ -64,10 +64,11 @@ def _post(url: str, payload: dict, api_key: str = "", timeout: int = TIMEOUT) ->
         raise LLMError(f"The model server could not be reached ({e.__class__.__name__}).") from None
 
 
-def openai_chat(system: str, history, question: str, temperature: float = 0.4, max_tokens: int = 1800, history_limit: int = 12) -> str:
-    """One chat completion from the configured OpenAI-compatible server."""
-    base = validate_base_url(settings.get("LLM_BASE_URL"))
-    model = settings.get("LLM_MODEL")
+def openai_chat(system: str, history, question: str, temperature: float = 0.4, max_tokens: int = 1800, history_limit: int = 12,
+                base_url: str = "", model_name: str = "", key: str = "") -> str:
+    """One chat completion from the configured OpenAI-compatible server (or from the explicit base_url/model_name/key given)."""
+    base = validate_base_url(base_url or settings.get("LLM_BASE_URL"))
+    model = model_name or settings.get("LLM_MODEL")
     if not model:
         raise LLMError("LLM_MODEL is not configured.")
     messages = [{"role": "system", "content": system}]
@@ -77,7 +78,7 @@ def openai_chat(system: str, history, question: str, temperature: float = 0.4, m
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": question})
     data = _post(base + "/chat/completions", {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens},
-                 settings.get("LLM_API_KEY"))
+                 key or settings.get("LLM_API_KEY"))
     try:
         text = (data["choices"][0]["message"]["content"] or "").strip()
     except Exception:
@@ -86,3 +87,33 @@ def openai_chat(system: str, history, question: str, temperature: float = 0.4, m
     if not text:
         raise LLMError("The model returned an empty answer.")
     return text
+
+
+# ---- backup services: free-tier keys the owner can add in Secrets; each is tried in order when the main AI fails.
+PRESETS = [  # (secret name, base url, default model, model secret name)
+    ("GROQ_API_KEY", "https://api.groq.com/openai/v1", "llama-3.3-70b-versatile", "GROQ_MODEL"),
+    ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "meta-llama/llama-3.3-70b-instruct:free", "OPENROUTER_MODEL"),
+    ("MISTRAL_API_KEY", "https://api.mistral.ai/v1", "mistral-small-latest", "MISTRAL_MODEL"),
+    ("TOGETHER_API_KEY", "https://api.together.xyz/v1", "meta-llama/Llama-3.3-70B-Instruct-Turbo", "TOGETHER_MODEL"),
+]
+
+
+def backups():
+    """[(label, base_url, model, key)] for every backup service whose key is present in Secrets."""
+    out = []
+    for name, base, model, mname in PRESETS:
+        k = settings.get(name)
+        if k:
+            out.append((name.split("_")[0].title(), base, settings.get(mname) or model, k))
+    return out
+
+
+def backup_chat(system, history, question):
+    """Try each backup service in turn; returns (label, text) or raises LLMError listing which ones failed (no secrets)."""
+    errs = []
+    for label, base, model, key in backups():
+        try:
+            return label, openai_chat(system, history, question, base_url=base, model_name=model, key=key)
+        except Exception as e:
+            errs.append(f"{label}: {str(e)[:80]}")
+    raise LLMError("No backup AI service answered. " + "; ".join(errs) if errs else "No backup AI service is configured.")

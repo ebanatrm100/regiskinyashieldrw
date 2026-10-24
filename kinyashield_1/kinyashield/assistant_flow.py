@@ -71,6 +71,8 @@ _find_trust = _optional("trust_db")        # privacy, limits, source policy, whe
 _find_ai_lab = _optional("ai_lab")        # AI-guide demos: token counter, attention, next word, loss, gradient, chmod, strict calculator
 _find_image_lab = _optional("image_lab")       # image-prompt tools (improve/score/thirds/ratio/latent/denoise), four languages
 _find_image_guide = _optional("image_guide_db")  # AI image generation guide (process, techniques, prompts, composition, fixes), four languages
+_find_research_lab = _optional("research_lab")       # interpret / research plan / rag demo tools, four languages
+_find_research_guide = _optional("research_guide_db")  # how an AI interprets, researches (RAG, tools) and composes answers, four languages
 _find_ai_guide = _optional("ai_guide_db")  # how AI assistants work (from the AI Technical Guide), four languages
 _find_writing = _optional("writing_db")    # templates: emails, CVs, applications, reports, proposals, messages
 
@@ -165,7 +167,7 @@ def route(question, lang, force_ai=False):
         named = _find_name(q, k)
         if named is not None:
             return {"kind": "guide", "entry": named}
-    for _finder in ((_find_ai_lab, _find_image_lab, _find_ai_guide, _find_image_guide) if not force_ai else ()):   # AI-guide demos (strict commands) and "how does an AI assistant work" topics
+    for _finder in ((_find_ai_lab, _find_image_lab, _find_research_lab, _find_research_guide, _find_ai_guide, _find_image_guide) if not force_ai else ()):   # AI-guide demos (strict commands) and "how does an AI assistant work" topics
         if _finder is None:
             continue
         try:

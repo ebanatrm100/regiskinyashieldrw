@@ -299,7 +299,7 @@ with tab_chat:
                 if _e.get("photo_query"):      # a curated glossary term (cybersecurity): search for the photo subject chosen for that term
                     _photo_term = _e["photo_query"]
                 elif _e.get("kind") not in {"owner", "intent", "greeting", "trust", "translate", "phone", "name", "scam", "scam_list", "phone_list", "physics", "writing", "tutor", "formula",
-                                            "cyber_list", "ai_lab", "ai_guide"} and not _e.get("gallery") and not _e.get("image_query"):
+                                            "cyber_list", "ai_lab", "ai_guide", "image_lab"} and not _e.get("gallery") and not _e.get("image_query"):
                     _photo_term = _wr0.extract_term(_q)
             except Exception:
                 _photo_term = None

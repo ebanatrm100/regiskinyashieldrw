@@ -74,6 +74,7 @@ _find_image_lab = _optional("image_lab")       # image-prompt tools (improve/sco
 _find_image_guide = _optional("image_guide_db")  # AI image generation guide (process, techniques, prompts, composition, fixes), four languages
 _find_research_lab = _optional("research_lab")       # interpret / research plan / rag demo tools, four languages
 _find_research_guide = _optional("research_guide_db")  # how an AI interprets, researches (RAG, tools) and composes answers, four languages
+_find_ink = _optional("inkoranyamagambo")      # owner-supplied Kinyarwanda dictionary (461 words with Kinyarwanda meanings)
 _find_ai_guide = _optional("ai_guide_db")  # how AI assistants work (from the AI Technical Guide), four languages
 _find_writing = _optional("writing_db")    # templates: emails, CVs, applications, reports, proposals, messages
 
@@ -227,6 +228,13 @@ def route(question, lang, force_ai=False):
         defined = _find_definition(q, k)
         if defined is not None:
             return {"kind": "guide", "entry": defined}
+    if not force_ai and _find_ink is not None:   # "umuntu ni iki?", "igisobanuro cya umwana": the owner's dictionary, when the word is in it
+        try:
+            _ink = _find_ink(q, k, True)
+        except Exception:
+            _ink = None
+        if _ink is not None:
+            return {"kind": "guide", "entry": _ink}
     if not force_ai:
         entry = best(q, k)
         comp = _find_computer(q, k) if _find_computer is not None else None
@@ -247,4 +255,11 @@ def route(question, lang, force_ai=False):
             return {"kind": "guide", "entry": comp}
         if entry is not None:
             return {"kind": "guide", "entry": entry}
+    if not force_ai and _find_ink is not None:   # a bare dictionary word in the Kinyarwanda interface
+        try:
+            _ink = _find_ink(q, k, False)
+        except Exception:
+            _ink = None
+        if _ink is not None:
+            return {"kind": "guide", "entry": _ink}
     return {"kind": "ai"}

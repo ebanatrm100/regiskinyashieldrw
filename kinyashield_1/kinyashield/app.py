@@ -51,10 +51,17 @@ try:
 except Exception:  # the business tab is optional; the other tabs never depend on it
     _org = None
     _org_label = None
-_tab_names = [t["tab_check"], t["tab_learn"], t["tab_about"], _chat_label] + ([_org_label] if _org else [])
+try:
+    import image_studio_ui as _studio
+    _studio_label = _studio.TAB.get(str(lang).lower(), _studio.TAB["en"])
+except Exception:  # the Image Studio is optional; the other tabs never depend on it
+    _studio = None
+    _studio_label = None
+_tab_names = [t["tab_check"], t["tab_learn"], t["tab_about"], _chat_label] + ([_studio_label] if _studio else []) + ([_org_label] if _org else [])
 _tabs = st.tabs(_tab_names)
 tab_check, tab_learn, tab_about, tab_chat = _tabs[:4]
-tab_org = _tabs[4] if _org else None
+tab_studio = _tabs[4] if _studio else None
+tab_org = _tabs[4 + (1 if _studio else 0)] if _org else None
 with tab_check:
     examples = {}
     p = pathlib.Path(__file__).parent / "data" / "dev_messages.csv"
@@ -217,9 +224,34 @@ with tab_chat:
     except Exception:
         st.caption("…")
 
+    _atts = {"images": [], "text": "", "names": []}
+    try:  # attach photos or files: they stay attached to your questions until you remove them
+        import attachments as _att
+        _att_labels = {"en": ("Attach photos or files (PNG, JPG, WEBP, PDF, Word, TXT, CSV)", "Attached; they stay with your questions until you remove them:"),
+                       "fr": ("Joindre des photos ou fichiers (PNG, JPG, WEBP, PDF, Word, TXT, CSV)", "Joints ; ils restent avec vos questions jusqu'à ce que vous les retiriez :"),
+                       "rw": ("Shyiramo amafoto cyangwa dosiye (PNG, JPG, WEBP, PDF, Word, TXT, CSV)", "Byashyizweho; bizaguma ku bibazo byawe kugeza ubikuyeho:"),
+                       "sw": ("Ambatisha picha au faili (PNG, JPG, WEBP, PDF, Word, TXT, CSV)", "Vimeambatishwa; vitabaki na maswali yako hadi uviondoe:")}
+        _al = _att_labels.get(_chat_lang, _att_labels["en"])
+        with st.expander(_al[0]):
+            _ups = st.file_uploader(_al[0], type=_att.ALL_EXTS, accept_multiple_files=True, key=f"chat_attach_{_chat_lang}", label_visibility="collapsed")
+        if _ups:
+            try:
+                _atts = _att.read([(f_.name, f_.getvalue()) for f_ in _ups])
+                st.caption(_al[1] + " " + ", ".join(_atts["names"]))
+            except _att.AttachError as _ae:
+                st.warning(_att.message(str(_ae), _chat_lang))
+    except Exception:
+        _atts = {"images": [], "text": "", "names": []}
+
     for _message in st.session_state[_history_key]:
         with st.chat_message(_message["role"]):
             st.markdown(_message["content"])
+            for _gi, _g in enumerate(_message.get("generated") or []):   # pictures the AI created for a "draw ..." request
+                try:
+                    st.image(_g["data"], width=480)
+                    st.download_button("⬇", _g["data"], file_name=f"kinyashield_image_{_gi + 1}.png", mime=_g["mime"], key=f"dl_{_chat_lang}_{id(_message)}_{_gi}")
+                except Exception:
+                    pass
             if _message.get("image"):  # photo for a computer answer (Wikimedia Commons); text above is complete without it
                 try:
                     st.image(_message["image"]["url"], caption=_message["image"]["caption"], width=480)
@@ -269,7 +301,52 @@ with tab_chat:
             if _det and _det != _chat_lang and _det in _L:
                 _chat_lang, _lk, _T = _det, _det, _L[_det]
         _hist.append({"role": "user", "content": _q})
-        _routed = _route(_q, _chat_lang, force_ai=_force_ai) if _flow_ok else {"kind": "ai"}
+        try:  # "draw a cat on a roof" / "génère une image de ..." / "kora ishusho y'inka": create a picture with the image service
+            import image_gen as _ig
+            _idea = _ig.parse_request(_q)
+        except Exception:
+            _ig, _idea = None, None
+        if _idea:
+            try:
+                _ref = (_atts["images"][0][0], _atts["images"][0][1]) if _atts["images"] else None
+                _prompt_used = _ig.build_prompt(_idea, _ig.suggest_style(_idea), "1:1")
+                with st.spinner("…"):
+                    _made = _ig.generate(_prompt_used, "1:1", 1, _ref)
+                _hist.append({"role": "assistant", "content": _ig.DISCLOSE.get(_chat_lang, _ig.DISCLOSE["en"]), "kind": "note",
+                              "generated": [{"data": d_, "mime": m_, "provider": p_} for d_, m_, p_ in _made]})
+            except Exception as _ie:
+                _txt = _ig.friendly_error(_ie, _chat_lang) if _ig else str(_ie)
+                try:
+                    if str(_ie) == "not_configured":
+                        _txt += "\n\n```\n" + _prompt_used + "\n```"
+                except Exception:
+                    pass
+                _hist.append({"role": "assistant", "content": _txt, "kind": "note"})
+            st.session_state[_rel_key] = []
+            st.rerun()
+        try:  # "photos of a lion" / "montre-moi des photos de ...": real photos from Wikimedia Commons
+            import photo_words as _pw
+            _pterm0 = _pw.explicit_term(_q)
+        except Exception:
+            _pw, _pterm0 = None, None
+        if _pterm0:
+            _gal0, _note0 = [], ""
+            try:
+                import images_db as _img0
+                with st.spinner("…"):
+                    _ph0 = _img0.photos(_pterm0, 5)
+                _gal0 = [{"name": x["caption"], "url": x["url"], "page": x["page"], "license": x.get("license", "")} for x in _ph0]
+                _note0 = _img0.note(_chat_lang)
+            except Exception:
+                pass
+            _m0 = {"role": "assistant", "content": (_pw.HEAD.get(_chat_lang, _pw.HEAD["en"]).format(t=_pterm0)) if _gal0 else _pw.NO_PHOTO.get(_chat_lang, _pw.NO_PHOTO["en"]).format(t=_pterm0), "kind": "note"}
+            if _gal0:
+                _m0["gallery"], _m0["gallery_note"] = _gal0, _note0
+            _hist.append(_m0)
+            st.session_state[_rel_key] = []
+            st.rerun()
+        _has_att = bool(_atts["images"] or _atts["text"])
+        _routed = _route(_q, _chat_lang, force_ai=(_force_ai or _has_att)) if _flow_ok else {"kind": "ai"}
         st.session_state[_rel_key] = []
         if _routed["kind"] == "scam":
             _r = _routed["result"]
@@ -392,6 +469,10 @@ with tab_chat:
                 def _ask_ai(**_kw):
                     from assistant_engine import answer_question
                     _question = _kw.pop("question", _q)
+                    if _atts["text"]:
+                        _kw.setdefault("document", _atts["text"])
+                    if _atts["images"]:
+                        _kw.setdefault("images", [(b_, m_) for b_, m_, _n in _atts["images"]])
                     return answer_question(question=_question, history=_history_ai, language_name=LANG_NAMES.get(_chat_lang, "English"), language_code=_chat_lang,
                                            use_search=_use_search, intent_hint=_intent_hint(_q, _hist[:-1], _chat_lang), **_kw)
 
@@ -430,7 +511,14 @@ with tab_chat:
                     except Exception as _chat_error:
                         _ai_missing = _chat_error.__class__.__name__ == "MissingAPIKeyError"
                         _kind = "note"
-                        if _info:  # no AI key or AI error: still give the sourced Wikipedia/Wiktionary answer
+                        if str(_chat_error) == "vision_unavailable":
+                            try:
+                                import attachments as _att2
+                                _msg = _att2.message("vision", _chat_lang)
+                            except Exception:
+                                _msg = _T["err"]
+                            _term = None
+                        elif _info:  # no AI key or AI error: still give the sourced Wikipedia/Wiktionary answer
                             _msg = _wr.format_answer(_info, _chat_lang)
                         elif _name and _wr is not None:
                             _msg = _wr.no_name(_chat_lang)
@@ -461,6 +549,13 @@ with tab_chat:
                 _hist.append(_out)
             st.rerun()
 
+
+if tab_studio is not None:
+    with tab_studio:
+        try:
+            _studio.render(st, str(lang).lower())
+        except Exception:
+            st.warning("Image Studio could not load. The other tabs still work.")
 
 if tab_org is not None:
     with tab_org:

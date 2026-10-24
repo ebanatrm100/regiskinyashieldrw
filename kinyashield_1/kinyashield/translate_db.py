@@ -21,7 +21,7 @@ P = [
     ("Good night", "Bonne nuit", "Murare neza", "Usiku mwema / Lala salama", ""),
     ("How are you?", "Comment allez-vous ?", "Amakuru?", "Habari yako? / U hali gani?", "In Kinyarwanda the usual answer is “Ni meza” (good). Use the plural “Mumeze mute?” for respect or several people."),
     ("I am fine", "Je vais bien", "Ndi muzima / Meze neza", "Sijambo / Nzuri", ""),
-    ("Thank you", "Merci", "Murakoze", "Asante", "Murakoze is already polite (plural form); “Urakoze” is the informal singular."),
+    ("Thank you", "Merci", "Murakoze / Urakoze", "Asante", "Murakoze is already polite (plural form); “Urakoze” is the informal singular."),
     ("Thank you very much", "Merci beaucoup", "Murakoze cyane", "Asante sana", ""),
     ("You are welcome", "De rien", "Nta kibazo / Ntacyo", "Karibu / Starehe", ""),
     ("Please", "S'il vous plaît", "Nyamuneka", "Tafadhali", ""),
@@ -205,9 +205,14 @@ def _variants(text):
     return list(dict.fromkeys(outs))
 
 
-def match(phrase, source_hint=None):
-    """(row index, source language) for an exact bank match, else None. English is tried first, then the interface language, then the others."""
-    order = ["en"] + [l for l in ([source_hint] if source_hint else []) if l != "en"] + [l for l in LANGS if l not in ("en", source_hint)]
+def match(phrase, source_hint=None, strict=False):
+    """(row index, source language) for an exact bank match, else None. English is tried first, then the interface language, then the others.
+    With strict=True the named source language is tried FIRST (the person said "from French")."""
+    if strict and source_hint:
+        order = [source_hint] + [l for l in ["en"] + list(LANGS) if l != source_hint]
+        order = list(dict.fromkeys(order))
+    else:
+        order = ["en"] + [l for l in ([source_hint] if source_hint else []) if l != "en"] + [l for l in LANGS if l not in ("en", source_hint)]
     for l in order:
         for v in _variants(phrase):
             i = _IDX[l].get(v)
@@ -223,9 +228,10 @@ def match(phrase, source_hint=None):
     return None
 
 
-def translate(phrase, target, ui_lang="en"):
-    """Dict with the main translation, the source language, the other languages and a usage note; or None when the phrase is not in the bank."""
-    hit = match(phrase, lk(ui_lang))
+def translate(phrase, target, ui_lang="en", source=None):
+    """Dict with the main translation, the source language, the other languages and a usage note; or None when the phrase is not in the bank.
+    source: the language the person named ("from French"); it is tried first."""
+    hit = match(phrase, source, True) if source else match(phrase, lk(ui_lang))
     if hit is None:
         return None
     i, src = hit

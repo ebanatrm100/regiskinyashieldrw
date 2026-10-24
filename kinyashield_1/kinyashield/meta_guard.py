@@ -10,10 +10,10 @@ import urllib.request
 from textutil import fold
 
 LANG_WORDS = {
-    "rw": ["kinyarwanda", "ikinyarwanda", "kinyarwandaa", "kinya", "rw"],
-    "fr": ["french", "francais", "français", "igifaransa", "kifaransa", "fr"],
-    "sw": ["swahili", "kiswahili", "igiswahili", "kiswahilii", "sw"],
-    "en": ["english", "anglais", "icyongereza", "kiingereza", "englishi", "en"],
+    "rw": ["kinyarwanda", "ikinyarwanda", "ururimi rw'ikinyarwanda", "kinyarwandaa", "kinya", "rw"],
+    "fr": ["french", "francais", "français", "igifaransa", "gifaransa", "kifaransa", "fr"],
+    "sw": ["swahili", "kiswahili", "igiswahili", "giswahili", "kiswahilii", "sw"],
+    "en": ["english", "anglais", "icyongereza", "cyongereza", "kiingereza", "englishi", "en"],
 }
 _LANG_ALT = "|".join(sorted((w for ws in LANG_WORDS.values() for w in ws), key=len, reverse=True))
 _Q = "[\"“”'«»]?"
@@ -43,11 +43,77 @@ _META_SENTENCE = re.compile(r"\b(?:the (?:phrase|sentence|question|words?)|this 
 _WRAP_PLAIN = re.compile(r"^\s*(?:please\s+)?(?:repeat after me|say exactly|répète après moi|subiramo nyuma yanjye|rudia baada yangu)\b", re.I)
 
 
+# --- full parser: "Translate this word from French to Kinyarwanda: bonjour", "translate hello from English to Swahili", "traduis merci du français au kinyarwanda", ...
+_VERB = re.compile(r"^\s*(?:please\s+|s'il vous pla[iî]t\s+|nyabuneka\s+|tafadhali\s+)?(?:can you\s+|could you\s+|peux-tu\s+|pouvez-vous\s+)?(?:translate|translation of|traduis(?:ez)?(?:-moi)?|traduire|hindura|humura|tafsiri|nitafsirie|fasiri)\b\s*", re.I)
+_FILLER = re.compile(r"^(?:(?:this|the|that|ce|cette|le|la|iri|iyi|neno hili|hili)\s+)(?:words?|phrases?|sentences?|texts?|mots?|expressions?|jambo|amagambo|interuro|inyandiko|neno|maneno|sentensi|maandishi)\s*(?:for me|pour moi|for us)?\s*", re.I)
+_LA = r"(?:the\s+|le\s+|la\s+|l['’]|ururimi\s+rw['’]?\s*|lugha\s+ya\s+)?"
+_SRC_RE = re.compile(r"(?:\bfrom\b|\bdu\b|\bde la\b|\bde l['’]|\bde\b|\bd['’]|\bdes\b|\bkuva\s+mu\b|\bkuva\b|\bkutoka\s+kwa\b|\bkutoka\b)\s*" + _LA + r"(?P<l>" + _LANG_ALT + r")\b", re.I)
+_TGT_RE = re.compile(r"(?:\bto\b|\binto\b|\bin\b|\ben\b|\bvers\b|\bau\b|\bà\b|\ba\b|\bmu\b|\bkwenda\b|\bkwa\b|\bujya\s+mu\b|\bkuwa\b|\bhadi\b)\s*" + _LA + r"(?P<l>" + _LANG_ALT + r")\b", re.I)
+
+
+def _code(word):
+    w = fold(word)
+    for c, ws in LANG_WORDS.items():
+        if w in [fold(x) for x in ws]:
+            return c
+    return ""
+
+
+def parse_translation_full(question):
+    """(phrase, source_code, target_code) for "Translate <this word> from X to Y[: text]" in English, French, Kinyarwanda and Kiswahili, else None.
+    source_code may be '' when no source language is named. Needs a target language and a non-empty phrase."""
+    q = (question or "").strip()
+    if not q or len(q) > 400:
+        return None
+    v = _VERB.match(q)
+    if not v:
+        return None
+    body = q[v.end():]
+    src = tgt = ""
+    spans = []
+    for m in _SRC_RE.finditer(body):
+        c = _code(m.group("l"))
+        if c:
+            src = c
+            spans.append(m.span())
+            break
+    taken = [s for s in spans]
+    tm = [m for m in _TGT_RE.finditer(body) if _code(m.group("l")) and not any(a <= m.start() < b for a, b in taken)]
+    if not tm:
+        return None
+    m = tm[-1] if not src else tm[0] if len(tm) == 1 else tm[-1]
+    tgt = _code(m.group("l"))
+    spans.append(m.span())
+    if src and src == tgt:
+        return None
+    colon = re.search(r"[:：]\s*(.+)$", body, re.S)
+    if colon and not any(a <= colon.start() < b for a, b in spans):
+        phrase = colon.group(1)
+    else:
+        rest, last = [], 0
+        for a, b in sorted(spans):
+            rest.append(body[last:a]); last = b
+        rest.append(body[last:])
+        phrase = " ".join(x.strip() for x in rest if x.strip())
+        phrase = re.sub(r"\s+", " ", phrase)
+    if not colon:
+        stripped = _FILLER.sub("", phrase.strip(), count=1)
+        if stripped.strip() and stripped != phrase.strip():
+            phrase = stripped
+    phrase = phrase.strip(" \"'“”«»:.-?!")
+    if not phrase or len(phrase) > 300:
+        return None
+    return phrase, src, tgt
+
+
 def parse_translation(question):
     """(phrase, target_code) when the message asks to translate a sentence into a language, else None. target_code may be '' if only the phrase is clear."""
     q = (question or "").strip()
     if not q or len(q) > 400:
         return None
+    full = parse_translation_full(q)
+    if full is not None:
+        return full[0], full[2]
     for rx in _TRANSLATE_RE:
         m = rx.match(q)
         if not m:
@@ -135,7 +201,7 @@ _NEED_KEY = {"en": "For a full, natural translation of any sentence, the AI tran
              "sw": "Ili kutafsiri sentensi yoyote kikamilifu na kwa asili, mfasiri wa AI anahitaji GEMINI_API_KEY kwenye Secrets za programu. Hadi hapo, ninajibu kile kilicho kwenye benki yangu iliyoandikwa kwa mkono tu."}
 
 
-def translation_answer(phrase, target, ui_lang):
+def translation_answer(phrase, target, ui_lang, source=None):
     """Answer text for a translation request when no AI is available. Order: curated bank (exact), checked machine translation, then the honest
     fallback: the words I do know, word by word, with a clear note that this is not a sentence translation."""
     k = ui_lang if ui_lang in NAMES else "en"
@@ -144,12 +210,12 @@ def translation_answer(phrase, target, ui_lang):
     TD = None
     try:
         import translate_db as TD
-        res = TD.translate(phrase, target, k)
+        res = TD.translate(phrase, target, k, source)
         if res is not None:
             return TD.render(res, k)["answer"][k], True
     except Exception:
         TD = None
-    out = machine_translate(phrase, target)
+    out = machine_translate(phrase, target, source)
     if out and target != "rw":     # Kinyarwanda machine output is too unreliable to present as an answer
         return f"**{NAMES[k][target]}:** {out}\n\n_{MT_NOTE[k]}_", True
     parts = []

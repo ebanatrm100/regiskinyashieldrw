@@ -63,6 +63,7 @@ def _optional(module, name="find"):
 
 _find_tutor = _optional("tutor_db")        # worked maths solutions + pointer to the practice quiz
 _find_translate = _optional("translate_db")  # phrasebook: "how do you say X in Kinyarwanda"
+_parse_translation_full = _optional("meta_guard", "parse_translation_full")  # (phrase, source, target)
 _parse_translation = _optional("meta_guard", "parse_translation")  # "Translate X into Kinyarwanda": X is material to translate, not a question to answer
 _is_wrapper = _optional("meta_guard", "is_wrapper")                # "Repeat / rewrite / correct: X"
 _find_cyber = _optional("cyber_db")  # cybersecurity terms (meaning, applications, photos)
@@ -127,8 +128,14 @@ def route(question, lang, force_ai=False):
         if res.verdict != "ok":
             return {"kind": "scam", "result": res, "steps": next_steps(res, k)}
     if not force_ai and _parse_translation is not None:
+        _src = ""
+        tr = None
         try:
-            tr = _parse_translation(q)
+            _full = _parse_translation_full(q) if _parse_translation_full is not None else None
+            if _full is not None:
+                tr, _src = (_full[0], _full[2]), _full[1]
+            else:
+                tr = _parse_translation(q)
         except Exception:
             tr = None
         if tr is not None:
@@ -136,19 +143,19 @@ def route(question, lang, force_ai=False):
             try:  # curated bank first: exact, hand-written translations between the four languages
                 import translate_db as _td
                 _target = tr[1] or {"en": "rw", "rw": "en", "fr": "en", "sw": "en"}[k]
-                _res = _td.translate(tr[0], _target, k)
+                _res = _td.translate(tr[0], _target, k, _src or None)
                 if _res is not None:
                     hit = _td.render(_res, k)
             except Exception:
                 hit = None
-            if hit is None and _find_translate is not None:
+            if hit is None and _find_translate is not None and not _src:
                 try:
                     hit = _find_translate(q, k)
                 except Exception:
                     hit = None
             if hit is not None:
                 return {"kind": "guide", "entry": hit}
-            return {"kind": "translate", "phrase": tr[0], "target": tr[1]}
+            return {"kind": "translate", "phrase": tr[0], "target": tr[1], "source": _src}
     if not force_ai and _is_wrapper is not None:
         try:
             if _is_wrapper(q):

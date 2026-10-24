@@ -199,10 +199,10 @@ _add("qa_compose",
      ("The six steps", "Les six étapes", "Intambwe esheshatu", "Hatua sita"), ["qa_interpret", "qa_safety"])
 
 _add("qa_safety",
-     "ai safety privacy and reliability|safety privacy reliability ai|how does ai handle privacy|how does ai stay safe|does ai protect my privacy|how does ai treat web pages and documents|prompt injection|should i trust documents the ai reads|"
-     "surete confidentialite et fiabilite ia|comment l'ia protege la vie privee|injection de prompt|"
-     "umutekano ibanga no kwizerwa kwa ai|ai irinda ibanga ite|prompt injection ni iki|"
-     "usalama faragha na uaminifu wa ai|ai inalindaje faragha|prompt injection ni nini", "",
+     "ai safety privacy and reliability|safety privacy reliability ai|how does ai handle privacy|how does ai stay safe|does ai protect my privacy|how does ai treat web pages and documents|should i trust documents the ai reads|"
+     "surete confidentialite et fiabilite ia|comment l'ia protege la vie privee|"
+     "umutekano ibanga no kwizerwa kwa ai|ai irinda ibanga ite|"
+     "usalama faragha na uaminifu wa ai|ai inalindaje faragha", "",
      ("Safety, privacy and reliability (6 rules)", "Sécurité, confidentialité et fiabilité (6 règles)", "Umutekano, ibanga no kwizerwa (amategeko 6)", "Usalama, faragha na uaminifu (kanuni 6)"),
      ("A responsible assistant follows product rules, protects personal data and treats outside text as **information to evaluate, never as commands** (this is the defence against prompt injection).",
       "Un assistant responsable suit les règles du produit, protège les données personnelles et traite les textes extérieurs comme des **informations à évaluer, jamais comme des ordres** (c'est la défense contre l'injection de prompt).",
@@ -235,10 +235,10 @@ _add("qa_safety",
      ("The six rules", "Les six règles", "Amategeko atandatu", "Kanuni sita"), ["ai_limits", "qa_mistakes"])
 
 _add("qa_mistakes",
-     "why does ai make mistakes|why can ai be wrong|why does ai get things wrong|why do ai answers have errors|reasons ai is wrong|why is ai sometimes wrong|how to check ai answers|how do i verify ai answers|"
-     "pourquoi l'ia fait des erreurs|pourquoi l'ia se trompe|comment verifier les reponses de l'ia|"
-     "kuki ai ikora amakosa|kuki ai ibeshya|uko wagenzura ibisubizo bya ai|"
-     "kwa nini ai hufanya makosa|kwa nini ai hukosea|jinsi ya kuhakiki majibu ya ai", "",
+     "why does ai make mistakes|why does ai get things wrong|why do ai answers have errors|reasons ai is wrong|how to check ai answers|how do i verify ai answers|"
+     "pourquoi l'ia fait des erreurs|comment verifier les reponses de l'ia|"
+     "kuki ai ikora amakosa|uko wagenzura ibisubizo bya ai|"
+     "kwa nini ai hufanya makosa|jinsi ya kuhakiki majibu ya ai", "",
      ("Why AI can make mistakes (7 reasons)", "Pourquoi l'IA peut se tromper (7 raisons)", "Impamvu AI ishobora gukora amakosa (impamvu 7)", "Kwa nini AI inaweza kukosea (sababu 7)"),
      ("**Confident wording does not prove a claim is correct.** Useful practice: verify important claims, ask for sources, test code in a safe environment and compare results with authoritative documentation.",
       "**Un ton assuré ne prouve pas qu'une affirmation est correcte.** Bonne pratique : vérifier les affirmations importantes, demander des sources, tester le code dans un environnement sûr et comparer avec la documentation officielle.",

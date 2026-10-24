@@ -35,7 +35,7 @@ def test_lookup_in_every_language():
     assert G.find("qu'est-ce que le rag")["id"] == "qa_rag"
     assert G.find("rag ni iki")["id"] == "qa_rag"
     assert G.find("rag ni nini")["id"] == "qa_rag"
-    assert G.find("pourquoi l'ia se trompe")["id"] == "qa_mistakes"
+    assert G.find("pourquoi l'ia fait des erreurs")["id"] == "qa_mistakes"
     assert G.find("kwa nini ai hufanya makosa")["id"] == "qa_mistakes"
     assert G.find("what is a transformer")["id"] == "qa_term_transformer"
     assert G.find("what is phishing") is None

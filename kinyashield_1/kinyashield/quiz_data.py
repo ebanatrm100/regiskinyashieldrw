@@ -6,6 +6,7 @@ TOPICS = {
     "math": {"en": "Mathematics", "fr": "Mathématiques", "rw": "Imibare", "sw": "Hisabati"},
     "physics": {"en": "Physics", "fr": "Physique", "rw": "Ubugenge (Physics)", "sw": "Fizikia"},
     "science": {"en": "General science", "fr": "Sciences générales", "rw": "Siyansi rusange", "sw": "Sayansi ya jumla"},
+    "cybersecurity": {"en": "Cybersecurity", "fr": "Cybersécurité", "rw": "Umutekano w'ikoranabuhanga (Cybersecurity)", "sw": "Usalama wa mtandao (Cybersecurity)"},
     "cyber": {"en": "Digital safety", "fr": "Sécurité numérique", "rw": "Umutekano wa digitale", "sw": "Usalama wa kidijitali"},
     "world": {"en": "World knowledge", "fr": "Culture générale", "rw": "Ubumenyi rusange", "sw": "Maarifa ya jumla"},
 }
@@ -131,3 +132,16 @@ def pick(topic=None, n=5, seed=None):
     rnd = random.Random(seed)
     rnd.shuffle(pool)
     return pool[:n]
+
+
+try:   # the standard cybersecurity question set (quiz_cyber.py); the quiz keeps working without it
+    from quiz_cyber import build as _build_cyber
+    QUESTIONS.extend(_build_cyber(Q))
+except Exception:
+    pass
+
+try:   # 43 more standard cybersecurity questions (quiz_cyber2.py)
+    from quiz_cyber2 import build as _build_cyber2
+    QUESTIONS.extend(_build_cyber2(Q))
+except Exception:
+    pass

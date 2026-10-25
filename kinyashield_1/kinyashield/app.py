@@ -73,11 +73,27 @@ with tab_check:
     choice = st.selectbox(t["examples"], ["—"] + list(examples))
     text = st.text_area(t["paste"], value=examples.get(choice, ""), height=150,
                         placeholder=t["placeholder"], key=f"msg_{lang}_{choice}")
+    try:
+        import message_ai as _mai, message_check_ui as _mcu
+    except Exception:
+        _mai = _mcu = None
+    _use_ai = st.checkbox(_mai.LABELS[lang]["use_ai"], value=True, key=f"use_ai_check_{lang}") if _mai else False
     go = st.button(t["analyze"], type="primary", use_container_width=True)
-    st.caption(t["privacy"])
+    st.caption(_mai.PRIVACY[lang] if _mai else t["privacy"])
     if go and text.strip():
         res = analyze(text)
-        st.markdown(ui.verdict_html(res, lang), unsafe_allow_html=True)
+        _smart = None
+        if _mcu is not None:
+            try:
+                _smart = _mcu.analyse(text, lang, res, _use_ai)
+                res_show = _mcu.merged_result(res, _smart)
+            except Exception:
+                _smart, res_show = None, res
+        else:
+            res_show = res
+        st.markdown(ui.verdict_html(res_show, lang), unsafe_allow_html=True)
+        if _smart is not None:
+            _mcu.render(_smart, lang)
         st.caption(f"{t['detected']}: {LANG_NAMES[res.language]}")
         a, b, c = st.tabs([t["evidence"], t["findings"], t["steps"]])
         with a:

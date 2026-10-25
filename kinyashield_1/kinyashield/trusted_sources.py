@@ -25,4 +25,6 @@ SOURCES = [
 NOTE = {
     "en": "Addresses marked unverified must be checked by the project owner before release.",
     "rw": "Aderesi zanditseho 'unverified' zigomba kugenzurwa na nyiri umushinga mbere yo gusohora.",
+    "fr": "Les adresses marquées « unverified » doivent être vérifiées par le propriétaire du projet avant la publication.",
+    "sw": "Anwani zilizowekwa alama 'unverified' lazima zikaguliwe na mmiliki wa mradi kabla ya kutolewa.",
 }

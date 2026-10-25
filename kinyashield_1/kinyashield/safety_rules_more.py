@@ -14,11 +14,21 @@ EXTEND = {
     "account_threat": {
         "en": [r"\b(?:account|whatsapp|sim|line|card|wallet|momo|profile)\b[^.!?\n]{0,40}\b(?:is|are|will be|has been|is being|been|was|gets?)\s+(?:suspended|blocked|closed|deactivated|locked|terminated|deleted|banned|frozen)\b"],
         "fr": [r"\b(?:compte|ligne|carte|portefeuille)\b[^.!?\n]{0,40}\b(?:est|sera|a ete|va etre)\s+(?:suspendu|bloque|ferme|desactive|verrouille|supprime|gele)\b"],
-        "rw": [], "sw": [],
+        "rw": [r"\b(?:konti|sim|karita|momo|whatsapp)\b[^.!?\n]{0,40}\b(?:izafungwa|yafunzwe|izahagarikwa|yahagaritswe|izasibwa|iragiye gufungwa)\b"],
+        "sw": [r"\b(?:akaunti|laini|kadi|mkoba|whatsapp)\b[^.!?\n]{0,40}\b(?:itafungwa|imefungwa|itasimamishwa|imesimamishwa|itafutwa|imezuiwa)\b"],
     },
     "account_verification_request": {
         "en": [r"\b(?:update|confirm|verify)\b[^.!?\n]{0,20}\b(?:your )?(?:billing|payment (?:details|method|information)|card (?:details|number))\b"],
-        "fr": [], "rw": [], "sw": [],
+        "fr": [r"\b(?:mettez a jour|confirmez|verifiez)\b[^.!?\n]{0,25}\b(?:informations? de paiement|coordonnees bancaires|details de (?:votre )?carte|numero de (?:votre )?carte)\b"],
+        "rw": [r"\b(?:vugurura|emeza|genzura)\b[^.!?\n]{0,25}\b(?:amakuru yo kwishyura|nimero ya karita|amakuru ya karita|amakuru ya banki)\b"],
+        "sw": [r"\b(?:sasisha|thibitisha|hakiki)\b[^.!?\n]{0,25}\b(?:taarifa za malipo|namba ya kadi|maelezo ya kadi|taarifa za benki)\b"],
+    },
+    "remote_access": {
+        "rw": [r"\b(?:shyiraho|kuramo|install)\b[^.!?\n]{0,30}\b(?:anydesk|teamviewer|quicksupport|porogaramu yo (?:kugenzura|gufasha) telefone)\b"],
+    },
+    "too_good_offer": {
+        "rw": [r"\b(?:kuzikuba kabiri amafaranga yawe|inyungu itajegajega|amafaranga y'ubusa|amafaranga yoroshye)\b",
+               r"\b(?:wunguke|ubone)\b[^.!?\n]{0,25}\b(?:frw|amafaranga)\b[^.!?\n]{0,15}\b(?:buri munsi|ku munsi|buri cyumweru)\b"],
     },
 }
 

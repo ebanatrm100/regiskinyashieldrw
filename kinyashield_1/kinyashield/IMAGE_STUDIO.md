@@ -5,7 +5,7 @@
 (`photos of lions`) still return real Wikimedia Commons photos.
 
 **Needs one provider in Secrets** (see `deploy/secrets.example.toml`): a Gemini key (image model), `HF_TOKEN`, an OpenAI-compatible
-`IMAGE_BASE_URL` + `IMAGE_MODEL`, or the opt-in public service `IMAGE_ALLOW_PUBLIC=true`. Without any, the app shows the strong prompt it built.
+`IMAGE_BASE_URL` + `IMAGE_MODEL`, or the free keyless public service (Pollinations), which is ON by default as the last resort (`IMAGE_ALLOW_PUBLIC=false` turns it off; only the prompt text is sent). Several Gemini image models are tried in turn, and when everything fails the app now shows the real reason (quota, model not available, service busy) instead of a generic message. If every service fails it is usually a Gemini free-tier quota of 0 for images: add HF_TOKEN or enable billing for the key.
 
 **Upload in chat:** photos (PNG/JPG/WEBP, up to 6 MB) and documents (PDF, Word, TXT, MD, CSV, LOG, up to 10 MB), max 4 files. Photos are understood
 by the Gemini engine only; documents work with any configured AI. Files are kept in the session only, never written to disk.

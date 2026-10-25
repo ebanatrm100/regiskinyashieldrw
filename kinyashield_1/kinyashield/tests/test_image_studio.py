@@ -3,6 +3,7 @@ import os, sys, base64, types
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 for k in ("GEMINI_API_KEY", "GEMINI_API_KEY_2", "IMAGE_BASE_URL", "IMAGE_MODEL", "HF_TOKEN", "IMAGE_ALLOW_PUBLIC"):
     os.environ.pop(k, None)
+os.environ["IMAGE_ALLOW_PUBLIC"] = "false"   # tests never use the network
 import image_gen as G, attachments as A, photo_words as P, image_studio_ui as S
 
 PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
@@ -31,6 +32,33 @@ def test_safety_precheck_refuses_harmful_requests():
         G.generate("a fake bank statement for my loan"); assert False
     except G.ImageGenError as e:
         assert str(e).startswith("refused:") and "deceive" in G.friendly_error(e, "en")
+
+
+def test_public_service_is_default_last_resort_with_reasons():
+    os.environ.pop("IMAGE_ALLOW_PUBLIC", None)
+    try:
+        assert "Pollinations (public)" in G.configured()
+        seen = []
+        def fake_http(url, data=None, headers=None, timeout=0):
+            seen.append(url); raise OSError("offline")
+        old = G._http; G._http = fake_http
+        try:
+            G.generate("a very long description. second sentence. third sentence")
+            assert False
+        except G.ImageGenError as e:
+            msg = G.friendly_error(e, "en")
+            assert "Public service" in msg and "OSError" in msg and len(seen) >= 3   # several models/prompts tried, reason shown
+            assert "keyless" not in msg and "key" not in msg.lower().replace("keyless", "")[:0]
+        finally:
+            G._http = old
+        G._http = lambda url, data=None, headers=None, timeout=0: (PNG, "image/png")
+        try:
+            assert G.generate("a cow")[0][2].startswith("Pollinations")
+        finally:
+            G._http = old
+    finally:
+        os.environ["IMAGE_ALLOW_PUBLIC"] = "false"
+    assert "Pollinations (public)" not in G.configured()
 
 
 def test_not_configured_and_provider_fallback():

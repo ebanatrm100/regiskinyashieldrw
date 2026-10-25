@@ -6,7 +6,7 @@ Secrets (Streamlit > Settings > Secrets), all optional; the first provider that 
   GEMINI_API_KEY (+ _2.._4)   uses model IMAGE_MODEL_GEMINI (default gemini-2.5-flash-image)
   IMAGE_BASE_URL, IMAGE_MODEL, IMAGE_API_KEY   any OpenAI-compatible /images/generations server
   HF_TOKEN                    Hugging Face Inference (model HF_IMAGE_MODEL, default black-forest-labs/FLUX.1-schnell; HF_IMAGE_URL overrides the address)
-  IMAGE_ALLOW_PUBLIC=true     allow a free keyless public service (Pollinations). Only the PROMPT text is sent; it is third-party and not private.
+  IMAGE_ALLOW_PUBLIC=false    turns OFF the last-resort free keyless public service (Pollinations), which is ON by default. Only the PROMPT text is sent; it is third-party and not private.
 Quality depends on the provider you configure; a generated image can contain errors (hands, lettering, geometry) and must be checked."""
 from __future__ import annotations
 import base64, json, re, urllib.error, urllib.parse, urllib.request
@@ -102,20 +102,34 @@ def _gemini_keys():
     return out
 
 
+def _gem_reason(e):
+    """Short, secret-free reason for a failed Gemini call (quota, model not available, key rejected...)."""
+    t = str(e)
+    for code, word in (("429", "quota or rate limit (images may not be included in the free tier)"), ("403", "key not allowed for images"), ("401", "key rejected"), ("404", "image model not available for this key"),
+                       ("400", "request refused (try a simpler description)"), ("503", "service busy"), ("500", "service error")):
+        if code in t[:200]:
+            return word
+    return e.__class__.__name__
+
+
 def _gemini(prompt, aspect, n, reference):
     keys = _gemini_keys()
     if not keys:
         raise ImageGenError("no Gemini key")
     from google import genai
     from google.genai import types
-    model = settings.get("IMAGE_MODEL_GEMINI", "gemini-2.5-flash-image")
+    first = settings.get("IMAGE_MODEL_GEMINI", "gemini-2.5-flash-image")
+    models = [first] + [m for m in ("gemini-2.5-flash-image", "gemini-2.5-flash-image-preview", "gemini-2.0-flash-preview-image-generation", "gemini-2.0-flash-exp-image-generation") if m != first]
     parts = [types.Part.from_text(text=prompt + f"\nAspect ratio {aspect}.")]
     if reference:
         parts.insert(0, types.Part.from_bytes(data=reference[0], mime_type=reference[1]))
     out, last = [], None
     for key in keys:
         client = genai.Client(api_key=key)
-        for _ in range(n - len(out)):
+        for model in models:
+          for _ in range(n - len(out)):
+            if len(out) >= n:
+                break
             try:
                 resp = client.models.generate_content(model=model, contents=[types.Content(role="user", parts=parts)],
                                                       config=types.GenerateContentConfig(response_modalities=["IMAGE", "TEXT"]))
@@ -133,7 +147,10 @@ def _gemini(prompt, aspect, n, reference):
                 if not got:
                     last = "no image returned (the prompt may have been declined)"
             except Exception as e:
-                last = _err_text(e)
+                last = _gem_reason(e)
+                break
+          if out:
+            break
         if out:
             return out
     raise ImageGenError("Gemini: " + (last or "failed"))
@@ -194,20 +211,29 @@ def _hf(prompt, aspect, n, reference):
     raise ImageGenError("Hugging Face: " + (last or "failed"))
 
 
+_UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36", "Accept": "image/*,*/*;q=0.8"}
+
+
 def _public(prompt, aspect, n, reference):
-    if not settings.flag("IMAGE_ALLOW_PUBLIC"):
+    """Keyless public service (Pollinations). ON by default as the last resort so picture creation keeps working; set IMAGE_ALLOW_PUBLIC=false to disable.
+    Only the prompt text is sent. Tries several models and a shortened prompt before giving up."""
+    if not settings.flag("IMAGE_ALLOW_PUBLIC", True):
         raise ImageGenError("public service not enabled")
     w, h = ASPECTS.get(aspect, (1024, 1024))
+    short = prompt.split(". ")[0][:300]
+    attempts = [(prompt[:700], "flux"), (short, "flux"), (short, "turbo"), (short, "")]
     out, last = [], None
     for i in range(n):
-        try:
-            raw, _ = _http("https://image.pollinations.ai/prompt/" + urllib.parse.quote(prompt[:900]) + f"?width={w}&height={h}&nologo=true&model=flux&seed={i + 1}")
-            if _sniff(raw):
-                out.append((raw, _sniff(raw), "Pollinations (public)"))
-            else:
+        for text, model in attempts:
+            try:
+                q = f"?width={w}&height={h}&nologo=true&seed={i + 7}" + (f"&model={model}" if model else "")
+                raw, _ = _http("https://image.pollinations.ai/prompt/" + urllib.parse.quote(text) + q, headers=_UA, timeout=75)
+                if _sniff(raw):
+                    out.append((raw, _sniff(raw), "Pollinations (public)"))
+                    break
                 last = "unexpected response"
-        except Exception as e:
-            last = _err_text(e)
+            except Exception as e:
+                last = _err_text(e)
     if out:
         return out
     raise ImageGenError("Public service: " + (last or "failed"))
@@ -225,7 +251,7 @@ def configured():
         names.append("Image server")
     if settings.get("HF_TOKEN"):
         names.append("Hugging Face")
-    if settings.flag("IMAGE_ALLOW_PUBLIC"):
+    if settings.flag("IMAGE_ALLOW_PUBLIC", True):
         names.append("Pollinations (public)")
     return names
 
@@ -262,10 +288,10 @@ NOT_CONFIGURED = {
     "sw": "Uundaji wa picha haujawashwa bado. Mmiliki anaweza kuuwasha kwenye Streamlit Secrets kwa ufunguo wa Gemini (GEMINI_API_KEY), au HF_TOKEN (Hugging Face, bure), au IMAGE_BASE_URL + IMAGE_MODEL. Kwa sasa naweza kukuandikia prompt imara ya kutumia kwenye zana yoyote ya picha.",
 }
 FAILED = {
-    "en": "I could not create the picture right now (the image service did not answer). Try again in a moment or shorten the description.",
-    "fr": "Je n'ai pas pu créer l'image pour le moment (le service d'images n'a pas répondu). Réessayez dans un instant ou raccourcissez la description.",
-    "rw": "Sinashoboye gukora ishusho ubu (serivisi y'amashusho ntiyasubije). Ongera ugerageze nyuma gato cyangwa ugabanye ibisobanuro.",
-    "sw": "Sikuweza kuunda picha sasa (huduma ya picha haikujibu). Jaribu tena baadaye kidogo au fupisha maelezo.",
+    "en": "I could not create the picture right now: every image service I tried failed (reasons below). Try again in a moment or use a shorter, simpler description.",
+    "fr": "Je n'ai pas pu créer l'image pour le moment : tous les services d'images essayés ont échoué (raisons ci-dessous). Réessayez dans un instant ou utilisez une description plus courte et simple.",
+    "rw": "Sinashoboye gukora ishusho ubu: serivisi zose z'amashusho nagerageje ntizakoze (impamvu ziri hasi). Ongera ugerageze nyuma gato cyangwa ukoreshe ibisobanuro bigufi kandi byoroshye.",
+    "sw": "Sikuweza kuunda picha sasa: huduma zote za picha nilizojaribu zimeshindwa (sababu ziko chini). Jaribu tena baadaye kidogo au tumia maelezo mafupi na rahisi.",
 }
 DISCLOSE = {"en": "AI-generated image. It may contain errors (hands, lettering, geometry) and is not a real photograph; check it before you share or rely on it.",
             "fr": "Image générée par IA. Elle peut contenir des erreurs (mains, texte, géométrie) et n'est pas une vraie photographie ; vérifiez-la avant de la partager.",
@@ -282,7 +308,8 @@ def friendly_error(exc, lang="en"):
         return NOT_CONFIGURED[k]
     if msg.startswith("The reference") or msg.startswith("Describe"):
         return msg
-    return FAILED[k]
+    detail = msg[len("failed: "):] if msg.startswith("failed: ") else ""
+    return FAILED[k] + (f"\n\n_({detail[:220]})_" if detail else "")
 
 
 # ---- chat request parsing ("draw a cat on a roof", "génère une image de ...", "kora ishusho ya ...", "tengeneza picha ya ...")

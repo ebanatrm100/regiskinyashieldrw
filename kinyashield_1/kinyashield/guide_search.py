@@ -7,6 +7,38 @@ def fold(s):
     s = "".join(c for c in s if not unicodedata.combining(c)).lower()
     return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9'.\- ]+", " ", s)).strip()
 
+_STOP = set("the a an and or of to in on for is are was were do does did how what when where why who which can could should would i my me we you your it its this that these those with from at by as be been am not no et ou de du des la le les un une est sont que qui quoi comment pourquoi quand ou mon ma mes ton ta tes au aux en dans pour par sur avec sans ce ces cette nous vous je tu il elle nke nte ni ari mu ku kuri na se cyangwa kandi ya wa za cya bya bwa rwa rya ry uko iki ikihe ubwo yanjye wanjye zanjye ni ndi nta ya la za wa kwa na au ni ya wa la za je nini lini wapi vipi gani yangu wangu zangu langu".split())
+_TITLE_TOKENS = {}
+
+
+def _toks(text):
+    return [w for w in fold(text).replace("'", " ").split() if len(w) > 2 and w not in _STOP]
+
+
+def _title_index():
+    if not _TITLE_TOKENS:
+        for e in ENTRIES:
+            for l, t in e["title"].items():
+                _TITLE_TOKENS[(e["id"], l)] = (fold(t).rstrip(" ?.!"), _toks(t))
+    return _TITLE_TOKENS
+
+
+def _title_score(e, q, qtoks):
+    """Strong score when the question is the entry's title (any language) or contains most of its key words."""
+    best = 0.0
+    qs = q.rstrip(" ?.!")
+    idx = _title_index()
+    for l in e["title"]:
+        full, toks = idx[(e["id"], l)]
+        if full and (qs == full or full in qs):
+            return 60.0
+        if len(toks) >= 3:
+            hit = sum(1 for t in toks if t in qtoks)
+            if hit >= 3 and hit / len(toks) >= 0.75:
+                best = max(best, 14.0 * hit / len(toks))
+    return best
+
+
 _cache = {}
 def _rx(kw):
     if kw not in _cache:
@@ -28,6 +60,7 @@ def search(query, lang="en"):
                 if _rx(kw).search(q):
                     sub += 2 * len(kw.rstrip("*").split(" ")) * w
             score = max(score, sub)
+        score = max(score, _title_score(e, q, set(_toks(q))))
         if score > 0:
             out.append((score, e))
     out.sort(key=lambda x: -x[0])

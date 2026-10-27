@@ -16,10 +16,17 @@ class Scams(unittest.TestCase):
 
     def test_list_questions_in_all_languages(self):
         for q, l in [("methods of scams in terms of cybersecurity", "en"), ("give me millions of types of scams with description and examples", "en"),
-                     ("méthodes d'arnaque", "fr"), ("uburyo bw'uburiganya bwo kuri interineti", "rw"), ("mbinu za ulaghai", "sw"), ("types of cyber attacks", "en")]:
+                     ("méthodes d'arnaque", "fr"), ("uburyo bw'uburiganya bwo kuri interineti", "rw"), ("mbinu za ulaghai", "sw")]:
             e = route(q, l)["entry"]
             self.assertEqual(e["id"], "scam_list", q)
             self.assertEqual(len(e["steps"][l]), scams_db.COUNT, q)
+
+    def test_cyber_attack_questions_go_to_the_playbook(self):
+        import assistant_flow as F
+        for q, l, want in [("types of cyber attacks", "en", "cyb_attack_types"), ("list all types of cyber attacks", "en", "cyb_attack_types"), ("ubwoko bw'ibitero bya cyber", "rw", "cyb_attack_types")]:
+            r = F.route(q, l)
+            self.assertEqual(r["kind"], "guide", q)
+            self.assertEqual(r["entry"]["id"], want, q)
 
     def test_list_has_description_example_and_protection_and_is_honest(self):
         e = route("methods of scams in terms of cybersecurity", "en")["entry"]

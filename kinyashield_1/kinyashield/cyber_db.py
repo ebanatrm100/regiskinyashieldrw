@@ -1,5 +1,5 @@
 """Cybersecurity glossary for the AI Assistant: meaning, real-world use and photos, in English, French, Kinyarwanda and Kiswahili.
-Pure Python (no Streamlit). Data lives in cyber_terms_1.py ... cyber_terms_8.py (any that exist are loaded).
+Pure Python (no Streamlit). Data lives in cyber_terms_1.py ... cyber_terms_24.py (any that exist are loaded).
 
 Row = (id, English name, aliases, category, photo query, local names {fr,sw,rw} or None,
        en_meaning, en_use, fr_meaning, fr_use, rw_meaning, rw_use, sw_meaning, sw_use)
@@ -31,7 +31,7 @@ CATS = {
 }
 
 TERMS = []
-for _i in range(1, 9):
+for _i in range(1, 25):
     try:
         _m = importlib.import_module(f"cyber_terms_{_i}")
     except ImportError:

@@ -7,6 +7,23 @@ there are a few dozen families with endless variations). The text is protective 
 from __future__ import annotations
 import re, unicodedata
 from scams_data import DATA
+try:   # more scam families (scams_data_2.py)
+    from scams_data_2 import EXTRA as _EXTRA
+    DATA = {**DATA, **{k: v for k, v in _EXTRA.items() if k not in DATA}}
+except Exception:
+    pass
+try:   # more families, extra aliases, and aliases that must belong to one scam only (scams_data_3.py)
+    from scams_data_3 import EXTRA3 as _EXTRA3, ALIAS_PLUS as _PLUS, ALIAS_MOVE as _MOVE
+    DATA = {**DATA, **{k: v for k, v in _EXTRA3.items() if k not in DATA}}
+    DATA = {k: ([a for a in v[0] if _MOVE.get(a, k) == k] + [a for a in _PLUS.get(k, []) if a not in v[0]] + [a for a, tgt in _MOVE.items() if tgt == k and a not in v[0]],) + tuple(v[1:]) for k, v in DATA.items()}
+except Exception:
+    pass
+
+try:   # more scam families (scams_data_4.py)
+    from scams_data_4 import EXTRA4 as _EXTRA4
+    DATA = {**DATA, **{k: v for k, v in _EXTRA4.items() if k not in DATA}}
+except Exception:
+    pass
 
 LANGS = ("en", "fr", "rw", "sw")
 COUNT = len(DATA)

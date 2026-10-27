@@ -67,12 +67,14 @@ _parse_translation_full = _optional("meta_guard", "parse_translation_full")  # (
 _parse_translation = _optional("meta_guard", "parse_translation")  # "Translate X into Kinyarwanda": X is material to translate, not a question to answer
 _is_wrapper = _optional("meta_guard", "is_wrapper")                # "Repeat / rewrite / correct: X"
 _find_cyber = _optional("cyber_db")  # cybersecurity terms (meaning, applications, photos)
+_find_cyber_compare = _optional("cyber_compare")  # "difference between X and Y" / "X vs Y" for two glossary terms
 _find_clarify = _optional("intent", "clarify")  # too-vague opener ("help", "I have a problem") -> ask what is needed, with choices
 _find_trust = _optional("trust_db")        # privacy, limits, source policy, where to verify
 _find_ai_lab = _optional("ai_lab")        # AI-guide demos: token counter, attention, next word, loss, gradient, chmod, strict calculator
 _find_image_lab = _optional("image_lab")       # image-prompt tools (improve/score/thirds/ratio/latent/denoise), four languages
 _find_image_guide = _optional("image_guide_db")  # AI image generation guide (process, techniques, prompts, composition, fixes), four languages
 _find_research_lab = _optional("research_lab")       # interpret / research plan / rag demo tools, four languages
+_find_cyber_playbook = _optional("cyber_playbook_db")  # overview guides: hacker methods, attack families, how engineers protect systems, scam prevention, after a scam, careers
 _find_research_guide = _optional("research_guide_db")  # how an AI interprets, researches (RAG, tools) and composes answers, four languages
 _find_ink = _optional("inkoranyamagambo")      # owner-supplied Kinyarwanda dictionary (461 words with Kinyarwanda meanings)
 _find_ai_guide = _optional("ai_guide_db")  # how AI assistants work (from the AI Technical Guide), four languages
@@ -175,7 +177,7 @@ def route(question, lang, force_ai=False):
         named = _find_name(q, k)
         if named is not None:
             return {"kind": "guide", "entry": named}
-    for _finder in ((_find_ai_lab, _find_image_lab, _find_research_lab, _find_research_guide, _find_ai_guide, _find_image_guide) if not force_ai else ()):   # AI-guide demos (strict commands) and "how does an AI assistant work" topics
+    for _finder in ((_find_ai_lab, _find_image_lab, _find_research_lab, _find_research_guide, _find_ai_guide, _find_image_guide, _find_cyber_playbook) if not force_ai else ()):   # AI-guide demos (strict commands) and "how does an AI assistant work" topics
         if _finder is None:
             continue
         try:
@@ -192,6 +194,13 @@ def route(question, lang, force_ai=False):
         if cyber_list is not None and cyber_list["kind"] == "cyber_list" and not re.search(
                 r"scam|fraud|arnaque|uburiganya|ubutekamutwe|ulaghai|tapeli|method|methode|méthode|uburyo|mbinu|ways|techniques", q, re.I):
             return {"kind": "guide", "entry": cyber_list}
+    if not force_ai and _find_cyber_compare is not None:   # "difference between a virus and a worm", "red team vs blue team"
+        try:
+            _cmp = _find_cyber_compare(q, k)
+        except Exception:
+            _cmp = None
+        if _cmp is not None:
+            return {"kind": "guide", "entry": _cmp}
     if not force_ai and _find_scam is not None:    # the scam-methods catalogue (list, or one method by a short question) is richer than the glossary: description, example, protection
         try:
             scam0 = _find_scam(q, k)
@@ -245,7 +254,7 @@ def route(question, lang, force_ai=False):
         if physics is not None:
             return {"kind": "guide", "entry": physics}
         # "Methods of scams": a list question is answered here; a single method needs a short question or no better guide answer.
-        if scam is not None and (scam["kind"] == "scam_list" or entry is None or len(q.split()) <= 4):
+        if scam is not None and (scam["kind"] == "scam_list" or entry is None or len(q.split()) <= 4 or (scam["kind"] == "scam_method" and entry.get("id") == "phishing_basics")):
             return {"kind": "guide", "entry": scam}
         # Phone brands / "list of phone brands": a list question is answered here; a single brand needs a short question or no better guide answer.
         if phone is not None and (phone["kind"] == "phone_list" or entry is None or len(q.split()) <= 4):

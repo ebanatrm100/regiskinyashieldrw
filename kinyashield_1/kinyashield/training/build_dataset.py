@@ -32,9 +32,9 @@ def translation_rows():
 def cyber_rows():
     # TERMS row layout: id, en name, aliases, category, photo, {fr,sw,rw names}, en meaning, en use, fr meaning, fr use, rw meaning, rw use, sw meaning, sw use
     for r in cyber_db.TERMS:
-        names = {"en": r[1], **r[5]}
+        names = {"en": r[1], **(r[5] or {})}
         for k, mi in (("en", 6), ("fr", 8), ("rw", 10), ("sw", 12)):
-            yield rec(k, WHAT[k].format(t=names[k]), f"{r[mi]} {r[mi + 1]}", "cyber_glossary")
+            yield rec(k, WHAT[k].format(t=names.get(k) or r[1]), f"{r[mi]} {r[mi + 1]}", "cyber_glossary")
 
 
 def build(seed=7, val_share=0.05):

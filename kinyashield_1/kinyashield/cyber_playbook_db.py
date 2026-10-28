@@ -735,4 +735,10 @@ try:   # more guides found missing by a coverage audit (cyber_playbook_more.py)
 except Exception:
     pass
 
+try:   # more overview hubs found by a routing probe: malware types, tools, engineer roles, social engineering, password attacks, audit, scam themes (cyber_playbook_extra.py)
+    from cyber_playbook_extra import register as _register_extra
+    _register_extra(_add, _RAW)
+except Exception:
+    pass
+
 IDS = [e["id"] for e, _ in _RAW]

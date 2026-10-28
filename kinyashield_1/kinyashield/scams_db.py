@@ -25,6 +25,20 @@ try:   # more scam families (scams_data_4.py)
 except Exception:
     pass
 
+try:   # more scam families and extra names found by a coverage audit (scams_data_5.py)
+    from scams_data_5 import EXTRA5 as _EXTRA5, ALIAS_PLUS5 as _PLUS5
+    DATA = {**DATA, **{k: v for k, v in _EXTRA5.items() if k not in DATA}}
+    DATA = {k: ((list(v[0]) + [a for a in _PLUS5.get(k, []) if a not in v[0]],) + tuple(v[1:])) for k, v in DATA.items()}
+except Exception:
+    pass
+
+try:   # more scam families and extra names found by a second coverage audit (scams_data_6.py)
+    from scams_data_6 import EXTRA6 as _EXTRA6, ALIAS_PLUS6 as _PLUS6
+    DATA = {**DATA, **{k: v for k, v in _EXTRA6.items() if k not in DATA}}
+    DATA = {k: ((list(v[0]) + [a for a in _PLUS6.get(k, []) if a not in v[0]],) + tuple(v[1:])) for k, v in DATA.items()}
+except Exception:
+    pass
+
 LANGS = ("en", "fr", "rw", "sw")
 COUNT = len(DATA)
 ORDER = list(DATA)

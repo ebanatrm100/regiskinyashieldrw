@@ -729,4 +729,10 @@ def find(question, lang="en"):
     return best
 
 
+try:   # more guides found missing by a coverage audit (cyber_playbook_more.py)
+    from cyber_playbook_more import register as _register_more
+    _register_more(_add, _RAW)
+except Exception:
+    pass
+
 IDS = [e["id"] for e, _ in _RAW]

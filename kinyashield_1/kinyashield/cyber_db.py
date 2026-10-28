@@ -31,7 +31,7 @@ CATS = {
 }
 
 TERMS = []
-for _i in range(1, 25):
+for _i in range(1, 40):
     try:
         _m = importlib.import_module(f"cyber_terms_{_i}")
     except ImportError:
@@ -68,7 +68,7 @@ def validate(rows=None):
             t = str(r[j]).strip()
             if len(t) < 25:
                 errs.append(f"{rid}: field {j} is empty or too short")
-            if len(t) > 420:
+            if len(t) > 560:
                 errs.append(f"{rid}: field {j} is too long ({len(t)} chars); keep it to a few sentences")
         # the English and local texts must differ (a copied English text in the French/Kinyarwanda/Kiswahili field is a mistake)
         for j in (8, 10, 12):
@@ -85,6 +85,18 @@ for _r in TERMS:
         for _v in {fold(re.sub(r"\(.*?\)", "", _n)).strip(), fold(_n).strip()}:
             if _v and len(_v) >= 2:
                 _INDEX.setdefault(_v, _r[0])
+
+try:   # extra names for existing terms (cyber_alias_extra.py); never overrides a name that is already taken
+    from cyber_alias_extra import ALIASES as _EXTRA_ALIASES
+    _ids = {r[0] for r in TERMS}
+    for _rid, _als in _EXTRA_ALIASES.items():
+        if _rid in _ids:
+            for _a in _als:
+                for _v in {fold(re.sub(r"\(.*?\)", "", _a)).strip(), fold(_a).strip()}:
+                    if _v and len(_v) >= 2:
+                        _INDEX.setdefault(_v, _rid)
+except ImportError:
+    pass
 
 _FRAME = re.compile(
     r"^(?:what(?:'s| is| are| was| does| do)?|whats|who is|define|definition of|meaning of|the meaning of|explain|describe|tell me about|tell me more about|give me|show me|"

@@ -326,6 +326,10 @@ with tab_chat:
             try:
                 _ref = (_atts["images"][0][0], _atts["images"][0][1]) if _atts["images"] else None
                 _prompt_used = _ig.build_prompt(_idea, _ig.suggest_style(_idea), "1:1")
+                _uid_ = st.session_state.setdefault("kinyashield_uid", __import__("uuid").uuid4().hex)
+                _ok_, _wait_ = _ig.fair_use(_uid_, 1)
+                if not _ok_:
+                    raise _ig.ImageGenError(f"limit:{int(_wait_)}")
                 with st.spinner("…"):
                     _made = _ig.generate(_prompt_used, "1:1", 1, _ref)
                 _hist.append({"role": "assistant", "content": _ig.DISCLOSE.get(_chat_lang, _ig.DISCLOSE["en"]), "kind": "note",
@@ -338,6 +342,12 @@ with tab_chat:
                 except Exception:
                     pass
                 _hist.append({"role": "assistant", "content": _txt, "kind": "note"})
+        try:   # keep memory small on a busy server: only the 3 newest generated pictures stay in this visitor's history
+            _gen = [m_ for m_ in _hist if m_.get("generated")]
+            for m_ in _gen[:-3]:
+                m_["generated"] = []
+        except Exception:
+            pass
             st.session_state[_rel_key] = []
             st.rerun()
         try:  # "photos of a lion" / "montre-moi des photos de ...": real photos from Wikimedia Commons

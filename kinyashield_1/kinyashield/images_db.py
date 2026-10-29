@@ -67,8 +67,8 @@ def pick(data, term, n=5):
     return [s[2] for s in scored[:n]]
 
 
-def photos(term, n=5):
-    """Up to n photos for the keyword. Never raises; cached per process (failures too)."""
+def photos(term, n=5, extra=True):
+    """Up to n photos for the keyword. Never raises; cached per process (failures too). extra=True tops up from other licensed sources (web_photos) when Commons has too few."""
     term = (term or "").strip()
     if not term or len(term) > 60:
         return []
@@ -84,6 +84,13 @@ def photos(term, n=5):
             out += [m for m in more if m["url"] not in have][: n - len(out)]
     except Exception:
         out = out or []
+    if extra and len(out) < n:
+        try:
+            import web_photos
+            have = {o["url"] for o in out}
+            out = out + [m for m in web_photos.photos(term, n) if m["url"] not in have][: n - len(out)]
+        except Exception:
+            pass
     _cache[key] = out
     return out
 

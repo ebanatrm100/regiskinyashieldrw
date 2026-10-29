@@ -49,7 +49,7 @@ def render_quiz(st, lang):
         with c1:
             topic = st.selectbox(u["topic"], topics, format_func=lambda t: u["all"] if t == "all" else QD.TOPICS[t][lang], key=f"quiz_topic_{lang}")
         with c2:
-            n = st.slider(u["n"], 3, 10, 5, key=f"quiz_n_{lang}")
+            n = st.slider(u["n"], 3, 30, 5, key=f"quiz_n_{lang}")
         seed_key, chk_key = f"quiz_seed_{lang}", f"quiz_checked_{lang}"
         if seed_key not in st.session_state:
             st.session_state[seed_key] = 0

@@ -7,6 +7,7 @@ TOPICS = {
     "physics": {"en": "Physics", "fr": "Physique", "rw": "Ubugenge (Physics)", "sw": "Fizikia"},
     "science": {"en": "General science", "fr": "Sciences générales", "rw": "Siyansi rusange", "sw": "Sayansi ya jumla"},
     "cybersecurity": {"en": "Cybersecurity", "fr": "Cybersécurité", "rw": "Umutekano w'ikoranabuhanga (Cybersecurity)", "sw": "Usalama wa mtandao (Cybersecurity)"},
+    "networks": {"en": "Networks", "fr": "Réseaux", "rw": "Imiyoboro (Networks)", "sw": "Mitandao (Networks)"},
     "cyber": {"en": "Digital safety", "fr": "Sécurité numérique", "rw": "Umutekano wa digitale", "sw": "Usalama wa kidijitali"},
     "world": {"en": "World knowledge", "fr": "Culture générale", "rw": "Ubumenyi rusange", "sw": "Maarifa ya jumla"},
 }
@@ -143,5 +144,18 @@ except Exception:
 try:   # 43 more standard cybersecurity questions (quiz_cyber2.py)
     from quiz_cyber2 import build as _build_cyber2
     QUESTIONS.extend(_build_cyber2(Q))
+except Exception:
+    pass
+
+
+try:   # 800+ more cybersecurity questions generated from the glossary, scam catalogue and acronyms (quiz_cyber_gen.py)
+    from quiz_cyber_gen import build as _build_cyber_gen
+    QUESTIONS.extend(_build_cyber_gen(Q))
+except Exception:
+    pass
+
+try:   # 600+ networking questions (quiz_net.py)
+    from quiz_net import build as _build_net
+    QUESTIONS.extend(_build_net(Q))
 except Exception:
     pass

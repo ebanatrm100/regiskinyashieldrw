@@ -101,7 +101,7 @@ except ImportError:
 _FRAME = re.compile(
     r"^(?:what(?:'s| is| are| was| does| do)?|whats|who is|define|definition of|meaning of|the meaning of|explain|describe|tell me about|tell me more about|give me|show me|"
     r"what is the meaning of|what does|how does|how do|"
-    r"qu'est-ce que|qu'est ce que|c'est quoi|definition de|le sens de|explique|expliquez|parle-moi de|"
+    r"qu'est-ce qu'(?:un|une|on)|qu'est ce qu'(?:un|une|on)|qu'est-ce que|qu'est ce que|que signifie|que veut dire|c'est quoi|definition de|le sens de|explique|expliquez|parle-moi de|"
     r"ni iki|iki ni iki|sobanura|busobanura iki|icyo bisobanura|amakuru kuri|mbwira kuri|"
     r"nini maana ya|maana ya|ni nini|eleza|nieleze|niambie kuhusu)\s+", re.I)
 _TAIL = re.compile(r"\s+(?:mean|means|meaning|definition|work|works|stand for|stands for|is used for|used for|in cybersecurity|in cyber security|in security|in it|signifie|veut dire|"
@@ -116,11 +116,11 @@ _TERMW = re.compile(r"\b(?:terms?|words?|vocabulary|glossary|dictionary|terminol
 
 def _extract(question):
     q = (question or "").strip().strip("?!.\"' ").strip()
-    if not q or len(q) > 110 or "\n" in q:
+    if not q or len(q) > 150 or "\n" in q:
         return None
     for _ in range(2):
         q2 = _FRAME.sub("", q).strip()
-        q2 = re.sub(r"^(?:a|an|the|le|la|les|l'|un|une)\s+", "", q2, flags=re.I)
+        q2 = re.sub(r"^(?:(?:a|an|the|le|la|les|un|une)\s+|l['’]\s*|d['’]\s*)", "", q2, flags=re.I)
         if q2 == q:
             break
         q = q2
@@ -131,7 +131,8 @@ def _extract(question):
 def lookup(term_text):
     """Term row for an exact name/alias (any language), or None."""
     q = fold(term_text or "")
-    for v in (q, re.sub(r"^(?:a|an|the)\s+", "", q), q.rstrip("s") if len(q) > 4 else q):
+    base = re.sub(r"^(?:a|an|the|attaque|attack|shambulio|igitero)\s+", "", q)
+    for v in (q, re.sub(r"^(?:a|an|the)\s+", "", q), q.rstrip("s") if len(q) > 4 else q, base, re.sub(r"\s+(?:attack|attaque|shambulio)$", "", base)):
         rid = _INDEX.get(v)
         if rid:
             return _BY_ID[rid]
@@ -201,7 +202,7 @@ def overview(lang="en", cat=None):
 def find(question, lang="en"):
     """Guide-shaped entry for a cybersecurity-term question, or None."""
     q = (question or "").strip()
-    if not q or len(q) > 120 or _NOT.search(q):
+    if not q or len(q) > 160 or _NOT.search(q):
         return None
     folded = fold(q)
     # glossary / list requests
@@ -215,9 +216,14 @@ def find(question, lang="en"):
             if re.search(key, folded) and re.search(r"\bterms?\b|\bglossary\b|\bvocabulary\b", folded):
                 return overview(lang, cat)
         return overview(lang)
+    _direct = _extract(q)
+    if _direct and len(_direct.split()) <= 16:
+        _row = lookup(_direct)
+        if _row is not None:
+            return term_entry(_row)
     uses = bool(_USES.search(q))
     term = _extract(_USES.sub(" ", re.sub(r"\b(?:of|for|de|du|des|za|wa|ya|bya|mu|ku)\b", " ", q)).strip() if uses else q)
-    if not term or len(term.split()) > 5:
+    if not term or len(term.split()) > 16:
         return None
     row = lookup(term)
     if row is None:

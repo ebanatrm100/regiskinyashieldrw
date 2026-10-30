@@ -44,8 +44,17 @@ def asked_language(question):
         if toks & words:
             if toks & _POINT or (lang == "rw" and toks & {"nyirawe", "nyirinjye"}) or (lang == "sw" and toks & {"anakumiliki", "akumiliki"}):
                 return lang
-    if re.search(r"\buri uwa nde\b|\bqui t'a (cree|fait)\b", text):
+    if re.search(r"\buri uwa nde\b|\bqui t'a (cree|fait|developpe|concu|programme|construit)\b|\bqui t'a donne naissance\b", text):
         return "rw" if "uri uwa" in text else "fr"
+    # who created / made / built you
+    if re.search(r"\bwho (created|made|built|developed|designed|programmed|invented|is behind|is the creator of|is the developer of|is the author of) (you|this app|this assistant|kinyashield)\b|\bwho is your (creator|developer|maker|author)\b", text):
+        return "en"
+    if re.search(r"\bqui (est|sont) (ton|votre) (createur|developpeur|concepteur)\b|\bqui a (cree|developpe|concu|fabrique|programme) (cette application|cet assistant|kinyashield)\b", text):
+        return "fr"
+    if re.search(r"\bni nde (wakwiyubatse|wagukoze|waguhanze|wagukoreye|wagushyizeho|wakoze iyi porogaramu|wakoze kinyashield)\b|\bnde wakwubatse\b|\bnde wagukoze\b|\bumuremyi wawe ni nde\b|\bwakuremye ni nde\b", text):
+        return "rw"
+    if re.search(r"\bnani (alikuunda|alikutengeneza|alikuumba|aliyekuunda|aliyekutengeneza|alikubuni|alikuandika)\b|\bmuundaji wako ni nani\b|\bmtengenezaji wako ni nani\b|\bnani aliyeunda (programu hii|kinyashield)\b", text):
+        return "sw"
     return None
 
 

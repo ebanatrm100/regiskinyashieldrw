@@ -741,4 +741,11 @@ try:   # more overview hubs found by a routing probe: malware types, tools, engi
 except Exception:
     pass
 
+try:   # networking basics, ports, Wi-Fi, troubleshooting and "what can you do" hubs (net_playbook.py)
+    import net_playbook as _net_playbook
+    _net_playbook.register(_add, _RAW)
+    _net_playbook._finish(_RAW)
+except Exception:
+    pass
+
 IDS = [e["id"] for e, _ in _RAW]

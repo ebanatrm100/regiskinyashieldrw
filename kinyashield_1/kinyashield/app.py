@@ -215,7 +215,7 @@ with tab_chat:
                       "fr": "Rechercher sur le web des informations récentes et montrer les sources (clé IA requise)",
                       "rw": "Shakisha kuri interineti amakuru agezweho werekane amasoko (bisaba urufunguzo rwa AI)",
                       "sw": "Tafuta wavuti kwa taarifa za sasa na uonyeshe vyanzo (inahitaji ufunguo wa AI)"}
-    _use_search = st.checkbox(_search_labels.get(_chat_lang, _search_labels["en"]), key=f"use_search_{_chat_lang}", value=False)
+    _use_search = st.checkbox(_search_labels.get(_chat_lang, _search_labels["en"]), key=f"use_search_{_chat_lang}", value=True)
     _auto_labels = {"en": "Auto-detect the language I write in", "fr": "Détecter automatiquement la langue que j'écris",
                     "rw": "Menya ururimi nanditsemo ubwanjye", "sw": "Gundua lugha ninayoandika kiotomatiki"}
     _auto_lang = st.checkbox(_auto_labels.get(_chat_lang, _auto_labels["en"]), key=f"auto_lang_{_chat_lang}", value=True)
@@ -530,10 +530,22 @@ with tab_chat:
                     except Exception:
                         _term, _name, _info = None, None, None
                     try:
+                        _live = []
+                        if _use_search and not _info:
+                            try:                      # current / factual question: fetch live sources in parallel (4.5 s limit) for the AI to use
+                                import live_search as _ls
+                                if _ls.needs_live(_q):
+                                    with st.spinner(_T["thinking"]):
+                                        _live = _ls.fetch(_q, _chat_lang)
+                            except Exception:
+                                _live = []
                         with st.spinner(_T["thinking"]):
-                            _msg = _ask_ai(term_mode=bool(_term or _name), reference=(_wr.reference_text(_info) if _info else None))
+                            _ref = _wr.reference_text(_info) if _info else (_ls.reference_text(_live) if _live else None)
+                            _msg = _ask_ai(term_mode=bool(_term or _name), reference=_ref)
                         if _info:
                             _msg += _wr.source_line(_info, _chat_lang)
+                        elif _live:
+                            _msg += _ls.sources_line(_live, _chat_lang)
                     except Exception as _chat_error:
                         _ai_missing = _chat_error.__class__.__name__ == "MissingAPIKeyError"
                         _kind = "note"

@@ -7,6 +7,15 @@ untrusted data: the prompt tells the model to ignore any instructions inside it.
 from __future__ import annotations
 import json, re
 from textutil import fold
+try:   # situation library (scam_scen_*.py) and message-specific facts (scam_details.py); the check still works without them
+    import scam_scen_core as _SC
+    _SC.load()
+except Exception:
+    _SC = None
+try:
+    import scam_details as _SD
+except Exception:
+    _SD = None
 
 LANGS = ("en", "fr", "rw", "sw")
 LANG_NAME = {"en": "English", "fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}
@@ -92,17 +101,64 @@ LABELS = {
     "sw": {"title": "Uchambuzi wa akili", "summary": "Ujumbe huu ni nini", "why": "Kwa nini ni muhimu", "do": "Cha kufanya sasa", "dont": "Usichopaswa kufanya", "verify": "Jinsi ya kuthibitisha", "signals": "Dalili zilizopatikana kwenye maandishi", "ai": "AI + kanuni", "rules": "Kanuni tu",
            "noai": "Uchambuzi wa AI haukupatikana, hivyo maelezo haya yanatoka kwa kanuni na dalili za ujumbe.", "use_ai": "Tumia uchambuzi wa AI (hutuma maandishi ya ujumbe kwa huduma ya AI)", "wait": "Inachambua ujumbe…", "limits": "Kisaidizi cha uamuzi, si dhamana."},
 }
+_QUOTE = {"en": "Found in your message: {x}", "fr": "Trouvé dans votre message : {x}", "rw": "Byabonetse mu butumwa bwawe: {x}", "sw": "Imepatikana kwenye ujumbe wako: {x}"}
+_NOTHING = {"en": "It does not ask you for money, a code, a link, an installation or personal details. That is reassuring, but a first friendly message can still be the start of a scam: if a stranger later asks for money, a code or a favour, come back and check again.",
+            "fr": "Il ne vous demande ni argent, ni code, ni lien, ni installation, ni données personnelles. C'est rassurant, mais un premier message amical peut être le début d'une arnaque : si un inconnu demande ensuite de l'argent, un code ou un service, revenez vérifier.",
+            "rw": "Ntabwo igusaba amafaranga, kode, link, gushyiraho porogaramu cyangwa amakuru bwite. Biratuza, ariko ubutumwa bwa mbere bw'urugwiro bushobora kuba intangiriro y'uburiganya: nyuma uwo mutazi nasaba amafaranga, kode cyangwa ubufasha, garuka ugenzure.",
+            "sw": "Haikuombi pesa, msimbo, kiungo, kusakinisha au taarifa binafsi. Hilo linatia moyo, lakini ujumbe wa kwanza wa kirafiki unaweza kuwa mwanzo wa utapeli: mgeni akiomba baadaye pesa, msimbo au upendeleo, rudi ukague tena."}
+_OK_STEP = {
+    "url": {"en": "The message has a link («{x}»). I found no known warning, but do not log in or pay through it: type the organisation's official address yourself.",
+            "fr": "Le message contient un lien (« {x} »). Je n'ai trouvé aucun signal connu, mais ne vous connectez ni ne payez via ce lien : tapez vous-même l'adresse officielle de l'organisation.",
+            "rw": "Ubutumwa bufite link («{x}»). Nta kimenyetso kizwi nabonye, ariko ntukinjire cyangwa wishyure unyuze kuri yo: ubwawe wandike aderesi yemewe y'ikigo.",
+            "sw": "Ujumbe una kiungo («{x}»). Sikuona dalili inayojulikana, lakini usiingie au kulipa kupitia kiungo hicho: andika mwenyewe anwani rasmi ya shirika."},
+    "phone": {"en": "It gives the number {x}. Find the organisation's official number yourself and compare; do not call or pay a number only because a message gives it.",
+              "fr": "Il donne le numéro {x}. Trouvez vous-même le numéro officiel de l'organisation et comparez ; n'appelez ni ne payez un numéro simplement parce qu'un message le donne.",
+              "rw": "Itanga nimero {x}. Shaka nimero yemewe y'ikigo ubwawe urabigereranye; ntuhamagare cyangwa wishyure nimero kuko ubutumwa buyivuze gusa.",
+              "sw": "Inatoa namba {x}. Tafuta mwenyewe namba rasmi ya shirika na ulinganishe; usipige au kulipa namba kwa sababu tu ujumbe umeitaja."},
+    "amount": {"en": "It mentions {x}. Check any money, balance or debt in your own app or at the bank, not from the message.",
+               "fr": "Il mentionne {x}. Vérifiez tout argent, solde ou dette dans votre appli ou à la banque, pas d'après le message.",
+               "rw": "Havugwa {x}. Reba amafaranga, ayo ufite cyangwa umwenda muri porogaramu yawe cyangwa kuri banki, si mu butumwa.",
+               "sw": "Unataja {x}. Kagua pesa, salio au deni kwenye programu yako au benki, si kutoka ujumbe."},
+    "ask": {"en": "It asks you to do something. Before you do it, confirm with the sender through a number or app you already trust that they really sent it and why.",
+            "fr": "Il vous demande de faire quelque chose. Avant de le faire, confirmez avec l'expéditeur, par un numéro ou une appli de confiance, qu'il l'a vraiment envoyé et pourquoi.",
+            "rw": "Irakwifuza gukora ikintu. Mbere yo kugikora, emeza n'uwohereje ukoresheje nimero cyangwa porogaramu wizeye ko yabwohereje koko n'impamvu.",
+            "sw": "Inakuomba ufanye kitu. Kabla ya kufanya, thibitisha na mtumaji kwa namba au programu unayoiamini kuwa ameituma kweli na kwa nini."},
+    "plain": {"en": "I found nothing known to be wrong in this message, and it asks for nothing risky. If the sender is a stranger, do not share personal details, codes or money until you know who they are; if it is someone you know and seems odd, call them.",
+              "fr": "Je n'ai rien trouvé de connu comme anormal dans ce message, et il ne demande rien de risqué. Si l'expéditeur est un inconnu, ne partagez ni données personnelles, ni codes, ni argent avant de savoir qui il est ; si c'est une connaissance et que cela paraît étrange, appelez-la.",
+              "rw": "Nta kintu kizwi nabonye kitameze neza muri ubu butumwa, kandi nta kintu cy'ingaruka busaba. Niba uwohereje ari umuntu utazi, ntugire amakuru bwite, kode cyangwa amafaranga utanga utaramumenya; niba ari uwo uzi kandi bisa n'ibidasanzwe, mumuhamagare.",
+              "sw": "Sikuona kitu kinachojulikana kuwa si sawa kwenye ujumbe huu, na hauombi kitu cha hatari. Mtumaji akiwa mgeni, usishiriki taarifa binafsi, misimbo au pesa hadi ujue ni nani; akiwa unayemjua na inaonekana si kawaida, mpigie."},
+}
+_DETAIL_W = {"url_brand": 3, "url_short": 2, "url_tld": 2, "url_hyphen": 1, "ask_code": 3, "ask_install": 2, "ask_secret": 2, "amount_pay": 2, "ask_personal": 2, "ask_callback": 1, "deadline": 1, "phone": 1}
+
 PRIVACY = {"en": "The rule check runs inside this page. If you keep \"Use AI analysis\" on, the message text is also sent to the AI service to explain it; this app does not store it. Do not paste full PINs, passwords or one-time codes.",
            "fr": "La vérification par règles s'exécute dans cette page. Si « Utiliser l'analyse IA » est activé, le texte du message est aussi envoyé au service d'IA pour l'expliquer ; l'application ne le conserve pas. Ne collez pas de PIN, mot de passe ou code à usage unique complets.",
            "rw": "Igenzura ry'amategeko rikorerwa muri uru rupapuro. Niba usize \"Koresha isesengura rya AI\", inyandiko y'ubutumwa nayo yoherezwa kuri serivisi ya AI kugira ngo isobanurwe; iyi porogaramu ntiyibika. Ntukandukure PIN, ijambo ry'ibanga cyangwa kode yuzuye.",
            "sw": "Ukaguzi wa kanuni hufanyika ndani ya ukurasa huu. Ukiacha \"Tumia uchambuzi wa AI\" ikiwa imewashwa, maandishi ya ujumbe pia hutumwa kwa huduma ya AI kuyaeleza; programu hii haihifadhi. Usibandike PIN, nywila au msimbo kamili."}
 
 
+_PROHIB = re.compile(r"\b(?:never|do not|don't|dont|should not|must not|will not|won't|not (?:to )?share|jamais|ne (?:pas|partagez|donnez|communiquez|cliquez)|ntuzigere|ntugasangize|ntukagire|ntugatange|ntukohereze|kamwe|usishiriki|usimpe|usitoe|usibofye)\b")
+
+
+def _prohibited(f, pos):
+    last = 0
+    for m in re.finditer(r"[.!?\n]\s", f[:pos]):
+        last = m.end()
+    return bool(_PROHIB.search(f[last:pos][-90:]))
+
+
 def signals(text, lang="en"):
     """(found, missing_names): clue explanations present in the text (folded matching) and the key clues that are absent."""
     f = fold(text); k = lang if lang in LANGS else "en"; found = []; weight = 0
     for sid, (rx, w, expl) in _SIG.items():
-        if re.search(rx, f, re.I):
+        hit = False
+        for m in re.finditer(rx, f, re.I):
+            if sid in ("secret", "install") and _prohibited(f, m.start()):
+                continue      # "do not share this code" is a warning, not a request
+            if sid == "secret" and _PROHIB.search(f) and not (_SD is not None and "ask_code" in _SD.facts(text)["asks"]):
+                continue      # a genuine code notice: it carries the warning and asks for nothing
+            hit = True
+            break
+        if hit:
             found.append((sid, expl[k])); weight += w
     absent = [_SIG_NAME[s][k] for s in ("secret", "urgency", "prize", "threat", "install", "link") if not any(s == x for x, _ in found)]
     return found, absent, weight
@@ -175,7 +231,31 @@ def assess(text, lang, result, use_ai=True, ask=None):
     """Combine rules, clues and (optionally) AI. `ask(prompt) -> str` calls the model; any exception just means 'AI unavailable'."""
     k = lang if lang in LANGS else "en"
     found, absent, weight = signals(text, k)
+    scen, facts_, dlines = [], None, []
+    if _SC is not None:
+        try:
+            scen = _SC.match(text, k)
+        except Exception:
+            scen = []
+    if _SD is not None:
+        try:
+            facts_ = _SD.facts(text)
+            dlines = _SD.details(text, k)
+            weight += sum(_DETAIL_W.get(a, 0) for a in facts_["asks"]) + (1 if facts_["deadlines"] else 0) + (1 if facts_["phones"] and facts_["asks"] else 0)
+            for u in facts_["urls"][:3]:
+                if any(x.startswith(("The link", "Le lien", "Link", "Kiungo")) and "«" + _SD.domain_of(u) + "»" in x for x in dlines):
+                    weight += 2
+        except Exception:
+            dlines = []
     rule_v = result.verdict if result is not None else "ok"
+    if scen:   # situation library: a strong or high-risk situation raises the verdict even when no single rule fired
+        top_sev = scen[0]["sev"]
+        if any(x["strong"] for x in scen) or (top_sev == "high" and (len(scen) >= 2 or rule_v != "ok")):
+            sv = "high"
+        else:
+            sv = "verify"
+        if RANK[sv] > RANK[rule_v]:
+            rule_v = sv
     clue_v = "high" if weight >= 7 else ("verify" if weight >= 3 else "ok")
     base = max(rule_v, clue_v, key=lambda v: RANK[v]) if rule_v != clue_v else rule_v
     if rule_v == "ok" and clue_v == "high":
@@ -192,22 +272,61 @@ def assess(text, lang, result, use_ai=True, ask=None):
     if ai and verdict == "high" and rule_v == "ok" and not found and len(ai["reasons"]) < 2:
         verdict = "verify"       # a lone, unexplained AI "high" on a message with no clues is treated as "verify"
     rule_reasons = []
+    for x in scen[:3]:
+        r = f"{x['name']}: {x['why']}"
+        if x["quotes"]:
+            r += " " + _QUOTE[k].format(x=", ".join("“" + q + "”" for q in x["quotes"]))
+        rule_reasons.append(r)
     if result is not None:
         for f in result.findings:
             if f.severity != "low":
                 rule_reasons.append(f"{f.title[k]}: {f.why[k]}")
     clue_reasons = [e for _, e in found]
+    if dlines:   # concrete facts from THIS message replace the generic clue lines they make redundant
+        drop = {"link": 0, "short_link": 0, "money": 0}
+        clue_reasons = [e for sid, e in found if sid not in drop and not (sid in ("secret", "urgency", "install", "secrecy") and dlines)] if dlines else clue_reasons
+        clue_reasons = dlines + clue_reasons
+    elif not found and not scen and verdict == "ok":
+        clue_reasons = [_NOTHING[k]]
     if ai:
         reasons = ai["reasons"] + [r for r in rule_reasons if r not in ai["reasons"]]
         summary = ai["summary"]
         kind = ai["kind"] or KIND_LABEL[k][verdict]
     else:
         reasons = rule_reasons + clue_reasons
-        summary = KIND_LABEL[k][verdict]
-        kind = KIND_LABEL[k][verdict]
+        summary = (scen[0]["name"] + ": " + scen[0]["why"]) if scen else KIND_LABEL[k][verdict]
+        kind = scen[0]["name"] if scen else KIND_LABEL[k][verdict]
     do = (ai["do"] if ai and ai["do"] else []) or DO[verdict][k]
     if verdict == "high" and ai and ai["do"]:
         do = ai["do"]
+    if scen and not (ai and ai["do"]):   # specific steps of the situation(s) found in this message come first
+        spec = []
+        for x in scen[:2]:
+            for st in x["do"]:
+                if st not in spec:
+                    spec.append(st)
+        do = spec[:6] + [d for d in DO[verdict][k][-1:] if d not in spec]
+    if not scen and not (ai and ai["do"]) and result is not None and verdict != "ok":   # no situation matched: use the specific advice of the rules that fired, not only the generic steps
+        spec = []
+        for f in result.findings:
+            if f.severity != "low" and f.advice[k] not in spec:
+                spec.append(f.advice[k])
+        if spec:
+            do = spec[:4] + [d for d in DO[verdict][k][-1:] if d not in spec]
+    if verdict == "ok" and not (ai and ai["do"]):   # nothing known matched: say what to check in THIS message, from the facts found in it
+        spec = []
+        if facts_:
+            if facts_["urls"]:
+                spec.append(_OK_STEP["url"][k].format(x=_SD.domain_of(facts_["urls"][0])))
+            if facts_["phones"]:
+                spec.append(_OK_STEP["phone"][k].format(x=facts_["phones"][0]))
+            if facts_["amounts"]:
+                spec.append(_OK_STEP["amount"][k].format(x=facts_["amounts"][0]))
+            if facts_["asks"]:
+                spec.append(_OK_STEP["ask"][k])
+        if not spec:
+            spec.append(_OK_STEP["plain"][k])
+        do = spec[:4] + DO["ok"][k][:2]
     verify = ai["verify"] if ai and ai["verify"] else DO["verify"][k][1:2] + DO["verify"][k][2:3]
     dont = (ai["dont"] if ai and ai["dont"] else []) or DONT[k]
     return {"verdict": verdict, "source": "rules+ai" if ai else "rules", "kind": kind, "summary": summary, "reasons": reasons[:8] if reasons else [KIND_LABEL[k][verdict]],

@@ -1,0 +1,112 @@
+"""Scam scenarios, part 2: impersonation (police, tax, boss, suppliers), delivery and customs, utilities, telecom promotions. fr/rw/sw wording is a DRAFT."""
+from scam_scen_core import add
+
+add("fake_police_court", "high", ["OFFICIAL", "r:\\b(?:summons|warrant|arrest|case|file|complaint|investigation|charged|convocation|mandat|plainte|enquete|impamvu|dosiye|ikirego|ifatwa|wito|mashtaka|upelelezi)\\w*", "r:\\b(?:pay|fine|bail|settle|avoid|transfer|call|ohereza|ishyura|ihazabu|lipa|faini|dhamana|amande|payer)\\w*"],
+    ("Fake police / court / investigator demanding payment", "Faux policier / tribunal / enquêteur exigeant un paiement", "Umupolisi / urukiko / umuhanga w'impimbano usaba kwishyura", "Polisi / mahakama / mpelelezi bandia anayedai malipo"),
+    ("Scammers claim you or a relative is under investigation, with an 'arrest warrant', and offer to 'close the case' for a fee or bail. Real authorities summon you in writing and never take fines by mobile money to a personal number.",
+     "Les escrocs prétendent que vous ou un proche êtes visé par une enquête et un « mandat d'arrêt », et proposent de « classer l'affaire » contre une somme. Les vraies autorités convoquent par écrit et n'encaissent jamais d'amende sur un numéro personnel.",
+     "Abatekamutwe bavuga ko wowe cyangwa umuvandimwe wawe ukurikiranyweho icyaha bafite «ifatwa», bakagusaba amafaranga ngo «bafunge dosiye». Ubuyobozi nyabwo bukwandikira kandi ntibwakira amande kuri nimero bwite.",
+     "Matapeli hudai wewe au jamaa yako mnachunguzwa kwa «hati ya kukamatwa», na kutoa «kufunga kesi» kwa ada au dhamana. Mamlaka halisi huita kwa maandishi na haikusanyi faini kwa namba ya mtu binafsi."),
+    ("Do not pay or share ID details. Hang up and call the real police or court number from an official source (not the one given). | Fines and bail are paid only through official government channels with a receipt. | Tell a trusted relative; scammers rely on secrecy and panic.",
+     "Ne payez pas et ne donnez pas votre identité. Raccrochez et appelez la vraie police ou le tribunal via une source officielle (pas le numéro donné). | Amendes et cautions se paient uniquement par les canaux officiels avec reçu. | Prévenez un proche de confiance ; l'arnaque repose sur le secret et la panique.",
+     "Ntukishyure kandi ntutange amakuru y'indangamuntu. Funga uhamagare polisi cyangwa urukiko nyarwo ukoresheje nimero yemewe (si iyo wahawe). | Amande n'amafaranga y'ingwate yishyurwa gusa mu nzira za Leta zemewe ufite inyemezabwishyu. | Bwira umuntu wizeye; abatekamutwe bashingira ku ibanga n'ubwoba.",
+     "Usilipe wala kutoa taarifa za kitambulisho. Kata na upige polisi au mahakama halisi kwa namba rasmi (si uliyopewa). | Faini na dhamana hulipwa kupitia njia rasmi za serikali na risiti. | Mwambie ndugu unayemwamini; matapeli hutegemea siri na hofu."), strong=True)
+
+add("fake_tax_authority", "high", ["r:\\b(?:rra|tax|revenue|taxes|impot|taxe|kodi|ushuru|tra|kra|ura)\\b", "r:\\b(?:refund|penalty|arrears|overdue|owe|unpaid|audit|rembours|penalite|arrieres|ihazabu|ideni|gusubizwa|kurejeshewa|adhabu|deni|ukaguzi)\\w*", "PAY"],
+    ("Fake tax-authority refund or penalty", "Faux remboursement ou pénalité du fisc", "Gusubizwa cyangwa ihazabu y'imisoro y'impimbano", "Marejesho au adhabu bandia ya mamlaka ya kodi"),
+    ("Fake 'tax refund' messages harvest your bank details; fake 'penalty' messages push you to pay at once to avoid seizure or a fine.",
+     "Les faux « remboursements d'impôt » récoltent vos données bancaires ; les fausses « pénalités » vous poussent à payer vite pour éviter saisie ou amende.",
+     "Ubutumwa bw'impimbano bwa «gusubizwa imisoro» bukusanya amakuru ya banki; ubwa «ihazabu» bugusunikira kwishyura vuba.",
+     "Ujumbe bandia wa «marejesho ya kodi» hukusanya taarifa za benki; wa «adhabu» hukusukuma ulipe haraka."),
+    ("Do not open the link or enter bank/card details. | Log in yourself to the tax authority's official portal (type the address) or visit its office to check your balance. | Official refunds go to the account already on file; they never need your PIN or card number.",
+     "N'ouvrez pas le lien et ne saisissez aucune donnée bancaire. | Connectez-vous vous-même au portail officiel (tapez l'adresse) ou allez au bureau des impôts. | Les remboursements officiels vont au compte déjà enregistré ; ils n'exigent jamais PIN ni numéro de carte.",
+     "Ntukingure link kandi ntushyiremo amakuru ya banki. | Injira ubwawe ku rubuga rwemewe rw'ikigo cy'imisoro (wandike aderesi) cyangwa ujye ku biro. | Ayasubizwa yoherezwa kuri konti isanzwe yanditse; ntibasaba PIN cyangwa nimero y'ikarita.",
+     "Usifungue kiungo wala kuingiza taarifa za benki. | Ingia mwenyewe kwenye tovuti rasmi ya mamlaka ya kodi (andika anwani) au tembelea ofisi. | Marejesho rasmi huenda kwenye akaunti iliyosajiliwa; hayahitaji PIN au namba ya kadi."))
+
+add("boss_urgent_request", "high", ["BOSS", "r:\\b(?:urgent|quick|confidential|discreet|favou?r|task|are you available|at your desk|besoin|urgent|service|ibanze|ikibazo|kazi|ombi|haraka|tafadhali)\\w*", "r:\\b(?:transfer|pay|send|buy|gift cards?|voucher|invoice|account|virement|payer|acheter|ohereza|gura|ishyura|tuma|nunua|lipa)\\w*"],
+    ("Fake boss / CEO urgent payment request", "Faux patron / PDG demandant un paiement urgent", "Umuyobozi w'impimbano asaba kwishyura byihutirwa", "Bosi bandia anayeomba malipo ya haraka"),
+    ("Business email compromise: someone pretends to be your manager or director, asks for secrecy and a quick transfer, gift cards or airtime. The sender address or number is spoofed or a new one.",
+     "Fraude au président : quelqu'un se fait passer pour votre responsable, demande discrétion et virement, cartes cadeaux ou crédit rapidement. L'adresse ou le numéro est usurpé ou nouveau.",
+     "Uburiganya bukoresha izina ry'umuyobozi: umuntu yiyoberanya nk'umuyobozi wawe, agasaba ibanga no kohereza amafaranga, ama-carte cyangwa airtime vuba. Aderesi cyangwa nimero iba iy'impimbano cyangwa nshya.",
+     "Ulaghai wa barua pepe ya biashara: mtu hujifanya meneja au mkurugenzi, kuomba siri na uhamisho wa haraka, kadi za zawadi au muda wa maongezi. Anwani au namba ni bandia au mpya."),
+    ("Do not pay. Call your boss on the number you already have (not one in the message) or ask in person. | Follow your company's payment approval process; no one can bypass it by chat. | Report it to your IT or security team and keep the message.",
+     "Ne payez pas. Appelez votre responsable au numéro que vous avez déjà (pas celui du message) ou demandez en personne. | Suivez le processus d'approbation des paiements ; personne ne le contourne par message. | Signalez-le à votre équipe informatique ou sécurité et gardez le message.",
+     "Ntukishyure. Hamagara umuyobozi wawe kuri nimero usanzwe ufite (si iri mu butumwa) cyangwa ubimubaze imbonankubone. | Kurikiza uburyo bw'ikigo bwo kwemeza kwishyura; nta wubirengaho mu butumwa. | Bimenyeshe abashinzwe ikoranabuhanga cyangwa umutekano ubike ubutumwa.",
+     "Usilipe. Mpigie bosi wako kwa namba uliyo nayo (si ya ujumbe) au muulize ana kwa ana. | Fuata mchakato wa kampuni wa kuidhinisha malipo; hakuna anayeukwepa kwa ujumbe. | Ripoti kwa timu ya IT au usalama na hifadhi ujumbe."), strong=True)
+
+add("supplier_bank_change", "high", ["r:\\b(?:invoice|supplier|vendor|payment|payroll|salary|facture|fournisseur|paiement|inyemezabwishyu|utanga ibicuruzwa|ankara|msambazaji|mshahara)\\w*", "r:\\b(?:new|changed|updated|different|nouveau|nouvelle|chang|nshya|byahindutse|mpya|imebadilika)\\w*", "r:\\b(?:bank|account|iban|swift|banque|compte|banki|konti|akaunti|rib)\\b"],
+    ("Changed bank account on an invoice or salary", "Changement de compte bancaire sur une facture ou un salaire", "Guhindura konti ya banki kuri facture cyangwa umushahara", "Kubadilisha akaunti ya benki kwenye ankara au mshahara"),
+    ("Fraudsters (or a hacked supplier mailbox) send a 'new bank account' for an invoice or ask HR to change salary details, so your payment goes to them.",
+     "Des fraudeurs (ou une messagerie piratée de fournisseur) envoient un « nouveau compte » pour une facture ou demandent aux RH de changer les coordonnées de salaire.",
+     "Abakora uburiganya (cyangwa email yinjiriwe y'utanga ibicuruzwa) bohereza «konti nshya» ya facture cyangwa basaba abakozi gihindura konti y'umushahara.",
+     "Walaghai (au sanduku la barua lililodukuliwa la msambazaji) hutuma «akaunti mpya» ya ankara au kuomba HR kubadilisha akaunti ya mshahara."),
+    ("Do not change payment details because of a message. | Confirm by phoning the supplier or employee on the number already in your records, and have a second person approve. | Make a small test payment only after the confirmation.",
+     "Ne changez pas les coordonnées de paiement sur la base d'un message. | Confirmez par téléphone via le numéro de vos dossiers et faites approuver par une seconde personne. | Faites un petit paiement test seulement après confirmation.",
+     "Ntuhindure amakuru y'ubwishyu kubera ubutumwa. | Emeza uhamagaye utanga ibicuruzwa cyangwa umukozi kuri nimero iri mu bikubiye byawe, hanyuma undi muntu abyemeze. | Ohereza amafaranga make yo kugerageza nyuma yo kwemeza gusa.",
+     "Usibadilishe taarifa za malipo kwa sababu ya ujumbe. | Thibitisha kwa kupiga msambazaji au mfanyakazi kwa namba iliyo kwenye kumbukumbu zako na mtu wa pili aidhinishe. | Fanya malipo madogo ya majaribio baada ya uthibitisho tu."), strong=True)
+
+add("fake_delivery_fee", "high", ["PARCEL", "r:\\b(?:fee|pay|payment|customs|duty|tax|clearance|redeliver|reschedule|address|frais|payer|douane|dedouan|ikiguzi|ishyura|ubukode|ada|lipa|forodha|anwani)\\w*", "r:(?:https?://|www\\.|\\b[a-z0-9-]+\\.(?:com|net|org|xyz|info|top|online|site|click|link)\\b|\\bcall\\b|\\bhamagara\\b|\\bpiga\\b|\\bappelez\\b)"],
+    ("Fake parcel, courier or customs fee", "Faux colis, transporteur ou frais de douane", "Ipaki, kompanyi itwara ibintu cyangwa amafaranga ya gasutamo by'impimbano", "Kifurushi, mjumbe au ada ya forodha bandia"),
+    ("A fake courier SMS says a parcel is waiting and you must pay a small 'delivery' or 'customs' fee through a link. The page steals your card or mobile-money details.",
+     "Un faux SMS de transporteur dit qu'un colis attend et qu'il faut payer de petits « frais de livraison » ou « douane » via un lien. La page vole vos données de carte ou d'argent mobile.",
+     "SMS y'impimbano ya kompanyi itwara ibintu ivuga ko hari ipaki, ugomba kwishyura amafaranga make unyuze kuri link. Urupapuro rwiba amakuru y'ikarita cyangwa mobile money.",
+     "SMS bandia ya mjumbe husema kuna kifurushi na lazima ulipe ada ndogo ya «uwasilishaji» au «forodha» kwa kiungo. Ukurasa huiba taarifa za kadi au pesa za simu."),
+    ("Do not tap the link or pay. Did you order anything? If not, ignore it. | Track the parcel only on the courier's official site or app using the tracking number from your order. | Real customs duties are paid through the official customs system with a receipt.",
+     "Ne touchez pas le lien et ne payez pas. Avez-vous commandé quelque chose ? Sinon, ignorez. | Suivez le colis uniquement sur le site ou l'appli officiels avec le numéro de suivi de votre commande. | Les droits de douane se paient via le système douanier officiel avec reçu.",
+     "Ntukande link kandi ntukishyure. Hari icyo wategetse? Niba nta cyo, wirengagize. | Kurikirana ipaki ku rubuga cyangwa porogaramu yemewe ukoresheje nimero yo gukurikirana yo kuri komande. | Imisoro ya gasutamo yishyurwa mu buryo bwemewe ufite inyemezabwishyu.",
+     "Usibofye kiungo wala kulipa. Je, uliagiza kitu? Kama la, puuza. | Fuatilia kifurushi kwenye tovuti au programu rasmi ya mjumbe kwa namba ya ufuatiliaji ya oda yako. | Ushuru wa forodha hulipwa kupitia mfumo rasmi wa forodha na risiti."))
+
+add("fake_utility_token", "medium", ["r:\\b(?:eucl|wasac|electricity|power|cash ?power|water|token|meter|units|electricite|compteur|umuriro|amazi|ikarita y'umuriro|umeme|maji|mita)\\b", "r:\\b(?:disconnect|cut|overdue|unpaid|arrears|bill|discount|bonus|promo|coupee|impayee|facture|bonus|gucibwa|ideni|fagitire|punguzo|imekatwa|deni)\\w*", "PAY"],
+    ("Fake electricity/water bill, disconnection threat or discounted tokens", "Fausse facture électricité/eau, menace de coupure ou jetons à prix cassé", "Facture y'umuriro/amazi y'impimbano, gutera ubwoba bwo gucibwa cyangwa tokens ku giciro gito", "Bili bandia ya umeme/maji, kitisho cha kukatwa au tokeni kwa bei ndogo"),
+    ("Scammers threaten disconnection or sell cheap 'tokens'. Payment goes to a personal number and the token is fake or already used.",
+     "Les escrocs menacent de couper ou vendent des « jetons » bon marché. Le paiement va sur un numéro personnel et le jeton est faux ou déjà utilisé.",
+     "Abatekamutwe bagutera ubwoba bwo kugucisha cyangwa bagurisha «tokens» ku giciro gito. Amafaranga ajya kuri nimero bwite, token iba y'impimbano cyangwa yakoreshejwe.",
+     "Matapeli hutishia kukata au kuuza «tokeni» za bei ndogo. Malipo huenda kwa namba binafsi na tokeni ni bandia au imeshatumika."),
+    ("Check the real balance in the utility's official app/USSD or visit its office. | Buy tokens only from official channels (the utility's app, authorised agents or your mobile-money menu). | Never send money to a personal number for a bill.",
+     "Vérifiez le solde réel dans l'appli/USSD officiel ou au bureau du fournisseur. | N'achetez des jetons que par les canaux officiels (appli du fournisseur, agents agréés, menu d'argent mobile). | N'envoyez jamais d'argent à un numéro personnel pour une facture.",
+     "Reba ibyo ugomba nyabyo muri porogaramu/USSD yemewe cyangwa ku biro by'ikigo. | Gura tokens gusa mu nzira zemewe (porogaramu y'ikigo, abagenzi bemewe, menu ya mobile money). | Ntuzigere wohereza amafaranga kuri nimero bwite kubera facture.",
+     "Angalia deni halisi kwenye programu/USSD rasmi au ofisi ya kampuni. | Nunua tokeni kupitia njia rasmi tu (programu ya kampuni, mawakala walioidhinishwa, menyu ya pesa za simu). | Kamwe usitume pesa kwa namba binafsi kwa bili."))
+
+add("telecom_promo", "medium", ["r:\\b(?:mtn|airtel|tigo|safaricom|vodacom|orange|momo|telecom)\\b", "r:\\b(?:free|bonus|promo|win|won|data|airtime|gift|reward|offer|gratuit|cadeau|ubuntu|ikiguzi|bure|zawadi|bahati|megabytes|mb|gb)\\w*", "r:(?:https?://|www\\.|\\b[a-z0-9-]+\\.(?:com|net|xyz|info|top|online|site|click|link)\\b|\\bsend\\b|\\bohereza\\b|\\btuma\\b|\\bdial\\b|\\*\\d{2,4}#)"],
+    ("Fake telecom promotion, bonus or 'dial this code' offer", "Fausse promotion d'opérateur ou offre « composez ce code »", "Promosiyo y'impimbano ya sosiyete ya telefone cyangwa «kanda iyi kode»", "Promosheni bandia ya kampuni ya simu au «piga msimbo huu»"),
+    ("Fake 'free data/airtime bonus' messages ask you to click, forward to friends or dial a code. Some USSD codes forward your calls or move your airtime.",
+     "De fausses offres « data/crédit gratuit » vous demandent de cliquer, transférer à vos amis ou composer un code. Certains codes USSD détournent vos appels ou votre crédit.",
+     "Ubutumwa bw'impimbano bwa «data/airtime kubuntu» busaba gukanda, kohereza ku nshuti cyangwa gukanda kode. Zimwe kode za USSD zohereza ahandi amahamagara yawe cyangwa airtime.",
+     "Ujumbe bandia wa «data/muda wa maongezi bure» hukuomba ubofye, utume kwa marafiki au upige msimbo. Baadhi ya misimbo ya USSD hupeleka simu zako au muda wa maongezi kwingine."),
+    ("Do not click, forward, or dial unknown codes. | Check offers only in the operator's official app, shop or official social page (look for the verified tick) or its official number. | Never share your PIN or codes to 'claim' a bonus.",
+     "Ne cliquez pas, ne transférez pas, ne composez pas de code inconnu. | Vérifiez les offres dans l'appli officielle de l'opérateur, en boutique ou sur sa page officielle (coche vérifiée) ou son numéro officiel. | Ne partagez jamais PIN ou codes pour « réclamer » un bonus.",
+     "Ntukande, ntuyohereze, ntukande kode utazi. | Genzura ibyo batanga muri porogaramu yemewe ya sosiyete, ku iduka cyangwa ku rubuga rwayo rwemewe (ikimenyetso cyemeza) cyangwa nimero yemewe. | Ntugasangize PIN cyangwa kode ngo «uhabwe» bonus.",
+     "Usibofye, usitume au usipige misimbo usiyoijua. | Hakiki ofa kwenye programu rasmi ya kampuni, duka au ukurasa rasmi (alama ya uthibitisho) au namba rasmi. | Kamwe usishiriki PIN au misimbo ili «kudai» bonasi."))
+
+add("fake_government_benefit", "high", ["r:\\b(?:government|ministry|irembo|rssb|nida|social|benefit|subsidy|grant|relief|stimulus|ubudehe|vup|gouvernement|ministere|subvention|aide|leta|minisiteri|inkunga|serikali|wizara|ruzuku|msaada)\\w*", "r:\\b(?:register|apply|claim|eligible|selected|qualif|enregistr|inscri|eligible|iyandikishe|ihuze|wemerewe|umeshinda|jiandikishe|umechaguliwa|dai)\\w*", "r:\\b(?:fee|pay|send|pin|nida|id number|link|frais|payer|ishyura|ohereza|ada|lipa|tuma|kiungo|namba ya kitambulisho)\\w*"],
+    ("Fake government aid, subsidy or registration fee", "Fausse aide publique, subvention ou frais d'inscription", "Inkunga ya Leta y'impimbano, ruzuku cyangwa amafaranga yo kwiyandikisha", "Msaada bandia wa serikali, ruzuku au ada ya usajili"),
+    ("Scammers promise relief, cash transfers, scholarships or farm subsidies 'from the government' and charge a registration fee or collect your ID/NIDA and phone details.",
+     "Les escrocs promettent aides, transferts d'argent, bourses ou subventions agricoles « du gouvernement » et exigent des frais ou collectent ID/NIDA et téléphone.",
+     "Abatekamutwe bizeza inkunga, amafaranga, buruse cyangwa ruzuku y'ubuhinzi «ya Leta» bakagusaba amafaranga yo kwiyandikisha cyangwa bagafata indangamuntu/NIDA na telefoni.",
+     "Matapeli huahidi msaada, pesa, ufadhili au ruzuku ya kilimo «ya serikali» na kutoza ada ya usajili au kukusanya kitambulisho/NIDA na simu."),
+    ("Government programmes do not charge to register. Ask your local leader, sector/district office or the ministry's official site. | Do not send ID photos or numbers to a stranger. | Report the message to the authorities.",
+     "Les programmes publics ne font pas payer l'inscription. Demandez au chef local, au bureau du secteur/district ou sur le site officiel du ministère. | N'envoyez pas de photo ou numéro d'identité à un inconnu. | Signalez le message aux autorités.",
+     "Gahunda za Leta ntizisaba amafaranga yo kwiyandikisha. Baza umuyobozi w'aho utuye, ibiro by'umurenge/akarere cyangwa urubuga rwemewe rwa minisiteri. | Ntukohereze ifoto cyangwa nimero y'indangamuntu ku muntu utazi. | Menyesha ubuyobozi ubwo butumwa.",
+     "Mipango ya serikali haitozi ada ya kujiandikisha. Muulize kiongozi wa eneo, ofisi ya kata/wilaya au tovuti rasmi ya wizara. | Usitume picha au namba ya kitambulisho kwa mgeni. | Ripoti ujumbe kwa mamlaka."))
+
+add("fake_ngo_scholarship", "high", ["SCHOOL", "r:\\b(?:selected|awarded|won|congratulations|chosen|eligible|admitted|accepted|umeshinda|wemerewe|watoranyijwe|umechaguliwa|felicitations|selectionne)\\w*", "r:\\b(?:fee|processing|application|visa|registration|pay|send|ada|ishyura|frais|payer|ohereza|lipa|tuma)\\w*"],
+    ("Fake scholarship / grant / admission with a fee", "Fausse bourse / subvention / admission avec frais", "Buruse / inkunga / kwemererwa kw'impimbano gufite amafaranga", "Ufadhili / ruzuku / udahili bandia wenye ada"),
+    ("Genuine scholarships and admissions never charge to 'release' an award. The fee is the scam; the scholarship does not exist.",
+     "Les vraies bourses et admissions ne font pas payer pour « débloquer » un prix. Les frais sont l'arnaque ; la bourse n'existe pas.",
+     "Buruse n'amashuri nyabyo ntibisaba amafaranga yo «gufungura» igihembo. Amafaranga ni yo buriganya; buruse ntibaho.",
+     "Ufadhili na udahili halisi hautozi ada ya «kufungua» tuzo. Ada ndiyo utapeli; ufadhili haupo."),
+    ("Do not pay. Look up the institution or foundation yourself and contact it by its official site. | Never apply through a link you were sent unsolicited. | Ask your school's counsellor or education office.",
+     "Ne payez pas. Cherchez vous-même l'établissement ou la fondation et contactez-le via son site officiel. | Ne postulez jamais via un lien reçu sans l'avoir demandé. | Demandez à votre conseiller scolaire ou au bureau de l'éducation.",
+     "Ntukishyure. Shakisha ubwawe ikigo cyangwa fondasiyo ubahamagare ukoresheje urubuga rwabo rwemewe. | Ntukarasabe unyuze kuri link wohererejwe utayisabye. | Baza umujyanama wo ku ishuri cyangwa ibiro by'uburezi.",
+     "Usilipe. Tafuta taasisi au wakfu mwenyewe na uwasiliane kupitia tovuti rasmi. | Kamwe usiombe kupitia kiungo ulichotumiwa bila kuomba. | Muulize mshauri wa shule au ofisi ya elimu."))
+
+add("school_fees_new_account", "high", ["SCHOOL", "r:\\b(?:new|changed|different|updated|nouveau|nouvelle|nshya|byahindutse|mpya|imebadilika)\\w*", "r:\\b(?:account|bank|number|momo|konti|akaunti|compte|banque|nimero|namba)\\b", "PAY"],
+    ("School fees sent to a 'new account'", "Frais de scolarité vers un « nouveau compte »", "Amafaranga y'ishuri yoherezwa kuri «konti nshya»", "Ada ya shule kutumwa kwa «akaunti mpya»"),
+    ("A message pretending to be the school says its account changed, so parents pay the scammer instead of the school.",
+     "Un message se faisant passer pour l'école annonce un changement de compte : les parents paient l'escroc au lieu de l'école.",
+     "Ubutumwa bwiyoberanya nk'ishuri buvuga ko konti yahindutse, ababyeyi bakishyura umutekamutwe aho kwishyura ishuri.",
+     "Ujumbe unaojifanya shule husema akaunti imebadilika, wazazi hulipa tapeli badala ya shule."),
+    ("Confirm any change by visiting the school or phoning the number on its official letters. | Pay fees only to the account shown by the school office, and keep the receipt. | Warn other parents.",
+     "Confirmez tout changement en passant à l'école ou en appelant le numéro de ses courriers officiels. | Payez uniquement sur le compte indiqué par le secrétariat et gardez le reçu. | Prévenez les autres parents.",
+     "Emeza impinduka ujya ku ishuri cyangwa uhamagara nimero iri ku ibaruwa zaryo zemewe. | Ishyura gusa kuri konti yerekanywe n'ibiro by'ishuri ubike inyemezabwishyu. | Menyesha ababyeyi bandi.",
+     "Thibitisha mabadiliko kwa kutembelea shule au kupiga namba ya barua rasmi. | Lipa ada kwa akaunti iliyoonyeshwa na ofisi ya shule tu na hifadhi risiti. | Waonye wazazi wengine."))

@@ -1,0 +1,145 @@
+"""Scam scenarios, part 1: mobile money, banking, loans, investment. See scam_scen_core.py. fr/rw/sw wording is a DRAFT for fluent review."""
+from scam_scen_core import add
+
+add("momo_reversal", "high", ["MISTAKE", "PAY", "REFUND"],
+    ("Wrong-transfer 'please send it back' scam", "Arnaque du « transfert par erreur, renvoyez-le »", "Uburiganya bwa «nakohereje amafaranga kubw'impanuka, ongera uyansubize»", "Utapeli wa «nilituma kimakosa, nirudishie»"),
+    ("The scammer sends or fakes a transfer notice, then begs you to 'return' the money. The first notice is fake (or later reversed), so what you send back is really yours.",
+     "L'escroc envoie ou falsifie un avis de transfert puis vous supplie de « rendre » l'argent. Le premier avis est faux (ou annulé ensuite) : ce que vous renvoyez est votre argent.",
+     "Umutekamutwe yohereza cyangwa agakora ubutumwa bw'impimbano bwo kohereza, hanyuma akagusaba «kugaruza» amafaranga. Ubutumwa bwa mbere ni ibinyoma (cyangwa burakurwaho), bityo ayo ugaruye ni ayawe.",
+     "Tapeli hutuma au kughushi taarifa ya uhamisho kisha hukuomba «urudishe» pesa. Taarifa ya kwanza ni bandia (au hurejeshwa), hivyo unachorudisha ni pesa zako."),
+    ("Check your real balance in your own MoMo/bank app or by dialling the official USSD code yourself; an SMS is not proof of money received. | Do not send anything back. If real money did arrive, ask the sender to contact the operator or bank, which can reverse it officially. | Block the number and report it to your operator.",
+     "Vérifiez votre vrai solde dans votre appli ou en composant vous-même le code USSD officiel ; un SMS ne prouve pas la réception. | Ne renvoyez rien. Si l'argent est vraiment arrivé, l'expéditeur doit passer par l'opérateur ou la banque, qui peut l'annuler officiellement. | Bloquez le numéro et signalez-le à votre opérateur.",
+     "Reba amafaranga yawe nyayo muri porogaramu yawe cyangwa wandike ubwawe kode ya USSD yemewe; SMS si gihamya y'uko amafaranga yageze. | Ntugire icyo usubiza. Niba amafaranga yageze koko, uwayohereje ajye kuri sosiyete cyangwa banki izayasubiza mu buryo bwemewe. | Hagarika iyo nimero uyimenyeshe sosiyete ya telefone.",
+     "Angalia salio halisi kwenye programu yako au piga mwenyewe msimbo rasmi wa USSD; SMS si ushahidi wa kupokea pesa. | Usirudishe chochote. Pesa zikifika kweli, mtumaji awasiliane na kampuni ya simu au benki inayoweza kuzirejesha rasmi. | Mzuie namba na uripoti kwa kampuni ya simu."), strong=True)
+
+add("momo_agent_fraud", "high", ["r:\\b(?:agent|agence|umukozi|wakala)\\b", "r:\\b(?:pin|code|kode|msimbo)\\b", "r:\\b(?:fix|problem|error|cancel|reverse|rectif|gukosora|kosa|tatizo|hitilafu|annul)\\w*"],
+    ("Fake mobile-money agent or support asking for your PIN", "Faux agent ou support d'argent mobile qui demande votre PIN", "Umukozi cyangwa serivisi y'impimbano ya mobile money igusaba PIN", "Wakala au huduma bandia ya pesa za simu anayeomba PIN"),
+    ("A real agent or operator never needs your PIN or a code to 'fix' or 'cancel' something. The PIN is the key to your wallet.",
+     "Un vrai agent ou opérateur n'a jamais besoin de votre PIN ni d'un code pour « corriger » ou « annuler ». Le PIN est la clé de votre portefeuille.",
+     "Umukozi cyangwa sosiyete nyayo ntibikenera PIN yawe cyangwa kode ngo «bakosore» cyangwa «bahagarike». PIN ni urufunguzo rwa konti yawe.",
+     "Wakala au kampuni halisi hahitaji PIN au msimbo kamwe ili «kurekebisha» au «kughairi». PIN ni ufunguo wa pochi yako."),
+    ("Do not tell anyone your PIN, even staff; hang up. | If you already shared it, change your PIN at once through the official menu and call the operator's official helpline from another phone. | Check recent transactions and report any you did not make.",
+     "Ne dites votre PIN à personne, même au personnel ; raccrochez. | Si vous l'avez donné, changez-le tout de suite par le menu officiel et appelez la ligne officielle depuis un autre téléphone. | Vérifiez les opérations récentes et signalez celles que vous n'avez pas faites.",
+     "Ntugire PIN yawe n'umwe, ndetse n'abakozi; funga telefoni. | Niba wayitanze, uyihindure ako kanya unyuze ku menu yemewe uhamagare nimero y'ubufasha yemewe ukoresheje indi telefoni. | Reba ibikorwa biheruka ubimenyeshe niba hari utakoze.",
+     "Usimwambie yeyote PIN yako, hata mfanyakazi; kata simu. | Ukishaitoa, ibadilishe mara moja kupitia menyu rasmi na upige nambari rasmi ya msaada kutoka simu nyingine. | Kagua miamala ya hivi karibuni na uripoti usiyoifanya."), strong=True)
+
+add("sim_kyc", "high", ["r:\\b(?:sim|line|laini|nimero|nomero|numero)\\b", "r:\\b(?:kyc|nida|id|national id|identity|registration|register|re-?register|update|kuvugurura|gusubiza|kiyandikisha|kuhakiki|ongera wiyandikishe|usajili)\\w*", "BLOCK"],
+    ("Fake SIM registration / KYC / ID update threat", "Fausse mise à jour SIM / KYC / pièce d'identité avec menace", "Gutera ubwoba ku bijyanye no kwandikisha SIM / KYC / indangamuntu", "Kitisho bandia cha usajili wa SIM / KYC / kitambulisho"),
+    ("Scammers say your line will be blocked unless you 'update' your ID, NIDA number or SIM details, to steal your identity or take over your number (SIM swap).",
+     "Les escrocs disent que votre ligne sera bloquée sauf si vous « mettez à jour » votre pièce d'identité, numéro NIDA ou données SIM, pour voler votre identité ou détourner votre numéro (SIM swap).",
+     "Abatekamutwe bavuga ko umurongo wawe uzafungwa nutavugurura indangamuntu, NIDA cyangwa amakuru ya SIM, kugira ngo bakwiba indangamuntu cyangwa bafate nimero yawe (SIM swap).",
+     "Matapeli hudai laini yako itafungwa usipo «sasisha» kitambulisho, namba ya NIDA au taarifa za SIM, ili kuiba utambulisho au kuchukua namba yako (SIM swap)."),
+    ("Do not send ID photos, NIDA number or codes. | Visit an official operator shop with your ID, or dial the operator's official number to ask whether any update is really required. | If your phone suddenly loses network, contact the operator at once: it may be a SIM swap.",
+     "N'envoyez ni photo de pièce d'identité, ni numéro NIDA, ni codes. | Allez dans une boutique officielle de l'opérateur avec votre pièce, ou appelez son numéro officiel pour savoir si une mise à jour est vraiment demandée. | Si votre téléphone perd soudain le réseau, contactez l'opérateur : ce peut être un SIM swap.",
+     "Ntukohereze ifoto y'indangamuntu, NIDA cyangwa kode. | Jya ku iduka ryemewe rya sosiyete ufite indangamuntu, cyangwa uhamagare nimero yayo yemewe ubaze niba hari ivugurura rikenewe koko. | Telefoni yawe nibura network ako kanya, hamagara sosiyete: bishobora kuba SIM swap.",
+     "Usitume picha ya kitambulisho, NIDA au misimbo. | Nenda duka rasmi la kampuni ukiwa na kitambulisho, au piga namba rasmi uulize kama sasisho linahitajika kweli. | Simu ikipoteza mtandao ghafla, wasiliana na kampuni mara moja: huenda ni SIM swap."))
+
+add("bank_alert", "high", ["r:\\b(?:bank|banque|banki|card|carte|ikarita|kadi|atm|debit|credit)\\b", "r:\\b(?:transaction|debited|withdrawal|purchase|payment of|operation|retrait|achat|igikorwa|umutwaro|muamala|malipo ya|umefanyiwa)\\w*", "r:\\b(?:call|contact|cancel|dispute|click|appelez|annulez|hamagara|gusubika|piga|ghairi|kanda|bofya)\\w*"],
+    ("Fake bank/card alert asking you to call or click", "Fausse alerte bancaire vous demandant d'appeler ou de cliquer", "Impuruza y'impimbano ya banki igusaba guhamagara cyangwa gukanda", "Tahadhari bandia ya benki inayokutaka upige au ubofye"),
+    ("A fake 'unusual transaction' alert makes you panic and call a scammer's number or open a fake bank page, where you give card details or codes.",
+     "Une fausse alerte « opération inhabituelle » vous panique pour appeler un escroc ou ouvrir une fausse page de banque où vous donnez carte ou codes.",
+     "Impuruza y'impimbano ya «igikorwa kidasanzwe» igutera ubwoba ugahamagara umutekamutwe cyangwa ugakanda urupapuro rw'impimbano rwa banki, aho utanga amakuru y'ikarita cyangwa kode.",
+     "Tahadhari bandia ya «muamala usio wa kawaida» hukutisha upige namba ya tapeli au ufungue ukurasa bandia wa benki, ambapo hutoa kadi au misimbo."),
+    ("Do not call the number or tap the link in the message. | Open your bank's own app or dial the number printed on the back of your card to see if the transaction exists. | If you already gave card details or a code, ask the bank to block the card now and change your PIN.",
+     "N'appelez pas le numéro et ne touchez pas le lien du message. | Ouvrez l'appli de votre banque ou appelez le numéro au dos de votre carte pour voir si l'opération existe. | Si vous avez déjà donné carte ou code, demandez à la banque de bloquer la carte et changez votre PIN.",
+     "Ntuhamagare nimero ziri mu butumwa kandi ntukande link. | Fungura porogaramu ya banki yawe cyangwa uhamagare nimero iri inyuma y'ikarita urebe niba icyo gikorwa gihari. | Niba waramaze gutanga amakuru y'ikarita cyangwa kode, saba banki guhagarika ikarita uhindure PIN.",
+     "Usipige namba wala kubofya kiungo cha ujumbe. | Fungua programu ya benki yako au piga namba iliyo nyuma ya kadi uone kama muamala upo. | Ukishatoa kadi au msimbo, iombe benki izuie kadi na ubadilishe PIN."))
+
+add("otp_forward", "high", ["r:\\b(?:code|otp|kode|msimbo)\\b", "r:\\b(?:send|forward|share|give|read|tell|ohereza|mpa|mbwira|tuma|nipe|niambie|envoyez|donnez)\\w*", "r:\\b(?:me|us|him|her|to this|to my|kuri|kwa|moi|nous)\\b"],
+    ("Asking you to forward or read out a code you received", "Demande de transférer ou lire un code reçu", "Gusaba kohereza cyangwa gusoma kode wohererejwe", "Ombi la kutuma au kusoma msimbo uliopokea"),
+    ("A code sent to YOUR phone is the scammer's key. Giving it lets them log in as you, reset your WhatsApp, empty your wallet or approve a payment.",
+     "Un code envoyé à VOTRE téléphone est la clé de l'escroc. Le donner lui permet de se connecter à votre place, détourner WhatsApp, vider votre portefeuille ou valider un paiement.",
+     "Kode yoherejwe kuri telefoni YAWE ni urufunguzo rw'umutekamutwe. Kuyimuha bimwemerera kwinjira nkawe, gufata WhatsApp yawe, kwiba amafaranga cyangwa kwemeza kwishyura.",
+     "Msimbo uliotumwa kwa simu YAKO ni ufunguo wa tapeli. Kuutoa kunamruhusu kuingia kama wewe, kuchukua WhatsApp yako, kuiba pesa au kuidhinisha malipo."),
+    ("Never forward, read out or type that code for anyone, whoever they say they are. | Ask yourself: did I just try to log in or pay? If not, someone else is, so change that account's password now. | Tell the real sender (the app or bank) that someone is trying to enter your account.",
+     "Ne transférez, ne lisez et ne tapez ce code pour personne, quoi qu'on vous dise. | Demandez-vous : ai-je essayé de me connecter ou de payer ? Sinon, quelqu'un d'autre le fait : changez le mot de passe du compte. | Signalez à l'expéditeur réel (appli ou banque) qu'on tente d'entrer dans votre compte.",
+     "Ntuzigere wohereza, usoma cyangwa wandika iyo kode ku muntu uwo ari we wese. | Wibaze: hari icyo nari ngiye gukora (kwinjira, kwishyura)? Niba ntacyo, hari undi ugerageza, hindura ijambo ry'ibanga rya konti ako kanya. | Menyesha nyir'ubutumwa nyawe (porogaramu cyangwa banki) ko hari ugerageza kwinjira muri konti yawe.",
+     "Kamwe usitume, usisome kwa sauti wala kuandika msimbo huo kwa yeyote. | Jiulize: nilijaribu kuingia au kulipa? Kama sivyo, mtu mwingine anajaribu, badilisha nenosiri la akaunti mara moja. | Mwambie mtumaji halisi (programu au benki) kuwa mtu anajaribu kuingia akaunti yako."), strong=True)
+
+add("loan_fee", "high", ["LOAN", "r:\\b(?:approved|granted|eligible|pre-?approved|accepted|accorde|approuve|yemejwe|wemerewe|umeidhinishwa|umekubaliwa|umestahili)\\w*", "r:\\b(?:fee|insurance|deposit|processing|activation|first|advance|frais|assurance|caution|ikiguzi|bima|ada|amafaranga y|kwishyura mbere|malipo ya awali)\\w*"],
+    ("Loan approved but you must pay a fee first", "Prêt accordé mais il faut payer d'abord des frais", "Inguzanyo yemejwe ariko ubanza kwishyura amafaranga", "Mkopo umeidhinishwa lakini lazima ulipe ada kwanza"),
+    ("Real lenders deduct charges from the loan or bill them later. A 'loan' that needs an advance 'insurance', 'activation' or 'processing' fee is an advance-fee scam: the loan never comes.",
+     "Les vrais prêteurs déduisent les frais du prêt. Un « prêt » qui exige d'abord une « assurance », « activation » ou « frais de dossier » est une arnaque aux frais d'avance : le prêt n'arrive jamais.",
+     "Abatanga inguzanyo nyayo bakata amafaranga ku nguzanyo ubwayo. «Inguzanyo» isaba mbere «bima», «gufungura» cyangwa «amafaranga y'inyandiko» ni uburiganya: inguzanyo ntiza.",
+     "Wakopeshaji halisi hukata ada kutoka mkopo wenyewe. «Mkopo» unaohitaji kwanza «bima», «uanzishaji» au «ada ya usindikaji» ni utapeli wa ada ya awali: mkopo haufiki."),
+    ("Do not pay anything before you receive a loan. | Check that the lender is licensed with the central bank (BNR in Rwanda) or ask your bank, SACCO or cooperative. | Keep the messages; report to the operator and to the police if you paid.",
+     "Ne payez rien avant d'avoir reçu un prêt. | Vérifiez que le prêteur est agréé par la banque centrale (BNR au Rwanda) ou demandez à votre banque, SACCO ou coopérative. | Gardez les messages ; signalez à l'opérateur et à la police si vous avez payé.",
+     "Ntukishyure ikintu mbere yo kubona inguzanyo. | Reba niba uyitanga afite uruhushya rwa banki nkuru (BNR mu Rwanda) cyangwa ubaze banki, SACCO cyangwa koperative yawe. | Bika ubutumwa; ubimenyeshe sosiyete na polisi niba warishyuye.",
+     "Usilipe chochote kabla ya kupokea mkopo. | Hakiki mkopeshaji ana leseni ya benki kuu (BNR Rwanda) au muulize benki, SACCO au ushirika wako. | Hifadhi ujumbe; ripoti kwa kampuni ya simu na polisi ukishalipa."), strong=True)
+
+add("loan_app_threat", "medium", ["LOAN", "APK", "r:\\b(?:contacts?|photos?|gallery|permissions?|shame|expose|friends|family|abakunzi|inshuti|marafiki|ndugu)\\b"],
+    ("Instant-loan app that wants your contacts or threatens you", "Appli de prêt instantané qui veut vos contacts ou vous menace", "Porogaramu y'inguzanyo yihuse ishaka abo mu rutonde rwawe cyangwa ikagutera ubwoba", "Programu ya mkopo wa haraka inayotaka anwani zako au kukutisha"),
+    ("Some illegal loan apps take your contacts and photos, then harass or shame you and your friends to force repayment with huge interest.",
+     "Certaines applis de prêt illégales prennent vos contacts et photos puis harcèlent ou humilient vous et vos amis pour imposer un remboursement à taux énorme.",
+     "Zimwe porogaramu z'inguzanyo zitemewe zifata abo mu rutonde rwawe n'amafoto, zigahohotera cyangwa gutesha agaciro wowe n'inshuti zawe kugira ngo wishyure inyungu nini cyane.",
+     "Baadhi ya programu haramu za mkopo huchukua anwani na picha zako kisha kukunyanyasa wewe na marafiki ili kulazimisha malipo yenye riba kubwa."),
+    ("Do not install apps that ask for your contacts, photos or SMS to give a loan. | Only borrow from a licensed bank, microfinance, SACCO or cooperative. | If already harassed, keep screenshots and report to the police and the regulator.",
+     "N'installez pas d'appli de prêt qui demande contacts, photos ou SMS. | N'empruntez qu'auprès d'une banque, microfinance, SACCO ou coopérative agréée. | Si on vous harcèle déjà, gardez les captures et signalez à la police et au régulateur.",
+     "Ntushyire porogaramu y'inguzanyo isaba abo mu rutonde, amafoto cyangwa SMS. | Guza gusa muri banki, microfinance, SACCO cyangwa koperative ifite uruhushya. | Niba wamaze guhohoterwa, bika amafoto y'ubutumwa uvugane na polisi n'urwego rugenzura.",
+     "Usisakinishe programu ya mkopo inayoomba anwani, picha au SMS. | Kopa kwa benki, taasisi ndogo ya fedha, SACCO au ushirika wenye leseni tu. | Ukishanyanyaswa, hifadhi picha za skrini na uripoti polisi na mdhibiti."))
+
+add("investment_guaranteed", "high", ["INVEST", "GUAR", "r:\\b(?:double|triple|x2|x3|\\d+ ?%|10x|returns?|inyungu|faida|rendement|doubler)\\w*"],
+    ("Guaranteed-profit investment / Ponzi scheme", "Investissement à gain garanti / système de Ponzi", "Ishoramari ry'inyungu zizewe / Ponzi", "Uwekezaji wa faida ya uhakika / mpango wa Ponzi"),
+    ("No genuine investment guarantees high returns in days. Early investors are paid with later investors' money until the scheme collapses and the organisers vanish.",
+     "Aucun investissement sérieux ne garantit de gros gains en quelques jours. Les premiers sont payés avec l'argent des suivants jusqu'à l'effondrement et la disparition des organisateurs.",
+     "Nta shoramari nyayo ryizeza inyungu nyinshi mu minsi mike. Abibanza bishyurwa amafaranga y'abakurikiraho kugeza ubwo gahunda isenyutse abayiteguye bakazimira.",
+     "Hakuna uwekezaji halisi unaohakikisha faida kubwa kwa siku chache. Wa kwanza hulipwa kwa pesa za wa baadaye hadi mpango uanguke na waandaaji wapotee."),
+    ("Do not send money. Ask for the licence: in Rwanda, investment and savings schemes should be registered with the regulators (BNR/CMA/RDB); check directly with them. | Remember: higher promised return means higher risk of fraud. | Do not recruit friends or family into it.",
+     "N'envoyez pas d'argent. Demandez l'agrément : au Rwanda, ces plans doivent être enregistrés (BNR/CMA/RDB) ; vérifiez directement auprès d'eux. | Plus le gain promis est élevé, plus le risque de fraude est grand. | N'y entraînez pas amis ou famille.",
+     "Ntugire amafaranga wohereza. Saba uruhushya: mu Rwanda ayo mashoramari agomba kwandikwa (BNR/CMA/RDB); ubibaze izo nzego ubwazo. | Inyungu nini yizezwa ni ibyago byinshi by'uburiganya. | Ntukwegere inshuti n'umuryango muri byo.",
+     "Usitume pesa. Omba leseni: Rwanda, mipango kama hii isajiliwe (BNR/CMA/RDB); hakiki moja kwa moja nao. | Faida kubwa inayoahidiwa ni hatari kubwa ya ulaghai. | Usiwavute marafiki au familia."), strong=True)
+
+add("crypto_trading_group", "high", ["CRYPTO", "GROUP", "r:\\b(?:profit|signals?|guaranteed|returns?|invest|earn|inyungu|faida|gagner|rendement|win)\\w*"],
+    ("Crypto / forex 'signals' group or fake trading platform", "Groupe « signaux » crypto/forex ou fausse plateforme de trading", "Itsinda ry'«ibimenyetso» bya crypto/forex cyangwa urubuga rw'impimbano rwo gucuruza", "Kikundi cha «ishara» za crypto/forex au jukwaa bandia la biashara"),
+    ("Scammers lure you into a VIP group, show fake profit screenshots, and push you to deposit on a fake platform where you can see 'gains' but never withdraw.",
+     "Les escrocs vous attirent dans un groupe VIP, montrent de fausses captures de gains et vous poussent à déposer sur une fausse plateforme où vous voyez des « gains » mais ne retirez jamais.",
+     "Abatekamutwe bagutumira mu itsinda rya VIP, bakakwereka amafoto y'inyungu y'ibinyoma, bakagusunikira kubitsa ku rubuga rw'impimbano aho ubona «inyungu» ariko ntushobora kubikuza.",
+     "Matapeli hukuvuta kwenye kikundi cha VIP, kuonyesha picha bandia za faida, na kukusukuma uweke pesa kwenye jukwaa bandia ambapo unaona «faida» lakini huwezi kutoa."),
+    ("Do not deposit on a platform a stranger recommended. | Test with the platform's regulator listing before any money; screenshots of profits prove nothing. | Never share your wallet seed phrase or exchange login.",
+     "Ne déposez pas sur une plateforme recommandée par un inconnu. | Vérifiez l'inscription auprès du régulateur avant tout argent ; des captures de gains ne prouvent rien. | Ne partagez jamais votre phrase de récupération ni vos identifiants d'échange.",
+     "Ntubitse ku rubuga rwerekanywe n'umuntu utazi. | Reba urutonde rw'urwego rugenzura mbere yo gutanga amafaranga; amafoto y'inyungu nta cyo yemeza. | Ntuzigere usangiza amagambo yo gusubirana wallet cyangwa konti y'ikigo cy'ivunjisha.",
+     "Usiweke pesa kwenye jukwaa lililopendekezwa na mgeni. | Hakiki orodha ya mdhibiti kabla ya pesa; picha za faida hazithibitishi chochote. | Kamwe usishiriki seed phrase ya wallet au akaunti ya exchange."), strong=True)
+
+add("seed_phrase", "high", ["r:\\b(?:seed phrase|recovery phrase|secret phrase|private key|12 words|24 words|mnemonic|amagambo 12|amagambo 24|maneno 12|maneno 24)\\b", "r:\\b(?:send|enter|share|verify|validate|connect|give|ohereza|andika|tuma|weka|fournir|saisir)\\w*"],
+    ("Request for your crypto wallet seed phrase or private key", "Demande de la phrase de récupération ou clé privée de votre portefeuille crypto", "Gusaba amagambo yo gusubirana cyangwa urufunguzo rw'ibanga rwa wallet yawe ya crypto", "Ombi la seed phrase au ufunguo wa siri wa pochi yako ya crypto"),
+    ("Whoever has your seed phrase controls ALL your crypto, forever. No genuine wallet, exchange or support agent ever asks for it.",
+     "Celui qui a votre phrase de récupération contrôle TOUS vos cryptos, pour toujours. Aucun portefeuille, plateforme ou support sérieux ne la demande.",
+     "Ufite amagambo yawe yo gusubirana agenzura crypto ZAWE ZOSE, iteka. Nta wallet, ikigo cy'ivunjisha cyangwa ubufasha nyabwo bibisaba.",
+     "Anayemiliki seed phrase yako hudhibiti crypto ZAKO ZOTE milele. Hakuna pochi, exchange au msaada halisi unaoiomba."),
+    ("Stop. Never type the phrase into any website, chat or form. | If you already did, move any remaining funds to a brand-new wallet immediately and treat the old one as stolen. | Report the page or account to the platform.",
+     "Stop. Ne saisissez jamais la phrase sur un site, un chat ou un formulaire. | Si c'est fait, déplacez tout de suite les fonds restants vers un nouveau portefeuille et considérez l'ancien comme volé. | Signalez la page ou le compte à la plateforme.",
+     "Hagarara. Ntuzigere wandika ayo magambo ku rubuga, mu kiganiro cyangwa mu fishi. | Niba warayanditse, hita wimurira amafaranga asigaye muri wallet nshya, ubone iya kera nk'iyibwe. | Menyesha urubuga cyangwa konti kuri platform.",
+     "Simama. Kamwe usiandike seed phrase kwenye tovuti, gumzo au fomu. | Ukishaweka, hamisha pesa zilizobaki kwenye pochi mpya mara moja na uichukulie ya zamani kuwa imeibiwa. | Ripoti ukurasa au akaunti kwa jukwaa."), strong=True)
+
+add("fake_payment_proof", "high", ["SELL", "r:\\b(?:i (?:have )?(?:paid|sent|transferred)|payment (?:done|made|sent)|screenshot|proof of payment|receipt|namaze kwishyura|nishyuye|nimelipa|nimetuma|capture|preuve de paiement|nahamya)\\w*", "r:\\b(?:release|deliver|send (?:the )?(?:item|goods|product)|hand over|ohereza igicuruzwa|mpa|niletee|tuma bidhaa|livrez|expediez)\\w*"],
+    ("Fake proof of payment (buyer scam)", "Faux justificatif de paiement (arnaque à l'acheteur)", "Gihamya cy'ubwishyu cy'impimbano (uburiganya bw'umuguzi)", "Uthibitisho bandia wa malipo (utapeli wa mnunuzi)"),
+    ("A fake buyer sends an edited screenshot or SMS saying the money was paid, hoping you release the goods before you check your real balance.",
+     "Un faux acheteur envoie une capture ou un SMS modifié disant que c'est payé, pour que vous livriez avant de vérifier votre vrai solde.",
+     "Umuguzi w'impimbano yohereza ifoto cyangwa SMS yahinduwe ivuga ko yishyuye, yizeye ko uzatanga ibicuruzwa mbere yo kugenzura konti yawe.",
+     "Mnunuzi bandia hutuma picha au SMS iliyohaririwa ikisema amelipa, akitumaini utatoa bidhaa kabla ya kukagua salio lako halisi."),
+    ("Release nothing until the money shows in YOUR own account balance (use your app or official USSD). | A screenshot or forwarded SMS is not proof. | Prefer pay-on-delivery in person or an official escrow/marketplace payment.",
+     "Ne livrez rien tant que l'argent n'apparaît pas dans VOTRE solde (appli ou USSD officiel). | Une capture ou un SMS transféré ne prouve rien. | Préférez le paiement en main propre à la livraison ou un séquestre officiel.",
+     "Ntugire icyo utanga kugeza amafaranga agaragaye kuri konti YAWE (porogaramu cyangwa USSD yemewe). | Ifoto cyangwa SMS yoherejwe si gihamya. | Hitamo kwishyura wiyizeye mu ntoki cyangwa ukoreshe urubuga rwemewe.",
+     "Usitoe chochote hadi pesa zionekane kwenye salio LAKO (programu au USSD rasmi). | Picha au SMS iliyotumwa si ushahidi. | Pendelea kulipia ukipokea ana kwa ana au huduma rasmi ya escrow."), strong=True)
+
+add("overpayment", "high", ["SELL", "r:\\b(?:overpaid|over-?payment|sent (?:too much|more)|extra (?:money|amount)|difference|surplus|excess|balance back|trop-?per[cç]u|difference|ikirenga|amafaranga arenze|ziada|salio la ziada)\\w*", "REFUND"],
+    ("Overpayment and 'refund the difference' scam", "Trop-perçu et « remboursez la différence »", "«Nohereje amafaranga arenze, nsubiza ikirenga»", "«Nimetuma ziada, nirudishie tofauti»"),
+    ("The fake buyer 'pays too much' (with a fake or later-cancelled payment) and asks you to send back the extra. You lose the real money you refund.",
+     "Le faux acheteur « paie trop » (paiement faux ou annulé ensuite) et demande le surplus. Vous perdez l'argent réel que vous remboursez.",
+     "Umuguzi w'impimbano «yishyura arenze» (ubwishyu bw'ibinyoma cyangwa buzakurwaho) agasaba ko usubiza ikirenga. Utakaza amafaranga nyayo usubije.",
+     "Mnunuzi bandia «hulipa zaidi» (malipo bandia au yatakayoghairiwa) na kuomba urudishe ziada. Unapoteza pesa halisi unazorudisha."),
+    ("Never refund an 'extra' amount until the original payment has fully cleared in your account. | Insist on the exact agreed price. | Report the buyer on the marketplace.",
+     "Ne remboursez jamais un « surplus » avant que le paiement initial soit définitivement encaissé. | Exigez le prix convenu exact. | Signalez l'acheteur sur la plateforme.",
+     "Ntuzigere usubiza «amafaranga arenze» mbere y'uko ubwishyu bwa mbere bwemezwa burundu kuri konti yawe. | Shimangira igiciro mwumvikanyeho. | Menyesha umuguzi ku rubuga.",
+     "Kamwe usirudishe «ziada» kabla malipo ya awali kuthibitishwa kikamilifu kwenye akaunti yako. | Shikilia bei iliyokubaliwa. | Ripoti mnunuzi kwenye jukwaa."), strong=True)
+
+add("deposit_before_viewing", "high", ["HOUSE", "r:\\b(?:deposit|reserve|reservation|advance|booking|fee|caution|avance|reservation|kubitsa|kwishyura mbere|kutanga avansi|arrhes|amafaranga yo gufata|kuweka nafasi|amana)\\w*", "PAY"],
+    ("Rent or property scam: deposit before viewing", "Arnaque location/immobilier : acompte avant visite", "Uburiganya bw'inzu/ubutaka: kwishyura mbere yo kureba", "Utapeli wa nyumba/ardhi: amana kabla ya kuona"),
+    ("The 'landlord' (often 'abroad') posts a great-value place with photos copied from elsewhere and asks for a deposit or keys-fee before you can visit.",
+     "Le « propriétaire » (souvent « à l'étranger ») publie un bien très attractif avec des photos copiées et exige un acompte ou « frais de clés » avant visite.",
+     "«Nyir'inzu» (akenshi «mu mahanga») ashyira inzu nziza ku giciro gito afite amafoto yibwe, agasaba amafaranga mbere y'uko usura.",
+     "«Mwenye nyumba» (mara nyingi «nje ya nchi») huweka nyumba nzuri kwa bei ndogo yenye picha zilizoigwa na kuomba amana kabla ya kutembelea."),
+    ("Visit the property in person and meet the owner before paying anything. | Check the title/ownership with the local land office (e.g. sector or district land office) or a licensed agent. | Pay by traceable bank transfer to the owner, with a signed agreement, never to a personal mobile number.",
+     "Visitez le bien en personne et rencontrez le propriétaire avant tout paiement. | Vérifiez le titre de propriété au bureau foncier local ou via un agent agréé. | Payez par virement traçable au propriétaire avec contrat signé, jamais sur un numéro mobile personnel.",
+     "Sura inzu ubwawe uhure na nyirayo mbere yo kwishyura. | Genzura ibyangombwa by'ubutaka ku biro by'ubutaka bw'aho (umurenge/akarere) cyangwa ku muhuza wemewe. | Ishyura ukoresheje banki ku mazina ya nyirayo hari amasezerano asinywe, si kuri nimero ya telefoni.",
+     "Tembelea mali mwenyewe na ukutane na mmiliki kabla ya kulipa. | Hakiki hati ya umiliki ofisi ya ardhi ya eneo au kwa wakala mwenye leseni. | Lipa kwa uhamisho wa benki unaofuatiliwa kwa mmiliki na mkataba uliosainiwa, si namba ya simu binafsi."), strong=True)

@@ -64,7 +64,7 @@ def _post(url: str, payload: dict, api_key: str = "", timeout: int = TIMEOUT) ->
         raise LLMError(f"The model server could not be reached ({e.__class__.__name__}).") from None
 
 
-def openai_chat(system: str, history, question: str, temperature: float = 0.4, max_tokens: int = 1800, history_limit: int = 12,
+def openai_chat(system: str, history, question: str, temperature: float = 0.4, max_tokens: int = 4000, history_limit: int = 12,
                 base_url: str = "", model_name: str = "", key: str = "") -> str:
     """One chat completion from the configured OpenAI-compatible server (or from the explicit base_url/model_name/key given)."""
     base = validate_base_url(base_url or settings.get("LLM_BASE_URL"))

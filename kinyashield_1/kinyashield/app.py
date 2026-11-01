@@ -57,11 +57,18 @@ try:
 except Exception:  # the Image Studio is optional; the other tabs never depend on it
     _studio = None
     _studio_label = None
-_tab_names = [t["tab_check"], t["tab_learn"], t["tab_about"], _chat_label] + ([_studio_label] if _studio else []) + ([_org_label] if _org else [])
+try:
+    import cyber_intel_ui as _intel
+    _intel_label = _intel.TAB.get(str(lang).lower(), _intel.TAB["en"])
+except Exception:  # the Cyber News tab is optional; the other tabs never depend on it
+    _intel = None
+    _intel_label = None
+_tab_names = [t["tab_check"], t["tab_learn"], t["tab_about"], _chat_label] + ([_studio_label] if _studio else []) + ([_org_label] if _org else []) + ([_intel_label] if _intel else [])
 _tabs = st.tabs(_tab_names)
 tab_check, tab_learn, tab_about, tab_chat = _tabs[:4]
 tab_studio = _tabs[4] if _studio else None
 tab_org = _tabs[4 + (1 if _studio else 0)] if _org else None
+tab_intel = _tabs[4 + (1 if _studio else 0) + (1 if _org else 0)] if _intel else None
 with tab_check:
     examples = {}
     p = pathlib.Path(__file__).parent / "data" / "dev_messages.csv"
@@ -601,3 +608,10 @@ if tab_org is not None:
             _org.render(st, str(lang).lower())
         except Exception:
             st.warning("Business & Schools tab could not load. The other tabs still work.")
+
+if tab_intel is not None:
+    with tab_intel:
+        try:
+            _intel.render(st, str(lang).lower())
+        except Exception:
+            st.warning("Cyber News could not load. The other tabs still work.")

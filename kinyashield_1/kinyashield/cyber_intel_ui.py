@@ -71,15 +71,12 @@ def explain_item(st, it: dict, lang: str):
 
 
 def explain_ai(titles, lang: str):
-    """AI explanation of the headlines in the user's language, or None when the AI is unavailable. Never raises."""
-    try:
-        from assistant_engine import answer_question
-        name = {"en": "English", "fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}[lang]
-        q = (f"Explain these cybersecurity news headlines in simple {name} for an ordinary reader: for each, in one or two sentences say what it means, why it matters and what to do. "
-             "Use only what the headline says; do not invent details; if a headline is too vague, say what kind of event it probably is and that the link has the facts.\n\n" + "\n".join(f"{i}. {t}" for i, t in enumerate(titles, 1)))
-        return answer_question(question=q, history=[], language_name=name, language_code=lang)
-    except Exception:
-        return None
+    """(AI explanation of the headlines in the user's language, None) or (None, failure code)."""
+    import ai_status
+    name = {"en": "English", "fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}[lang]
+    q = (f"Explain these cybersecurity news headlines in simple {name} for an ordinary reader: for each, in one or two sentences say what it means, why it matters and what to do. "
+         "Use only what the headline says; do not invent details; if a headline is too vague, say what kind of event it probably is and that the link has the facts.\n\n" + "\n".join(f"{i}. {t}" for i, t in enumerate(titles, 1)))
+    return ai_status.ask(q, lang)
 
 
 _BADGE = {"official": "official", "research": "research", "news": "news"}
@@ -119,18 +116,18 @@ def render_results(st, res: dict, lang: str, tx: dict):
 
 
 def translate_titles(titles, lang: str):
-    """Titles translated into the user's language by the AI (one numbered list in, one out), or None when the AI is unavailable. Never raises."""
-    try:
-        from assistant_engine import answer_question
-        name = {"fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}[lang]
-        q = (f"Translate these news headlines into {name}. Keep the numbering, one line each, no comments, keep names, numbers and product names unchanged. If unsure of a Kinyarwanda/Kiswahili term, use the closest natural wording.\n\n"
-             + "\n".join(f"{i}. {t}" for i, t in enumerate(titles, 1)))
-        out = answer_question(question=q, history=[], language_name=name, language_code=lang)
-        rows = re.findall(r"^\s*(\d+)[.)]\s*(.+)$", out, re.M)
-        res = {int(n): t.strip() for n, t in rows}
-        return [res.get(i) or titles[i - 1] for i in range(1, len(titles) + 1)] if res else None
-    except Exception:
-        return None
+    """(titles translated into the user's language, None) or (None, failure code)."""
+    import ai_status
+    name = {"fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}[lang]
+    q = (f"Translate these news headlines into {name}. Keep the numbering, one line each, no comments, keep names, numbers and product names unchanged. If unsure of a Kinyarwanda/Kiswahili term, use the closest natural wording.\n\n"
+         + "\n".join(f"{i}. {t}" for i, t in enumerate(titles, 1)))
+    out, err = ai_status.ask(q, lang)
+    if err:
+        return None, err
+    res = {int(n): t.strip() for n, t in re.findall(r"^\s*(\d+)[.)]\s*(.+)$", out, re.M)}
+    if not res:
+        return None, "empty"
+    return [res.get(i) or titles[i - 1] for i in range(1, len(titles) + 1)], None
 
 
 def render_upcoming(st, res: dict, lang: str, tx: dict):
@@ -225,22 +222,24 @@ def render(st, lang: str):
         _t2 = [it["title"] for t in topics for it in (res["items"].get(t) or [])][:12]
         if _t2 and st.button(EX[lang]["ai_btn"], key=f"intel_ai_{lang}"):
             with st.spinner(EX[lang]["ai_busy"]):
-                _ex = explain_ai(_t2, lang)
+                _ex, _err = explain_ai(_t2, lang)
             if _ex:
                 st.markdown(_ex)
                 st.caption(EX[lang]["ai_note"])
             else:
-                st.info(EX[lang]["ai_fail"])
+                import ai_status
+                st.info(ai_status.explain_failure(_err, lang))
     if lang != "en" and ss.get(kp) is not None:
         titles = [it["title"] for t in topics for it in (res["items"].get(t) or [])][:25]
         if titles and st.button(x["tr_btn"], key=f"intel_tr_{lang}"):
             with st.spinner(x["tr_busy"]):
-                got = translate_titles(titles, lang)
+                got, _err2 = translate_titles(titles, lang)
             if got:
                 st.markdown("\n".join(f"{i}. {t}" for i, t in enumerate(got, 1)))
                 st.caption(x["tr_note"])
             else:
-                st.info(x["tr_fail"])
+                import ai_status
+                st.info(ai_status.explain_failure(_err2, lang))
     st.caption(x["uptodate"])
     if st.button(tx["change"], key=f"intel_change_{lang}"):
         ss[kp] = None

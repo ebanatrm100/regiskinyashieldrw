@@ -399,8 +399,23 @@ with tab_chat:
                 if _le.__class__.__name__ in ("RerunException", "StopException"):
                     raise
         _has_att = bool(_atts["images"] or _atts["text"])
-        _routed = _route(_q, _chat_lang, force_ai=(_force_ai or _has_att)) if _flow_ok else {"kind": "ai"}
+        _routed = _route(_q, _chat_lang, force_ai=(_force_ai or _has_att), history=_hist[:-1]) if _flow_ok else {"kind": "ai"}
         st.session_state[_rel_key] = []
+        if _routed["kind"] == "cyber_news":      # "cybercrimes that happened this week": real dated results (or ask which period, with choices)
+            try:
+                import chat_news as _cn
+                _ctx = _routed.get("ctx") or {"topics": _routed.get("topics"), "text": _routed.get("text", _q)}
+                if _routed.get("period") is None:
+                    _hist.append({"role": "assistant", "content": _cn.ask_period(_chat_lang), "kind": "note", "news_ctx": _ctx})
+                else:
+                    with st.spinner(_T["thinking"]):
+                        _txt = _cn.answer(_routed["period"], _ctx.get("topics"), _ctx.get("text", ""), _chat_lang)
+                    _hist.append({"role": "assistant", "content": _txt, "kind": "note"})
+            except Exception as _ne:
+                if _ne.__class__.__name__ in ("RerunException", "StopException"):
+                    raise
+                _hist.append({"role": "assistant", "content": _T["err"], "kind": "note"})
+            st.rerun()
         if _routed["kind"] == "scam":
             _r = _routed["result"]
             _lines = [f"**{_T['scam_head']}** {_r.label}", ""]
@@ -543,32 +558,40 @@ with tab_chat:
                     except Exception:
                         _msg, _kind = _T["err"], "note"
                 else:
+                    _special = _routed.get("info") if _routed.get("intent") else None     # an example / follow-up / events request: answer it, never a definition of a keyword in it
                     try:  # a name, or a bare word/short topic: fetch sourced reference text so the answer is complete and checkable
                         import webref as _wr
-                        _name = _wr.extract_name(_q)
-                        _term = None if _name else _wr.extract_term(_q)
-                        with st.spinner(_T["thinking"]):
-                            if _name:
-                                _info = _wr.lookup_name(_name, _chat_lang)
-                            elif _term:
-                                _info = _wr.lookup(_term, _chat_lang)
-                            else:
-                                _info = _wr.closest_match(_q, _chat_lang)
+                        if _special:
+                            _name = _term = _info = None
+                        else:
+                            _name = _wr.extract_name(_q)
+                            _term = None if _name else _wr.extract_term(_q)
+                            with st.spinner(_T["thinking"]):
+                                if _name:
+                                    _info = _wr.lookup_name(_name, _chat_lang)
+                                elif _term:
+                                    _info = _wr.lookup(_term, _chat_lang)
+                                else:
+                                    _info = _wr.closest_match(_q, _chat_lang)
                     except Exception:
                         _term, _name, _info = None, None, None
                     try:
                         _live = []
-                        if _use_search and not _info:
+                        if (_use_search or (_special and _special.get("intent") == "events")) and not _info:
                             try:                      # current / factual question: fetch live sources in parallel (4.5 s limit) for the AI to use
                                 import live_search as _ls
-                                if _ls.needs_live(_q):
+                                if _ls.needs_live(_q) or _special:
                                     with st.spinner(_T["thinking"]):
                                         _live = _ls.fetch(_q, _chat_lang)
                             except Exception:
                                 _live = []
                         with st.spinner(_T["thinking"]):
                             _ref = _wr.reference_text(_info) if _info else (_ls.reference_text(_live) if _live else None)
-                            _msg = _ask_ai(term_mode=bool(_term or _name), reference=_ref)
+                            if _special:
+                                import request_intent as _ri
+                                _msg = _ask_ai(question=_ri.resolve(_q, _special, _chat_lang), term_mode=False, reference=(_ls.reference_text(_live) if _live else None))
+                            else:
+                                _msg = _ask_ai(term_mode=bool(_term or _name), reference=_ref)
                         if _info:
                             _msg += _wr.source_line(_info, _chat_lang)
                         elif _live:

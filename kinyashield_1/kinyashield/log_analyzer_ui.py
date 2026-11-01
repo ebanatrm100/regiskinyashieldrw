@@ -60,18 +60,15 @@ def _read(upload):
 
 
 def explain_ai(res: dict, lang: str):
-    """AI explanation of the (masked) findings in the user's language, or None. Never raises."""
-    try:
-        from assistant_engine import answer_question
-        name = {"en": "English", "fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}[lang]
-        facts = []
-        for fd in res["findings"][:8]:
-            facts.append(f"- {la.R[fd['id']]['title']['en']} ({fd['severity']}), {fd['count']} times; addresses: " + ", ".join(ip for ip, _c, _p in fd["ips"][:3]) + "; example: " + (fd["samples"][0][1][:160] if fd["samples"] else ""))
-        q = (f"A log analysis tool found these items. Explain to a non-expert in simple {name}: what probably happened, how serious it is, what to do first, and what to check next. "
-             "Use only these facts, do not invent details, and say clearly that these are leads, not proof.\n\n" + "\n".join(facts))
-        return answer_question(question=q, history=[], language_name=name, language_code=lang)
-    except Exception:
-        return None
+    """(AI explanation of the (masked) findings in the user's language, None) or (None, failure code)."""
+    import ai_status
+    name = {"en": "English", "fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}[lang]
+    facts = []
+    for fd in res["findings"][:8]:
+        facts.append(f"- {la.R[fd['id']]['title']['en']} ({fd['severity']}), {fd['count']} times; addresses: " + ", ".join(ip for ip, _c, _p in fd["ips"][:3]) + "; example: " + (fd["samples"][0][1][:160] if fd["samples"] else ""))
+    q = (f"A log analysis tool found these items. Explain to a non-expert in simple {name}: what probably happened, how serious it is, what to do first, and what to check next. "
+         "Use only these facts, do not invent details, and say clearly that these are leads, not proof.\n\n" + "\n".join(facts))
+    return ai_status.ask(q, lang)
 
 
 def render(st, lang: str):
@@ -141,12 +138,13 @@ def render(st, lang: str):
     st.download_button(tx["dl_json"], json.dumps(res, default=str, ensure_ascii=False, indent=1), file_name="log-report.json", key=f"logan_dlj_{lang}")
     if st.button(tx["ai"], key=f"logan_ai_{lang}"):
         with st.spinner(tx["ai_busy"]):
-            out = explain_ai(res, lang)
+            out, err = explain_ai(res, lang)
         if out:
             st.markdown(out)
             st.caption(tx["ai_note"])
         else:
-            st.info(tx["ai_fail"])
+            import ai_status
+            st.info(ai_status.explain_failure(err, lang))
     st.caption(L["caveat"])
 
 

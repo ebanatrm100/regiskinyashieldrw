@@ -12,6 +12,7 @@ import json
 import re
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
+from functools import lru_cache
 from urllib.parse import unquote_plus
 
 LANGS = ("en", "fr", "rw", "sw")
@@ -297,6 +298,7 @@ _P = {k: re.compile(v, re.I) for k, v in dict(
     syserr=r"kernel panic|out of memory|oom-killer|killed process|segfault|segmentation fault|i/o error|no space left on device|filesystem.*read-only|ext4-fs error|call trace|machine check|failed to start|entered failed state|main process exited, code=(?:exited|killed)|start request repeated too quickly|disk.*(?:failure|failing)",
     errlevel=r"\b(?:ERROR|CRITICAL|FATAL|EMERG|ALERT|SEVERE)\b",
 ).items()}
+_WEB_ANY = re.compile("|".join(f"(?:{_P[k].pattern})" for k in ("sqli", "xss", "traversal", "cmdi", "sensitive", "admin", "login_path")), re.I)
 _SSH_FAIL = re.compile(r"(?:Failed (?:password|publickey|keyboard-interactive/pam) for (?:invalid user )?(?P<u>\S+) from (?P<ip>" + _IP + r")|Invalid user (?P<u2>\S*) from (?P<ip2>" + _IP + r")|authentication failure;.*?rhost=(?P<ip3>" + _IP + r")(?:\s+user=(?P<u3>\S+))?)", re.I)
 _SSH_OK = re.compile(r"Accepted (?:password|publickey|keyboard-interactive/pam) for (?P<u>\S+) from (?P<ip>" + _IP + r")", re.I)
 _GEN_FAIL = re.compile(r"(?:login|logon|authentication|auth) (?:failed|failure|error)|failed login|bad password|invalid (?:password|credentials)|incorrect password|access denied for user", re.I)
@@ -308,6 +310,7 @@ _ACCT_WIN = {"4720", "4728", "4732", "4756"}
 _FAIL_WIN = {"4625", "4740", "4771", "4776"}
 
 
+@lru_cache(maxsize=65536)
 def _is_public(ip: str) -> bool:
     try:
         return ipaddress.ip_address(ip).is_global
@@ -316,11 +319,20 @@ def _is_public(ip: str) -> bool:
 
 
 def _valid_ip(ip: str) -> bool:
-    try:
-        ipaddress.ip_address(ip)
-        return True
-    except ValueError:
-        return False
+    """Fast check for dotted IPv4 text found by the IP pattern (each part 0-255)."""
+    for part in ip.split("."):
+        if int(part) > 255:
+            return False
+    return True
+
+
+# cheap lower-case pre-filters: a line is only run through the expensive patterns when one of these words is present
+_Q_HOST = re.compile(r"powershell|certutil|bitsadmin|curl|wget|base64|\bnc\b|ncat|/dev/tcp|mkfifo|python|mimikatz|sekurlsa|procdump|lsass|net user|vssadmin|bcdedit|chmod|/tmp/|xmrig|minerd|cryptonight|stratum|"
+                     r"sudo|crontab|cron\.|symlink|systemctl|authorized_keys|schtasks|currentversion|rc\.local|ld\.so|launchagents|service was installed|scheduled task|"
+                     r"cleared|deleted|truncated|history|histfile|shred|truncate|wevtutil|/var/log|useradd|adduser|usermod|gpasswd|added to|localgroup|user account|member was added|new user|"
+                     r"panic|memory|oom|killed|segfault|segmentation|i/o error|no space|read-only|ext4|call trace|machine check|failed to start|failed state|exited|repeated too|disk")
+_Q_SECRET = re.compile(r"pass|pwd|pin|secret|key|token|auth|bearer|akia|eyj|private")
+_Q_FAIL = re.compile(r"fail|invalid|incorrect|denied|bad password|authentication|error")
 
 
 class _F:
@@ -340,7 +352,21 @@ class _F:
             self.samples.append((n, mask(raw)[:240]))
 
 
+_RESULTS: dict = {}
+
+
 def analyze(text: str, year: int | None = None, thresholds: dict | None = None) -> dict:
+    """Cached front door of _analyze: the same text (and settings) is analysed once, so Streamlit reruns and language switches are instant."""
+    key = (hash(text or ""), len(text or ""), year, tuple(sorted((thresholds or {}).items())))
+    hit = _RESULTS.get(key)
+    if hit is None:
+        if len(_RESULTS) >= 12:
+            _RESULTS.pop(next(iter(_RESULTS)))
+        hit = _RESULTS[key] = _analyze(text, year, thresholds)
+    return hit
+
+
+def _analyze(text: str, year: int | None = None, thresholds: dict | None = None) -> dict:
     """Scan the log text. Returns a language-neutral result; use localize()/to_markdown() to present it. Never raises on ordinary text."""
     th = dict(fail=5, fail_hi=20, spray_users=5, fail_before_ok=3, scan404=20, login_posts=10, auth_codes=10, e5xx=10, flood_min=100, ports=10, fw_blocks=20, errors=3)
     th.update(thresholds or {})
@@ -367,6 +393,7 @@ def analyze(text: str, year: int | None = None, thresholds: dict | None = None) 
     web_total = 0
     urls, hashes = Counter(), Counter()
     for n, raw in enumerate(lines, 1):
+        low = raw.lower()
         ts = _ts(raw, year)
         if ts:
             parsed_ts += 1
@@ -375,32 +402,34 @@ def analyze(text: str, year: int | None = None, thresholds: dict | None = None) 
         for ip in _IP_RE.findall(raw)[:6]:
             if _valid_ip(ip):
                 all_ips[ip] += 1
-        for u in _URL.findall(raw)[:3]:
-            urls[mask(u)[:200]] += 1
-        for h in _HASH.findall(raw)[:2]:
-            hashes[h.lower()] += 1
-        lv = _P["errlevel"].search(raw)
+        if "http" in low:
+            for u in _URL.findall(raw)[:3]:
+                urls[mask(u)[:200]] += 1
+        if len(raw) >= 32 and ("hash" in low or "md5" in low or "sha" in low or "sum" in low or "=" not in low):
+            for h in _HASH.findall(raw)[:2]:
+                hashes[h.lower()] += 1
+        lv = _P["errlevel"].search(raw) if ("error" in low or "crit" in low or "fatal" in low or "emerg" in low or "alert" in low or "severe" in low) else None
         if lv:
             level_c[lv.group(0).upper()] += 1
-        low = raw.lower()
         # --- web access lines
-        am = _ACCESS.match(raw) or _ACCESS.search(raw)
+        am = (_ACCESS.match(raw) or _ACCESS.search(raw)) if ("http" in low or '"' in raw) else None
         is_web = bool(am)
         if am:
             web_total += 1
             ip, meth, path, st = am.group("ip"), am.group("m"), am.group("path"), am.group("st")
             ua, ref = am.group("ua") or "", am.group("ref") or ""
             status_c[st] += 1
-            dec = unquote_plus(unquote_plus(path))
+            dec = unquote_plus(unquote_plus(path)) if "%" in path or "+" in path else path
             blob = f"{dec} {ua} {ref}"
-            for key, rid in (("sqli", "web_sqli"), ("xss", "web_xss"), ("traversal", "web_traversal"), ("cmdi", "web_cmdi")):
-                if _P[key].search(blob):
-                    f(rid).hit(n, raw, ip)
-            if _P["sensitive"].search(dec):
-                f("web_sensitive_files").hit(n, raw, ip)
-            if _P["admin"].search(dec):
-                f("web_admin_probe").hit(n, raw, ip)
-            if _P["scanner"].search(ua):
+            if _WEB_ANY.search(blob):                 # one cheap pass first; the individual patterns only run for the few lines that match
+                for key, rid in (("sqli", "web_sqli"), ("xss", "web_xss"), ("traversal", "web_traversal"), ("cmdi", "web_cmdi")):
+                    if _P[key].search(blob):
+                        f(rid).hit(n, raw, ip)
+                if _P["sensitive"].search(dec):
+                    f("web_sensitive_files").hit(n, raw, ip)
+                if _P["admin"].search(dec):
+                    f("web_admin_probe").hit(n, raw, ip)
+            if ua and ua != "-" and _P["scanner"].search(ua):
                 f("web_scanner").hit(n, raw, ip)
             if st == "404":
                 s404[ip] += 1
@@ -411,11 +440,10 @@ def analyze(text: str, year: int | None = None, thresholds: dict | None = None) 
                 f("server_errors").hit(n, raw, ip)
             if meth == "POST" and _P["login_path"].search(dec):
                 posts_login[ip] += 1
-            tsw = _ts(raw, year)
-            if tsw:
-                per_min[ip][tsw.strftime("%Y-%m-%d %H:%M")] += 1
+            if ts:
+                per_min[ip][ts.replace(second=0)] += 1
         # --- authentication
-        m = _SSH_FAIL.search(raw)
+        m = _SSH_FAIL.search(raw) if ("fail" in low or "invalid user" in low or "authentication" in low) else None
         if m:
             ip = m.group("ip") or m.group("ip2") or m.group("ip3")
             u = m.group("u") or m.group("u2") or m.group("u3") or ""
@@ -425,7 +453,7 @@ def analyze(text: str, year: int | None = None, thresholds: dict | None = None) 
                 users_all[u] += 1
             f("ssh_bruteforce").hit(n, raw, ip, u)
         else:
-            m2 = _SSH_OK.search(raw)
+            m2 = _SSH_OK.search(raw) if "accepted" in low else None
             if m2:
                 ip, u = m2.group("ip"), m2.group("u")
                 users_all[u] += 1
@@ -433,13 +461,13 @@ def analyze(text: str, year: int | None = None, thresholds: dict | None = None) 
                     f("login_after_failures").hit(n, raw, ip, u)
                 if u == "root":
                     f("root_login").hit(n, raw, ip, u)
-            elif _GEN_FAIL.search(raw) and not is_web:
+            elif _Q_FAIL.search(low) and not is_web and _GEN_FAIL.search(raw):
                 ips = [i for i in _IP_RE.findall(raw) if _valid_ip(i)]
                 if ips:
                     fails_by_ip[ips[0]] += 1
                     f("ssh_bruteforce").hit(n, raw, ips[0])
         # --- Windows event IDs
-        ev = _EVID.search(raw)
+        ev = _EVID.search(raw) if "event" in low else None
         if ev:
             eid = ev.group(1)
             ips = [i for i in _IP_RE.findall(raw) if _valid_ip(i) and i not in ("0.0.0.0", "127.0.0.1")]
@@ -462,7 +490,7 @@ def analyze(text: str, year: int | None = None, thresholds: dict | None = None) 
             elif eid == "4624" and re.search(r"logon ?type[=:\s]+10\b", raw, re.I) and ip and _is_public(ip):
                 f("rdp_external").hit(n, raw, ip, user)
         # --- firewall
-        fm = _FW.search(raw)
+        fm = _FW.search(raw) if ("src=" in low or "dport" in low or "port" in low) else None
         if fm and _P["fw_action"].search(raw) or (fm and "SRC=" in raw):
             src = fm.group("src") or fm.group("src2") or fm.group("src3")
             dpt = fm.group("dpt") or fm.group("dpt2") or fm.group("dpt3")
@@ -470,7 +498,8 @@ def analyze(text: str, year: int | None = None, thresholds: dict | None = None) 
                 ports_by_ip[src].add(dpt)
                 f("firewall_blocks").hit(n, raw, src)
         # --- host activity (not web access lines)
-        if not is_web:
+        quick = _Q_HOST.search(low)
+        if not is_web and quick:
             if _P["malicious"].search(raw):
                 f("malicious_command").hit(n, raw, (_IP_RE.findall(raw) or [None])[0])
             if _P["sudo"].search(raw):
@@ -483,9 +512,9 @@ def analyze(text: str, year: int | None = None, thresholds: dict | None = None) 
                 f("log_tampering").hit(n, raw)
             if _P["syserr"].search(raw):
                 f("system_errors").hit(n, raw)
-        elif _P["malicious"].search(raw) and _CMD_NOT_WEB.search(raw):
+        elif is_web and quick and _P["malicious"].search(raw) and _CMD_NOT_WEB.search(raw):
             f("malicious_command").hit(n, raw, am.group("ip"))
-        if _has_secret(raw):
+        if _Q_SECRET.search(low) and _has_secret(raw):
             f("secrets_in_logs").hit(n, raw)
     # --- aggregate rules
     for ip, cnt in list(fails_by_ip.items()):

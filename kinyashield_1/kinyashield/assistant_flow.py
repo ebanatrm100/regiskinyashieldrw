@@ -138,10 +138,35 @@ _LOG_TXT = {
 }
 
 
-def route(question, lang, force_ai=False):
-    """Return {'kind': 'scam'|'guide'|'ai', ...}. Never raises for ordinary text."""
+def _request_intent(q, lang, history):
+    """Special requests (examples, follow-ups, events/news in a time frame, the answer to a 'which period?' question) that the offline guides must not answer by keyword. None for ordinary questions."""
+    try:
+        import request_intent as _ri
+        info = _ri.classify(q, lang, history if history is not None else [])
+    except Exception:
+        return None
+    if info is None:
+        return None
+    if info["intent"] == "example" and not info.get("topic") and re.search(r"\b(?:types?|kinds?|methods?|list|all|catalogue|methodes?|ubwoko|uburyo|mbinu|aina)\b", q, re.I):
+        return None  # a catalogue request ("types of scams with examples") is answered by the offline guide, which already has examples
+    if info["intent"] == "period":
+        return {"kind": "cyber_news", "period": info["period"], "ctx": info["news_ctx"]}
+    if info["intent"] == "events" and info.get("cyber"):
+        import cyber_intel as _ci
+        import cyber_upcoming as _cu
+        return {"kind": "cyber_news", "period": _ci.parse_time(q) or _cu.parse_future(q), "topics": _ci.parse_topics(q) or None, "text": q}
+    return {"kind": "ai", "intent": info["intent"], "info": info}
+
+
+def route(question, lang, force_ai=False, history=None):
+    """Return {'kind': 'scam'|'guide'|'ai'|'cyber_news', ...}. Never raises for ordinary text.
+    history (the earlier chat messages) lets follow-ups such as "give me an example of this" be answered about the previous topic."""
     q = (question or "").strip()
     k = _lk(lang)
+    if history is not None or not force_ai:
+        _special = _request_intent(q, lang, history)
+        if _special is not None:
+            return _special
     if not force_ai and len(q) < 200 and _LOG_HELP.search(q):
         try:
             from textutil import entry as _entry

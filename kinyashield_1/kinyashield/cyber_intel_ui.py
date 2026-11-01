@@ -162,7 +162,7 @@ def render(st, lang: str):
     lang = lang if lang in S else "en"
     tx = S[lang]
     ss = st.session_state
-    kq, kp, kt, kc = (f"intel_{n}_{lang}" for n in ("q", "period", "topics", "custom"))
+    kq, kp, kt, kc = (f"intel_state_{n}_{lang}" for n in ("q", "period", "topics", "custom"))     # never the same as a widget key: Streamlit forbids writing a widget's key
     st.subheader(tx["title"])
     st.write(tx["intro"])
     names = {"security": tx["t_security"], "awareness": tx["t_awareness"], "crime": tx["t_crime"]}
@@ -170,7 +170,7 @@ def render(st, lang: str):
         text = st.text_input(tx["ask"], placeholder=tx["ph"], key=f"intel_text_{lang}", max_chars=200)
         chosen = st.multiselect(tx["topics"], list(ci.TOPICS), default=list(ci.TOPICS), format_func=lambda x: names[x], key=f"intel_topics_{lang}")
         go = st.form_submit_button(tx["go"])
-    kf = f"intel_future_{lang}"
+    kf = f"intel_state_future_{lang}"
     x = X[lang]
     if go:
         topics = ci.parse_topics(text) or chosen or list(ci.TOPICS)

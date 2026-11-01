@@ -615,3 +615,5 @@ if tab_intel is not None:
             _intel.render(st, str(lang).lower())
         except Exception:
             st.warning("Cyber News could not load. The other tabs still work.")
+            import traceback as _tb
+            st.caption("Technical detail for the developer: " + _tb.format_exc().strip().splitlines()[-1][:300])

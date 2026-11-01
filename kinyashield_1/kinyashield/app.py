@@ -63,12 +63,19 @@ try:
 except Exception:  # the Cyber News tab is optional; the other tabs never depend on it
     _intel = None
     _intel_label = None
-_tab_names = [t["tab_check"], t["tab_learn"], t["tab_about"], _chat_label] + ([_studio_label] if _studio else []) + ([_org_label] if _org else []) + ([_intel_label] if _intel else [])
+try:
+    import log_analyzer_ui as _logan
+    _logan_label = _logan.TAB.get(str(lang).lower(), _logan.TAB["en"])
+except Exception:  # the Log Analyzer is optional; the other tabs never depend on it
+    _logan = None
+    _logan_label = None
+_tab_names = [t["tab_check"], t["tab_learn"], t["tab_about"], _chat_label] + ([_studio_label] if _studio else []) + ([_org_label] if _org else []) + ([_intel_label] if _intel else []) + ([_logan_label] if _logan else [])
 _tabs = st.tabs(_tab_names)
 tab_check, tab_learn, tab_about, tab_chat = _tabs[:4]
 tab_studio = _tabs[4] if _studio else None
 tab_org = _tabs[4 + (1 if _studio else 0)] if _org else None
 tab_intel = _tabs[4 + (1 if _studio else 0) + (1 if _org else 0)] if _intel else None
+tab_logan = _tabs[4 + (1 if _studio else 0) + (1 if _org else 0) + (1 if _intel else 0)] if _logan else None
 with tab_check:
     examples = {}
     p = pathlib.Path(__file__).parent / "data" / "dev_messages.csv"
@@ -378,6 +385,19 @@ with tab_chat:
             _hist.append(_m0)
             st.session_state[_rel_key] = []
             st.rerun()
+        try:  # a pasted log (or an attached log file with a short question): analyse it like a log analyzer, offline, in the chat language
+            import log_analyzer as _la0
+            _log_text = _q if _la0.looks_like_log(_q) else (_atts["text"] if (_atts["text"] and len(_q) < 200 and _la0.looks_like_log(_atts["text"])) else "")
+        except Exception:
+            _la0, _log_text = None, ""
+        if _log_text:
+            try:
+                _hist.append({"role": "assistant", "content": _la0.to_markdown(_la0.analyze(_log_text), _chat_lang), "kind": "note"})
+                st.session_state[_rel_key] = []
+                st.rerun()
+            except Exception as _le:
+                if _le.__class__.__name__ in ("RerunException", "StopException"):
+                    raise
         _has_att = bool(_atts["images"] or _atts["text"])
         _routed = _route(_q, _chat_lang, force_ai=(_force_ai or _has_att)) if _flow_ok else {"kind": "ai"}
         st.session_state[_rel_key] = []
@@ -617,3 +637,12 @@ if tab_intel is not None:
             st.warning("Cyber News could not load. The other tabs still work.")
             import traceback as _tb
             st.caption("Technical detail for the developer: " + _tb.format_exc().strip().splitlines()[-1][:300])
+
+if tab_logan is not None:
+    with tab_logan:
+        try:
+            _logan.render(st, str(lang).lower())
+        except Exception:
+            st.warning("Log Analyzer could not load. The other tabs still work.")
+            import traceback as _tb2
+            st.caption("Technical detail for the developer: " + _tb2.format_exc().strip().splitlines()[-1][:300])

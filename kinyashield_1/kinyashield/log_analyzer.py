@@ -259,7 +259,7 @@ def looks_like_log(text: str) -> bool:
 
 
 # ------------------------------------------------------------------ masking
-_SECRET_KV = re.compile(r"(?i)\b(pass(?:word|wd)?|pwd|pin|secret|api[_-]?key|access[_-]?key|token|authorization|auth|client_secret)(\s*[=:]\s*)(\"[^\"]+\"|'[^']+'|\S+)")
+_SECRET_KV = re.compile(r"(?i)\b(pass(?:word|wd)?|pin|secret|api[_-]?key|access[_-]?key|token|authorization|auth|client_secret)(\s*[=:]\s*)(\"[^\"]+\"|'[^']+'|\S+)")
 _SECRETS = (_SECRET_KV, re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{16,}"), re.compile(r"\bAKIA[0-9A-Z]{16}\b"), re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"),
             re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,}"))
 

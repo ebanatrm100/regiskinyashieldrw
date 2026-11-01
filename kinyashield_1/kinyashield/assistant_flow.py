@@ -129,10 +129,25 @@ _LIVE_ONLY = re.compile(
     r"hali ya hewa|kiwango cha ubadilishaji|habari za leo)\b", re.I)
 
 
+_LOG_HELP = re.compile(r"\b(?:log analy[sz]er|analy[sz]e (?:my |a |the |these )?logs?|log analysis|read (?:my |a )?logs?|analyseur de (?:journaux|logs)|analyser (?:un |mes |les )?(?:journal|journaux|logs?)|isesengura rya logs?|gusesengura logs?|sesengura log|kichanganuzi cha kumbukumbu|changanua (?:kumbukumbu|logs?)|kuchanganua (?:kumbukumbu|logs?))\b", re.I)
+_LOG_TXT = {
+    "en": ("Log Analyzer", "I can analyze logs for you. Paste the log text into this chat (several lines), or open the **Log Analyzer** tab to upload a file (SSH/auth, web server, Windows events, firewall, JSON, CSV or plain text). I look for brute-force logins, successful logins after failures, new accounts, risky sudo use, web attacks (SQL injection, XSS, path traversal, Log4Shell), scanners, port scans, request floods, signs of malware commands, persistence, log deletion, secrets written in logs and system errors. Every finding gets a severity, a MITRE ATT&CK reference, evidence lines, why it matters and what to do, in English, French, Kinyarwanda or Kiswahili. Findings are leads, not proof, and nothing is stored."),
+    "fr": ("Analyseur de journaux", "Je peux analyser des journaux pour vous. Collez le texte du journal dans ce chat (plusieurs lignes) ou ouvrez l'onglet **Analyseur de journaux** pour importer un fichier (SSH/authentification, serveur web, événements Windows, pare-feu, JSON, CSV ou texte). Je cherche les attaques par force brute, connexions réussies après échecs, nouveaux comptes, usages risqués de sudo, attaques web (injection SQL, XSS, traversée de répertoires, Log4Shell), scanners, balayages de ports, déluges de requêtes, commandes de logiciels malveillants, persistance, suppression de journaux, secrets écrits dans les journaux et erreurs système. Chaque constat a une gravité, une référence MITRE ATT&CK, des lignes de preuve, pourquoi c'est important et que faire. Les constats sont des pistes, pas des preuves, et rien n'est conservé."),
+    "rw": ("Isesengura rya Logs", "Nshobora gusesengura logs. Shyira inyandiko ya log muri iki kiganiro (imirongo myinshi), cyangwa ufungure igice cya **Isesengura rya Logs** ushyiremo dosiye (SSH/kwinjira, seriveri y'urubuga, events za Windows, firewall, JSON, CSV cyangwa inyandiko). Ndashaka kwinjira guhimbwa kenshi, kwinjira byagenze neza nyuma yo kunanirwa, konti nshya, sudo ifite ibyago, ibitero ku rubuga (SQL injection, XSS, path traversal, Log4Shell), scanners, port scans, ibisabwa byinshi cyane, amategeko ya malware, kwihisha, gusiba logs, amabanga yanditse muri logs n'amakosa ya sisitemu. Buri kintu gifite urwego, MITRE ATT&CK, imirongo y'ibimenyetso, impamvu n'icyo gukora. Ibyabonetse ni ibimenyetso byo gukurikirana, si gihamya, kandi nta kibikwa."),
+    "sw": ("Kichanganuzi cha Kumbukumbu", "Naweza kuchanganua kumbukumbu (logs) kwa ajili yako. Bandika maandishi ya kumbukumbu kwenye mazungumzo haya (mistari kadhaa), au fungua kichupo cha **Kichanganuzi cha Kumbukumbu** kupakia faili (SSH/uthibitishaji, seva ya wavuti, matukio ya Windows, firewall, JSON, CSV au maandishi). Natafuta kuingia kwa nguvu, kuingia kulikofaulu baada ya kushindwa, akaunti mpya, matumizi hatari ya sudo, mashambulizi ya wavuti (SQL injection, XSS, path traversal, Log4Shell), vichanganuzi, port scan, mafuriko ya maombi, amri za programu hasidi, kudumu, kufuta kumbukumbu, siri zilizoandikwa kwenye kumbukumbu na makosa ya mfumo. Kila tokeo lina kiwango, rejea ya MITRE ATT&CK, mistari ya ushahidi, kwa nini ni muhimu na la kufanya. Matokeo ni vidokezo, si ushahidi, na hakuna kinachohifadhiwa."),
+}
+
+
 def route(question, lang, force_ai=False):
     """Return {'kind': 'scam'|'guide'|'ai', ...}. Never raises for ordinary text."""
     q = (question or "").strip()
     k = _lk(lang)
+    if not force_ai and len(q) < 200 and _LOG_HELP.search(q):
+        try:
+            from textutil import entry as _entry
+            return {"kind": "guide", "entry": _entry("log_analyzer_help", "log", {x: _LOG_TXT[x][0] for x in _LOG_TXT}, {x: _LOG_TXT[x][1] for x in _LOG_TXT})}
+        except Exception:
+            pass
     if not force_ai and len(q) >= MIN_MESSAGE_LEN:
         res = analyze(q)
         if res.verdict != "ok":

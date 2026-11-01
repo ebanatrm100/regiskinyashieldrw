@@ -5,6 +5,7 @@ import re
 from datetime import timedelta
 
 import cyber_intel as ci
+import cyber_upcoming as cu
 
 TAB = {"en": "Cyber News", "fr": "Actualité cyber", "rw": "Amakuru ya Cyber", "sw": "Habari za Cyber"}
 S = {
@@ -36,6 +37,16 @@ S = {
                change="Chagua kipindi kingine", official="Taasisi rasmi", research="Utafiti wa usalama", news="Shirika la habari", sources="Vyanzo vilivyotoa matokeo", failed="Havikufikika safari hii",
                dropped="Hakuna kilicholingana na maneno yako ya ziada ({w}), kwa hiyo utafutaji ulipanuliwa kwa mada nzima.", note="Hivi ni vichwa vya habari na muhtasari mfupi kutoka kwa wachapishaji walioorodheshwa, havijathibitishwa na KinyaShield. Fungua kiungo na ulinganishe na chanzo rasmi kabla ya kuchukua hatua. Mitiririko ya moja kwa moja huhifadhi vitu vya hivi karibuni tu, hivyo kwa vipindi virefu matokeo mengi hutoka kwenye utafutaji wa habari wenye tarehe unaoishia kwa wachapishaji wa kuaminika. Hakuna hapa ni ushauri wa kisheria, kifedha au wa uchunguzi.",
                fetched="Imepatikana", loading="Inatafuta kwenye vyanzo vya kuaminika…", topic_note="Mada zilizotafutwa", empty_q="Andika swali, au chagua mada na kipindi tu."),
+}
+X = {
+    "en": dict(recent="Recent and past", coming="Upcoming", refresh="Refresh now (fetch the newest)", up_note="Nobody can know future attacks. This list shows only what is scheduled or due: recurring security-calendar dates (computed by rule, check the publisher for changes) and remediation deadlines CISA has set.",
+               up_none="Nothing scheduled was found for this period. Try a longer one.", rec="recurring calendar rule", due="deadline", up_title="Upcoming", live_off="Live deadlines could not be fetched; only the recurring calendar is shown.", uptodate="Always fetched live when you press Search; results are kept for 10 minutes."),
+    "fr": dict(recent="Récent et passé", coming="À venir", refresh="Actualiser (récupérer le plus récent)", up_note="Personne ne peut connaître les attaques futures. Cette liste ne montre que ce qui est planifié ou dû : dates récurrentes du calendrier de sécurité (calculées par règle, vérifiez auprès de l'éditeur) et échéances de correction fixées par la CISA.",
+               up_none="Rien de planifié trouvé pour cette période. Essayez une période plus longue.", rec="règle de calendrier récurrente", due="échéance", up_title="À venir", live_off="Les échéances en direct n'ont pas pu être récupérées ; seul le calendrier récurrent est affiché.", uptodate="Récupéré en direct à chaque recherche ; résultats gardés 10 minutes."),
+    "rw": dict(recent="Ibyabaye vuba n'ibyashize", coming="Ibigiye kuza", refresh="Vugurura (zana ibishya)", up_note="Nta wamenya ibitero bizaza. Uru rutonde rwerekana gusa ibiteganyijwe cyangwa ibigomba gukorwa: amatariki asubirwamo y'ingengabihe y'umutekano (abarwa ku mategeko, genzura ku mutangaza) n'amatariki ntarengwa CISA yashyizeho yo gukosora.",
+               up_none="Nta kiteganyijwe cyabonetse muri iki gihe. Gerageza igihe kirekire.", rec="itegeko ry'ingengabihe risubirwamo", due="itariki ntarengwa", up_title="Ibigiye kuza", live_off="Amatariki ntarengwa ya CISA ntiyabashije kuboneka; herekanwa ingengabihe isubirwamo gusa.", uptodate="Bikurwa ako kanya iyo ukanze Shakisha; ibisubizo bibikwa iminota 10."),
+    "sw": dict(recent="Ya hivi karibuni na yaliyopita", coming="Yajayo", refresh="Onyesha upya (pata mpya zaidi)", up_note="Hakuna anayejua mashambulizi ya baadaye. Orodha hii inaonyesha tu yaliyopangwa au yanayodaiwa: tarehe zinazojirudia za kalenda ya usalama (zinahesabiwa kwa kanuni, hakiki kwa mchapishaji) na tarehe za mwisho za kurekebisha alizoweka CISA.",
+               up_none="Hakuna kilichopangwa kwa kipindi hiki. Jaribu kipindi kirefu.", rec="kanuni ya kalenda inayojirudia", due="tarehe ya mwisho", up_title="Yajayo", live_off="Tarehe za mwisho za moja kwa moja hazikupatikana; kalenda inayojirudia pekee ndiyo inaonyeshwa.", uptodate="Hupatikana moja kwa moja unapobonyeza Tafuta; matokeo hukaa dakika 10."),
 }
 _BADGE = {"official": "official", "research": "research", "news": "news"}
 
@@ -69,6 +80,30 @@ def render_results(st, res: dict, lang: str, tx: dict):
     st.caption(tx["note"])
 
 
+def render_upcoming(st, res: dict, lang: str, tx: dict):
+    x = X[lang]
+    p = res["period"]
+    st.markdown(f"**{x['up_title']}:** {cu.label(p, lang)} ({p['start']} → {p['end']}) · {res['total']}")
+    st.caption(x["up_note"])
+    if not res["total"]:
+        st.info(x["up_none"])
+    names = {"security": tx["t_security"], "awareness": tx["t_awareness"], "crime": tx["t_crime"]}
+    for t in res["topics"]:
+        items = res["items"].get(t) or []
+        if not items:
+            continue
+        st.subheader(f"{names[t]} ({len(items)})")
+        for it in items:
+            tag = x["rec"] if it.get("recurring") else x["due"]
+            head = f"[{_md(it['title'])}]({it['url']})" if it.get("url") else _md(it["title"])
+            st.markdown(f"**{head}**  \n:gray[{it['date']} · {_md(it['source'])} · {tag}]")
+            if it.get("summary"):
+                st.caption(_md(it["summary"]))
+    if not res.get("live"):
+        st.caption(x["live_off"])
+    st.caption(f"{tx['fetched']}: {res['fetched']} (Kigali)")
+
+
 def render(st, lang: str):
     lang = lang if lang in S else "en"
     tx = S[lang]
@@ -81,37 +116,59 @@ def render(st, lang: str):
         text = st.text_input(tx["ask"], placeholder=tx["ph"], key=f"intel_text_{lang}", max_chars=200)
         chosen = st.multiselect(tx["topics"], list(ci.TOPICS), default=list(ci.TOPICS), format_func=lambda x: names[x], key=f"intel_topics_{lang}")
         go = st.form_submit_button(tx["go"])
+    kf = f"intel_future_{lang}"
+    x = X[lang]
     if go:
         topics = ci.parse_topics(text) or chosen or list(ci.TOPICS)
-        per = ci.parse_time(text)
-        ss[kq], ss[kt], ss[kp], ss[kc] = text, topics, per, False
+        ss[kq], ss[kt], ss[kp], ss[kf], ss[kc] = text, topics, ci.parse_time(text), cu.parse_future(text), False
     if kq not in ss:
         return
-    if ss.get(kp) is None:                           # no period named: ask, with choices
+    if ss.get(kp) is None and ss.get(kf) is None:      # no period named: ask, with choices (past and upcoming)
         st.markdown(f"### {tx['which']}")
         st.caption(tx["which_help"])
         L = ci.LABELS[lang]
+        st.markdown(f"**{x['recent']}**")
         cols = st.columns(3)
         for i, key in enumerate(ci.KEYS):
             if cols[i % 3].button(L[key], key=f"intel_pick_{key}_{lang}", use_container_width=True):
                 ss[kp] = ci.period_from_key(key)
                 st.rerun()
-        if cols[len(ci.KEYS) % 3].button(L["custom"], key=f"intel_pick_custom_{lang}", use_container_width=True):
+        st.markdown(f"**{x['coming']}**")
+        cols2 = st.columns(3)
+        for i, key in enumerate(cu.KEYS):
+            if cols2[i % 3].button(cu.LABELS[lang][key], key=f"intel_pickf_{key}_{lang}", use_container_width=True):
+                ss[kf] = cu.period_from_key(key)
+                st.rerun()
+        if st.button(L["custom"], key=f"intel_pick_custom_{lang}", use_container_width=True):
             ss[kc] = True
         if ss.get(kc):
             today = ci.today_local()
             a, b = st.columns(2)
-            d1 = a.date_input(tx["start"], value=today - timedelta(days=30), max_value=today, key=f"intel_d1_{lang}")
-            d2 = b.date_input(tx["end"], value=today, max_value=today, key=f"intel_d2_{lang}")
+            d1 = a.date_input(tx["start"], value=today - timedelta(days=30), key=f"intel_d1_{lang}", min_value=today - timedelta(days=3650), max_value=today + timedelta(days=730))
+            d2 = b.date_input(tx["end"], value=today, key=f"intel_d2_{lang}", min_value=today - timedelta(days=3650), max_value=today + timedelta(days=730))
             if st.button(tx["custom_go"], key=f"intel_custom_go_{lang}"):
-                ss[kp] = ci.custom_period(d1, d2)
+                lo, hi = (d1, d2) if d1 <= d2 else (d2, d1)
+                if lo <= today:
+                    ss[kp] = ci.custom_period(lo, min(hi, today))
+                if hi > today:
+                    ss[kf] = {"key": "custom", "start": max(lo, today + timedelta(days=1)), "end": hi, "future": True}
                 st.rerun()
         return
-    per, topics = ss[kp], ss.get(kt) or list(ci.TOPICS)
+    topics = ss.get(kt) or list(ci.TOPICS)
     st.caption(f"{tx['topic_note']}: " + ", ".join(names[t] for t in topics))
-    with st.spinner(tx["loading"]):
-        res = ci.search(per, topics, lang, ss.get(kq, ""))
-    render_results(st, res, lang, tx)
+    fresh = False
+    if st.button(x["refresh"], key=f"intel_refresh_{lang}"):
+        ci._CACHE.clear(); cu._CACHE.clear(); fresh = True
+    if ss.get(kp) is not None:
+        with st.spinner(tx["loading"]):
+            res = ci.search(ss[kp], topics, lang, ss.get(kq, ""))
+        render_results(st, res, lang, tx)
+    if ss.get(kf) is not None:
+        with st.spinner(tx["loading"]):
+            resu = cu.search(ss[kf], topics, lang, fresh=fresh)
+        render_upcoming(st, resu, lang, tx)
+    st.caption(x["uptodate"])
     if st.button(tx["change"], key=f"intel_change_{lang}"):
         ss[kp] = None
+        ss[kf] = None
         st.rerun()

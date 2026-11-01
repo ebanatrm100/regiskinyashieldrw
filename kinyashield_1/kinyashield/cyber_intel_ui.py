@@ -6,6 +6,7 @@ from datetime import timedelta
 
 import cyber_intel as ci
 import cyber_upcoming as cu
+import cyber_explain as cx
 
 TAB = {"en": "Cyber News", "fr": "Actualité cyber", "rw": "Amakuru ya Cyber", "sw": "Habari za Cyber"}
 S = {
@@ -48,6 +49,39 @@ X = {
     "sw": dict(recent="Ya hivi karibuni na yaliyopita", coming="Yajayo", refresh="Onyesha upya (pata mpya zaidi)", up_note="Hakuna anayejua mashambulizi ya baadaye. Orodha hii inaonyesha tu yaliyopangwa au yanayodaiwa: tarehe zinazojirudia za kalenda ya usalama (zinahesabiwa kwa kanuni, hakiki kwa mchapishaji) na tarehe za mwisho za kurekebisha alizoweka CISA.",
                up_none="Hakuna kilichopangwa kwa kipindi hiki. Jaribu kipindi kirefu.", rec="kanuni ya kalenda inayojirudia", due="tarehe ya mwisho", up_title="Yajayo", live_off="Tarehe za mwisho za moja kwa moja hazikupatikana; kalenda inayojirudia pekee ndiyo inaonyeshwa.", tr_btn="Tafsiri vichwa hivi kwa Kiswahili", tr_busy="Inatafsiri…", tr_fail="Tafsiri haikuweza kufanywa sasa (huenda ufunguo wa AI haupo). Vichwa asili vinabaki juu.", tr_note="Tafsiri ya kompyuta ya vichwa pekee; fungua kiungo kuona asili.", uptodate="Hupatikana moja kwa moja unapobonyeza Tafuta; matokeo hukaa dakika 10."),
 }
+EX = {
+    "en": dict(explain="Explain this", digest="In plain words", ai_btn="Explain these results in more depth (AI)", ai_busy="Explaining…", ai_fail="The AI explanation is not available now (the AI key may be missing). The plain-language explanations above still work.",
+               ai_note="AI explanation of the headlines above. It may contain mistakes: open the links for the facts."),
+    "fr": dict(explain="Expliquer", digest="En termes simples", ai_btn="Expliquer ces résultats plus en profondeur (IA)", ai_busy="Explication…", ai_fail="L'explication par l'IA n'est pas disponible maintenant (la clé IA manque peut-être). Les explications simples ci-dessus fonctionnent toujours.",
+               ai_note="Explication par l'IA des titres ci-dessus. Elle peut contenir des erreurs : ouvrez les liens pour les faits."),
+    "rw": dict(explain="Sobanura", digest="Mu magambo yoroshye", ai_btn="Sobanura ibi bisubizo byimbitse (AI)", ai_busy="Turasobanura…", ai_fail="Isobanura rya AI ntirishoboka ubu (urufunguzo rwa AI rushobora kuba rutarimo). Ibisobanuro byoroshye byo hejuru biracyakora.",
+               ai_note="Isobanura rya AI ry'imitwe iri hejuru. Rishobora kuba rifite amakosa: fungura imirongo urebe ukuri."),
+    "sw": dict(explain="Eleza hili", digest="Kwa maneno rahisi", ai_btn="Eleza matokeo haya kwa undani (AI)", ai_busy="Inaeleza…", ai_fail="Maelezo ya AI hayapatikani sasa (huenda ufunguo wa AI haupo). Maelezo rahisi hapo juu bado yanafanya kazi.",
+               ai_note="Maelezo ya AI ya vichwa vilivyo juu. Yanaweza kuwa na makosa: fungua viungo kupata ukweli."),
+}
+
+
+def explain_item(st, it: dict, lang: str):
+    e = cx.explain(it, lang)
+    l1, l2, l3 = e["labels"]
+    with st.expander(f"{EX[lang]['explain']} · {e['kind_name']}"):
+        st.markdown(f"**{l1}.** {e['what']}")
+        st.markdown(f"**{l2}.** {e['why']}")
+        st.markdown(f"**{l3}.** {e['do']}")
+
+
+def explain_ai(titles, lang: str):
+    """AI explanation of the headlines in the user's language, or None when the AI is unavailable. Never raises."""
+    try:
+        from assistant_engine import answer_question
+        name = {"en": "English", "fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}[lang]
+        q = (f"Explain these cybersecurity news headlines in simple {name} for an ordinary reader: for each, in one or two sentences say what it means, why it matters and what to do. "
+             "Use only what the headline says; do not invent details; if a headline is too vague, say what kind of event it probably is and that the link has the facts.\n\n" + "\n".join(f"{i}. {t}" for i, t in enumerate(titles, 1)))
+        return answer_question(question=q, history=[], language_name=name, language_code=lang)
+    except Exception:
+        return None
+
+
 _BADGE = {"official": "official", "research": "research", "news": "news"}
 
 
@@ -63,6 +97,9 @@ def render_results(st, res: dict, lang: str, tx: dict):
     if not res["total"]:
         st.info(tx["none"])
     names = {"security": tx["t_security"], "awareness": tx["t_awareness"], "crime": tx["t_crime"]}
+    _all = [it for t in res["topics"] for it in (res["items"].get(t) or [])]
+    if _all:
+        st.info(f"**{EX[lang]['digest']}:** " + cx.digest(_all, lang))
     for t in res["topics"]:
         items = res["items"].get(t) or []
         if not items:
@@ -72,6 +109,7 @@ def render_results(st, res: dict, lang: str, tx: dict):
             st.markdown(f"**[{_md(it['title'])}]({it['url']})**  \n:gray[{_md(it['source'])} · {tx[_BADGE.get(it['kind'], 'news')]} · {it['date']}]")
             if it.get("summary"):
                 st.caption(_md(it["summary"]))
+            explain_item(st, it, lang)
     if res.get("sources"):
         st.caption(f"**{tx['sources']}:** " + ", ".join(f"{n} ({c})" for n, _k, c in res["sources"][:14]))
     if res.get("failed"):
@@ -114,6 +152,7 @@ def render_upcoming(st, res: dict, lang: str, tx: dict):
             st.markdown(f"**{head}**  \n:gray[{it['date']} · {_md(it['source'])} · {tag}]")
             if it.get("summary"):
                 st.caption(_md(it["summary"]))
+            explain_item(st, it, lang)
     if not res.get("live"):
         st.caption(x["live_off"])
     st.caption(f"{tx['fetched']}: {res['fetched']} (Kigali)")
@@ -182,6 +221,16 @@ def render(st, lang: str):
         with st.spinner(tx["loading"]):
             resu = cu.search(ss[kf], topics, lang, fresh=fresh)
         render_upcoming(st, resu, lang, tx)
+    if ss.get(kp) is not None:
+        _t2 = [it["title"] for t in topics for it in (res["items"].get(t) or [])][:12]
+        if _t2 and st.button(EX[lang]["ai_btn"], key=f"intel_ai_{lang}"):
+            with st.spinner(EX[lang]["ai_busy"]):
+                _ex = explain_ai(_t2, lang)
+            if _ex:
+                st.markdown(_ex)
+                st.caption(EX[lang]["ai_note"])
+            else:
+                st.info(EX[lang]["ai_fail"])
     if lang != "en" and ss.get(kp) is not None:
         titles = [it["title"] for t in topics for it in (res["items"].get(t) or [])][:25]
         if titles and st.button(x["tr_btn"], key=f"intel_tr_{lang}"):

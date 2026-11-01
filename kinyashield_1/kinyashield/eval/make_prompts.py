@@ -29,7 +29,7 @@ P = [
  ("fr","Explique-moi la photosynthèse simplement","ai","tutor"),("sw","Nieleze jinsi mvua inavyotokea","ai","tutor"),
  ("rw","Sobanura uko imvura iboneka","ai","tutor"),("en","Write a short poem about Kigali","any","writing"),
  ("en","Give me tips for a job interview","any","writing"),("en","Correct this sentence: me and him goes to school","ai","writing"),
- ("fr","Écris un court message de remerciement à mon professeur","ai","writing"),("sw","Andika barua fupi ya kuomba kazi","any","writing"),
+ ("fr","Écris un court message de remerciement à mon professeur","any","writing"),("sw","Andika barua fupi ya kuomba kazi","any","writing"),
  ("rw","Mfasha kwandika ibaruwa isaba akazi","any","writing"),("en","What is the capital of Kenya and why was it chosen?","ai","qa"),
  ("en","Explain how vaccines work","ai","qa"),("en","How does compound interest work?","any","qa"),("fr","Pourquoi le ciel est-il bleu ?","ai","qa"),
  ("sw","Kwa nini bahari ni ya chumvi?","ai","qa"),("rw","Kuki ikirere ari ubururu?","ai","qa"),

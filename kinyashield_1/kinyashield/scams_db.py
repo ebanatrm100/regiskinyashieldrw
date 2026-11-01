@@ -57,7 +57,7 @@ _TITLE = {"en": "Methods of scams and cyber fraud", "fr": "Méthodes d'arnaque e
 
 _SCAM_WORDS = {"scam", "scams", "scammer", "scammers", "scamming", "fraud", "frauds", "fraudster", "cybercrime", "cybercrimes", "cyberattack", "cyberattacks", "cyber", "cybersecurity", "hacking", "swindle", "swindles", "tricks",
                "arnaque", "arnaques", "fraude", "fraudes", "escroquerie", "escroqueries", "cyberattaque", "cyberattaques", "cybersecurite", "cybercriminalite",
-               "uburiganya", "uburyo", "ubujura", "ikinyoma", "abatekamutwe", "gutekinika", "ulaghai", "utapeli", "matapeli", "udanganyifu", "uhalifu", "usalama"}
+               "uburiganya", "ubujura", "ikinyoma", "abatekamutwe", "gutekinika", "ulaghai", "utapeli", "matapeli", "udanganyifu", "uhalifu", "usalama"}
 _LIST_WORDS = {"method", "methods", "type", "types", "kind", "kinds", "list", "ways", "way", "technique", "techniques", "tricks", "forms", "all", "every", "different", "existing", "common", "main", "examples", "example",
                "methode", "methodes", "type", "types", "sorte", "sortes", "liste", "manieres", "techniques", "formes", "tous", "toutes", "exemples", "differentes", "existantes",
                "uburyo", "ubwoko", "bwoko", "urutonde", "ingero", "byose", "zose", "ibyo", "mbinu", "aina", "orodha", "njia", "zote", "mifano", "tofauti"}

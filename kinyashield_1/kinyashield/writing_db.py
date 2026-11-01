@@ -202,10 +202,10 @@ _t("congrats", ("congratulations message|congratulate|message of congratulations
     ["Vuga icyo wagezeho cyangwa ibyabaye by'ukuri.", "Ongeraho umurongo wawe bwite kugira ngo bidasa n'ibyakoporowe.", "Wohereze uwo munsi cyangwa nyuma yawo vuba."],
     ["Taja mafanikio au tukio mahususi.", "Ongeza mstari wa kibinafsi usionekane umenakiliwa.", "Tuma siku hiyo au baada yake kwa haraka."]))
 
-_INTENT = {"en": ("write", "draft", "template", "sample", "example", "format", "help me", "compose", "how to write", "how do i write", "make me", "structure", "outline"),
-           "fr": ("ecrire", "rediger", "modele", "exemple", "format", "aide-moi", "aidez-moi", "structure", "plan", "faire un", "comment ecrire"),
-           "rw": ("kwandika", "andika", "icyitegererezo", "urugero", "umfashe", "nfasha", "imiterere", "nandika nte", "gutegura"),
-           "sw": ("andika", "kuandika", "kiolezo", "mfano", "nisaidie", "unisaidie", "muundo", "jinsi ya kuandika")}
+_INTENT = {"en": ("write", "draft", "template", "sample", "example", "format", "help me", "compose", "how to write", "how do i write", "make me", "structure", "outline", "write me", "create", "prepare", "generate", "compose a", "can you write", "please write"),
+           "fr": ("ecrire", "rediger", "modele", "exemple", "format", "aide-moi", "aidez-moi", "structure", "plan", "faire un", "comment ecrire", "ecris", "ecrivez", "redige", "redigez", "ecris moi", "ecrivez moi", "composer", "compose", "genere", "generez", "prepare", "preparez", "creer", "cree", "peux tu ecrire", "pouvez vous ecrire", "j'ai besoin d'un", "j'ai besoin d'une"),
+           "rw": ("kwandika", "andika", "icyitegererezo", "urugero", "umfashe", "nfasha", "imiterere", "nandika nte", "gutegura", "ndandikira", "ndandikire", "mpandikire", "nandikira", "nyandikira", "ndifuza", "nshaka", "tegura", "ntegurira", "mpa", "nkeneye", "kora"),
+           "sw": ("andika", "kuandika", "kiolezo", "mfano", "nisaidie", "unisaidie", "muundo", "jinsi ya kuandika", "niandikie", "nandikie", "tuandikie", "nitungie", "tunga", "andikia", "nahitaji", "ninataka", "nataka", "niundie", "tayarisha", "nitayarishie", "nipe")}
 _IMPROVE = {"en": "improve my|proofread|rewrite my|correct my|polish my|edit my|make this sound|check my grammar|fix my writing|improve this",
             "fr": "ameliorer mon|corriger mon|reecrire mon|relire mon|ameliore ce|corrige ce",
             "rw": "kunoza inyandiko|nozaho|kosora inyandiko|kosora iyi|nosora",
@@ -230,7 +230,7 @@ def _entry(tid, lang):
 def find(question, lang="en"):
     """A writing template when the question asks to write/draft one of the supported kinds of text; else None."""
     k = lk(lang)
-    q = fold(question)
+    q = fold(question).replace("e-mail", "email").replace("e mail", "email")
     if not q or len(q) > 220:
         return None
     # improve-my-text requests: show the checklist (the AI does the actual rewriting when a pasted text is present)
@@ -244,7 +244,7 @@ def find(question, lang="en"):
     best, best_len = None, 0
     for tid, t in T.items():
         for l in LANGS:
-            for a in t["al"][LANGS.index(l)].split("|"):
+            for a in t["al"][LANGS.index(l)].replace("e-mail", "email").split("|"):
                 if a and len(a) > best_len and has_phrase(q, [a]):
                     # one-word type aliases that are common words (letter, report, invitation ...) need a writing intent or a very short question
                     if (intent or n <= 4):

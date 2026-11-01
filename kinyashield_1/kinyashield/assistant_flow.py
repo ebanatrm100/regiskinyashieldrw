@@ -122,6 +122,13 @@ def _attach_photo_query(entry):
         pass
 
 
+_LIVE_ONLY = re.compile(
+    r"\b(?:weather|forecast|exchange rate|news today|latest news|live score|"
+    r"meteo|m[ée]t[ée]o|quel temps|taux de change|actualit[ée]s? (?:du jour|d'aujourd'hui)|"
+    r"ikirere|ikirere kimeze|igipimo cy'ivunjisha|amakuru y'uyu munsi|"
+    r"hali ya hewa|kiwango cha ubadilishaji|habari za leo)\b", re.I)
+
+
 def route(question, lang, force_ai=False):
     """Return {'kind': 'scam'|'guide'|'ai', ...}. Never raises for ordinary text."""
     q = (question or "").strip()
@@ -165,6 +172,8 @@ def route(question, lang, force_ai=False):
                 return {"kind": "ai"}   # the quoted sentence is material to work on, never a question for the offline finders
         except Exception:
             pass
+    if not force_ai and _LIVE_ONLY.search(q):
+        return {"kind": "ai"}       # weather, exchange rates, news, live scores: the offline guides cannot know them, so the AI (with live look-up) answers in the user's language
     if not force_ai and _find_owner is not None:
         owner = _find_owner(q, k)
         if owner is not None:

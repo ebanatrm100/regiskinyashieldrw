@@ -64,7 +64,7 @@ def _post(url: str, payload: dict, api_key: str = "", timeout: int = TIMEOUT) ->
         raise LLMError(f"The model server could not be reached ({e.__class__.__name__}).") from None
 
 
-def openai_chat(system: str, history, question: str, temperature: float = 0.4, max_tokens: int = 4000, history_limit: int = 12,
+def openai_chat(system: str, history, question: str, temperature: float = 0.4, max_tokens: int = 4000, history_limit: int = 12, timeout: int = TIMEOUT,
                 base_url: str = "", model_name: str = "", key: str = "") -> str:
     """One chat completion from the configured OpenAI-compatible server (or from the explicit base_url/model_name/key given)."""
     base = validate_base_url(base_url or settings.get("LLM_BASE_URL"))
@@ -78,7 +78,7 @@ def openai_chat(system: str, history, question: str, temperature: float = 0.4, m
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": question})
     data = _post(base + "/chat/completions", {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens},
-                 key or settings.get("LLM_API_KEY"))
+                 key or settings.get("LLM_API_KEY"), timeout)
     try:
         text = (data["choices"][0]["message"]["content"] or "").strip()
     except Exception:
@@ -108,12 +108,37 @@ def backups():
     return out
 
 
+# ---- last resort that needs NO key: a free public OpenAI-compatible text service, so the AI explanation still answers when no key is set or every quota is used.
+# Its answers are lower quality and it may be slow or offline; switch it off with FREE_AI=false in Secrets (for example for private data: questions are sent to a third party).
+KEYLESS = [("https://text.pollinations.ai/openai", "openai"), ("https://text.pollinations.ai/v1", "openai")]
+KEYLESS_TIMEOUT = 30
+
+
+def keyless_ok() -> bool:
+    return settings.get("FREE_AI", "true").lower() not in {"false", "0", "no", "off"}
+
+
+def keyless_chat(system, history, question):
+    errs = []
+    for base, model in KEYLESS:
+        try:
+            return openai_chat(system, history, question, base_url=base, model_name=model, history_limit=6, max_tokens=1500, timeout=KEYLESS_TIMEOUT)
+        except Exception as e:
+            errs.append(str(e)[:60])
+    raise LLMError("The free AI service did not answer: " + "; ".join(errs))
+
+
 def backup_chat(system, history, question):
-    """Try each backup service in turn; returns (label, text) or raises LLMError listing which ones failed (no secrets)."""
+    """Try each configured backup service in turn, then the keyless free service; returns (label, text) or raises LLMError (no secrets in the message)."""
     errs = []
     for label, base, model, key in backups():
         try:
             return label, openai_chat(system, history, question, base_url=base, model_name=model, key=key)
         except Exception as e:
             errs.append(f"{label}: {str(e)[:80]}")
+    if keyless_ok():
+        try:
+            return "Free", keyless_chat(system, history, question)
+        except Exception as e:
+            errs.append(str(e)[:120])
     raise LLMError("No backup AI service answered. " + "; ".join(errs) if errs else "No backup AI service is configured.")

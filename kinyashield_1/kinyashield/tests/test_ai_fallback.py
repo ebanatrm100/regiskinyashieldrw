@@ -49,11 +49,24 @@ def test_backup_chat_tries_in_order_and_reports_failures():
 
 def test_no_services_gives_missing_key_error():
     import assistant_engine as E
+    os.environ["FREE_AI"] = "false"      # the keyless free service is switched off
     try:
         E.answer_question("hi", [], "English")
         assert False
     except E.MissingAPIKeyError as e:
         assert "GROQ_API_KEY" in str(e)
+    finally:
+        os.environ.pop("FREE_AI", None)
+
+
+def test_keyless_free_service_answers_when_nothing_is_configured():
+    import assistant_engine as E, llm_backend as B
+    old = B.openai_chat
+    B.openai_chat = lambda *a, **k: "free answer"
+    try:
+        assert E.answer_question("hi", [], "English") == "free answer"
+    finally:
+        B.openai_chat = old
 
 
 def test_backup_only_configuration_answers():

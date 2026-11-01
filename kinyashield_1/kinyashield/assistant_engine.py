@@ -86,7 +86,7 @@ def answer_question(
     reference: Wikipedia/Wiktionary text for that term (untrusted data; may be incomplete or about another meaning)."""
     prov = _llm.provider()          # "gemini" (default), "openai" (your own vLLM / llama.cpp / Ollama server) or "" (nothing configured)
     api_keys = _get_api_keys() if prov in ("gemini", "") else []
-    has_backup = bool(_llm.backups())
+    has_backup = bool(_llm.backups()) or _llm.keyless_ok()
     if prov == "" and api_keys:
         prov = "gemini"
     if (prov == "" or (prov == "gemini" and not api_keys)) and not has_backup:

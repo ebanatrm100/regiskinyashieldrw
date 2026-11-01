@@ -249,23 +249,30 @@ def custom_period(start: date, end: date):
 
 # ---------------------------------------------------------------- topics and extra search words
 _TOPIC_WORDS = {
-    "security": r"cyber ?security|cybersecurite|security|securite|vulnerab\w*|cve\b|patch\w*|breach\w*|data leak\w*|hack\w*|malware|ransomware|zero-?day|exploit\w*|attack\w*|attaque\w*|virus|"
-                r"umutekano|ibitero|shambulio|usalama|udhaifu|intege nke|ikibazo cy'umutekano",
-    "awareness": r"awareness|sensibilisation|tips?|conseils?|training|campaign\w*|prevention|education|protect yourself|stay safe|ubukangurambaga|inama|uhamasishaji|vidokezo|elimu|kwirinda|kwirinda",
+    "security": r"cyber ?security|cybersecurite|security|securite|data breach\w*|vulnerab\w*|cve\b|patch\w*|breach\w*|data leak\w*|hack\w*|malware|ransomware|zero-?day|exploit\w*|attack\w*|attaque\w*|virus|"
+                r"umutekano|ibitero|igitero|shambulio|mashambulizi|usalama|udhaifu|intege nke|ikibazo cy'umutekano|uvujaji wa data|uvujaji|kuvuja|ibura ry'amakuru|ibura ry'ibanga|udukuzi|kudukua|programu hasidi|virusi|ubujura bw'amakuru|wizi wa data|"
+                r"rancongiciel\w*|logiciels? malveillants?|piratage|pirates?|fuites? de donnees|faille\w*|vulnerabilite\w*|cyberattaque\w*|menace\w*|threat\w*",
+    "awareness": r"awareness|sensibilisation|tips?|conseils?|training|campaign\w*|prevention|education|protect yourself|stay safe|ubukangurambaga|inama|uhamasishaji|vidokezo|elimu|kwirinda|kuririnda|amahugurwa|ubumenyi|formation\w*|bonnes pratiques|campagne\w*|mafunzo|kampeni|jinsi ya kujikinga|ushauri",
     "crime": r"cyber ?crime\w*|cybercriminal\w*|cybercriminalite|fraud\w*|scam\w*|arnaque\w*|arrest\w*|takedown|police|interpol|europol|ransomware|phishing|extortion|theft|"
-             r"ibyaha|uhalifu|uburiganya|ubujura|ulaghai|utapeli|ubutekamutwe|ukamatwa|kuboneka|ukamatwa",
+             r"ibyaha|icyaha|abafashwe|gufatwa|uhalifu|wahalifu|mhalifu|uburiganya|ubujura|ulaghai|utapeli|ubutekamutwe|ukamatwa|kukamatwa|kuboneka|hameconnage|cybercriminel\w*|escroquerie\w*|extorsion|rancon\w*|vol de donnees|usurpation\w*|gendarmerie|justice|tribunal|condamn\w*|wizi|kukamatwa|mahakama|polisi",
 }
 _STOP = set(("what is are the a an of in on for about and or me please give tell show information info news latest current new updates update related to from with all any every "
              "quelles quels quel sont les des de la le du et ou en sur pour quoi donne moi montre informations nouvelles actualites derniere dernier "
              "ni iki ibihe amakuru yose ku kuri na cyangwa mpa nyereka amakuru "
              "ni nini habari zote za kuhusu na au nipe nionyeshe taarifa mpya ya "
              "ashize ishize gishize yashize iliyopita zilizopita uliopita byo bya cya mu muri interineti internet mtandao mtandaoni online cyber know like ago two three four five six seven eight nine ten "
-             "deux trois quatre cinq sept huit neuf dix mois semaines jours annees quelles cette ces derniers dernieres y'ibyaha ibyaha y'amakuru ya'ibyaha wa ya kwa katika ndani").split())
+             "deux trois quatre cinq sept huit neuf dix mois semaines jours annees quelles cette ces derniers dernieres y'ibyaha ibyaha y'amakuru ya'ibyaha wa ya kwa katika ndani "
+             "bwa bwo bya byo cya cyo ibya ibyo uku uyu iki iyi izo uko bwa mu muri ukwezi gutaha icyumweru gitaha umwaka utaha ibizaza bizaza bigiye kuza mezi iminsi ibyumweru imyaka "
+             "par des les aux au ces cette ce mois prochain prochaine prochains prochaines venir evenements actualite actualites nouvelles ont ete "
+             "ibikorwa bakoze bakora yakozwe byakozwe ibikorwa vya ni la wa za kwa kuhusu miezi wiki siku miaka mwezi mwaka huu hii ujao ijayo zijazo yajayo matukio mpya upcoming next coming events event daily today week month year days weeks months years").split())
 
 
 def parse_topics(text: str):
     q = fold(text)
     return [t for t in TOPICS if re.search(rf"(?<![a-z0-9])(?:{_TOPIC_WORDS[t]})", q)]
+
+
+_FUTURE_RX = ((0, r"\b(?:next|upcoming|coming|prochain\w*|a venir|ibizaza|bizaza|gutaha|gitaha|utaha|ijayo|ujao|zijazo|yajayo|kesho|tomorrow|demain)\b"),)
 
 
 def extra_terms(text: str) -> str:
@@ -276,10 +283,50 @@ def extra_terms(text: str) -> str:
     q = re.sub(r"\b\d{1,3}\s+\w+\s+(?:ago|ashize|iliyopita)\b", " ", q)
     q = re.sub(r"\b(?:last|past|previous|dernier\w*)\b", " ", q)
     q = re.sub(r"\b20[12]\d\b", " ", q)
+    q = re.sub(r"(?<![a-z0-9])(?:" + "|".join(_TOPIC_WORDS.values()) + r")(?![a-z0-9])", " ", q)      # whole topic phrases ("fuites de donnees", "programu hasidi")
+    for _k, rx in _FUTURE_RX:
+        q = re.sub(rx, " ", q)
     toks = [w for w in re.split(r"[^a-z0-9'\-]+", q) if w and len(w) > 2 and w not in _STOP and w not in _MONTHS and not w.isdigit()]
     toks = [w for w in toks if not any(re.fullmatch(rx, w) for _u, rx in _UNITS)]
     toks = [w for w in toks if not re.fullmatch(_TOPIC_WORDS["security"] + "|" + _TOPIC_WORDS["awareness"] + "|" + _TOPIC_WORDS["crime"], w)]
     return " ".join(toks[:5])
+
+
+_TERM_EN = (   # (folded regex, English search term): the user's own words become English search words for the English-language sources
+    (r"rancongiciel\w*|ibyorezo bya ransomware", "ransomware"), (r"hameconnage|ubutekamutwe bwa phishing|ulaghai wa phishing", "phishing"),
+    (r"logiciels? malveillants?|programu hasidi|ibyuma byangiza", "malware"), (r"fuites? (?:de )?donnees|uvujaji (?:wa )?data|uvujaji|ibura ry'amakuru|kuvuga amakuru", "data breach"),
+    (r"piratage|udukuzi|kudukua|ubujura bwo kuri interineti", "hacking"), (r"arnaques?|ulaghai|uburiganya|utapeli|ubutekamutwe", "scam"),
+    (r"fraude|wizi wa mtandaoni|ubujura bw'amafaranga", "fraud"), (r"cybercriminalite|ibyaha bya interineti|ibyaha byo kuri interineti|uhalifu wa mtandaoni|uhalifu wa kimtandao", "cybercrime"),
+    (r"cybercriminels|wahalifu wa mtandaoni|abakora ibyaha bya interineti", "cybercriminals"), (r"arrestations?|abafashwe|kukamatwa|ukamatwa", "arrested"),
+    (r"pesa (?:za )?simu|amafaranga (?:yo )?(?:kuri )?telefoni|monnaie mobile", "mobile money"), (r"vulnerabilite\w*|udhaifu|intege nke", "vulnerability"),
+    (r"deepfake\w*|hypertrucage\w*", "deepfake"), (r"rwanda|u rwanda", "Rwanda"), (r"afrique|afurika|africa", "Africa"), (r"banque|banki", "bank"), (r"mots? de passe|ijambo ry'ibanga|nywila", "password"),
+    (r"sextorsion", "sextortion"), (r"usurpation d'identite|kwiba indangamuntu|wizi wa utambulisho", "identity theft"), (r"rancon", "ransom"),
+)
+
+
+def english_terms(extra: str) -> str:
+    """The user's extra words as English search words ('rancongiciel Rwanda' -> 'ransomware Rwanda'); words with no known translation are kept (names, product names)."""
+    q = fold(extra)
+    out = []
+    for rx, en in _TERM_EN:
+        if re.search(rx, q):
+            out.append(en)
+            q = re.sub(rx, " ", q)
+    rest = [w for w in re.split(r"[^a-z0-9'\-]+", q) if len(w) > 2 and w not in _STOP]
+    return " ".join(dict.fromkeys(out + rest[:3]))[:80]
+
+
+_LOCAL_BASE = {   # topic queries in the user's language, for news published in that language
+    "fr": {"security": '(cybersécurité OR "fuite de données" OR vulnérabilité OR rançongiciel OR "logiciel malveillant" OR cyberattaque)',
+           "awareness": '("sensibilisation cybersécurité" OR hameçonnage OR "conseils de sécurité" OR "arnaque en ligne")',
+           "crime": '(cybercriminalité OR "fraude en ligne" OR cybercriminels OR "arnaque" OR "arrestation" OR "mobile money")'},
+    "sw": {"security": '(usalama wa mtandao OR "uvujaji wa data" OR udukuzi OR "programu hasidi" OR ransomware)',
+           "awareness": '("uhamasishaji usalama wa mtandao" OR "ulaghai mtandaoni" OR "tahadhari ya ulaghai")',
+           "crime": '(uhalifu wa mtandaoni OR "ulaghai wa pesa za simu" OR "wahalifu wa mtandaoni" OR "kukamatwa" OR "ulaghai")'},
+    "rw": {"security": '(umutekano wa interineti OR "ibitero bya interineti" OR "amakuru yibwe" OR ransomware)',
+           "awareness": '("ubukangurambaga umutekano wa interineti" OR "uburiganya kuri interineti" OR "kwirinda uburiganya")',
+           "crime": '(ibyaha byo kuri interineti OR "uburiganya bwa mobile money" OR "abafashwe uburiganya" OR "ubujura bwo kuri interineti")'},
+}
 
 
 # ---------------------------------------------------------------- fetching
@@ -450,11 +497,15 @@ def build_jobs(period: dict, topics, lang: str, extra: str):
     """The list of (name, kind, default_topics, fetch_function) to run. Pure; no network until the functions are called."""
     s, e = period["start"], period["end"]
     jobs = []
-    ex = extra.strip()
+    ex_native = extra.strip()
+    ex = english_terms(ex_native) if lang != "en" and ex_native else ex_native      # English-language sources get English search words
     for tp in topics:
         q = (f'"{ex}" ' if ex else "") + _BASE_Q[tp]
-        jobs.append((f"news:{tp}", "news", (tp,), lambda q=q: ("gn", _http(_gnews_url(q, s, e, lang)))))
-        if lang != "en":
+        if lang == "en":
+            jobs.append((f"news:{tp}", "news", (tp,), lambda q=q: ("gn", _http(_gnews_url(q, s, e, "en")))))
+        else:
+            ql = (f'"{ex_native}" ' if ex_native else "") + _LOCAL_BASE[lang][tp]      # and news published in the user's own language
+            jobs.append((f"news:{tp}", "news", (tp,), lambda q=ql: ("gn", _http(_gnews_url(q, s, e, lang)))))
             jobs.append((f"news-en:{tp}", "news", (tp,), lambda q=q: ("gn", _http(_gnews_url(q, s, e, "en")))))
     off = (f'"{ex}" ' if ex else "") + _OFFICIAL_Q
     jobs.append(("official", "official", tuple(topics), lambda: ("gn", _http(_gnews_url(off, s, e, "en")))))
@@ -487,6 +538,7 @@ def _search(period: dict, topics=None, lang: str = "en", text: str = "", fetch_j
     fetch_jobs lets tests supply jobs without a network. Results are cached for 10 minutes."""
     topics = [t for t in (topics or TOPICS) if t in TOPICS] or list(TOPICS)
     extra = extra_terms(text)
+    extra_en = english_terms(extra) if (extra and lang != "en") else extra
     s, e = period["start"], period["end"]
     key = (s, e, tuple(topics), lang, extra)
     t0 = now if now is not None else time.time()
@@ -527,7 +579,7 @@ def _search(period: dict, topics=None, lang: str = "en", text: str = "", fetch_j
                 it["summary"] = ""
             if not k:
                 continue
-            if extra and what == "feed" and not re.search(re.escape(extra.split()[0]), it["title"] + " " + it["summary"], re.I):
+            if extra and what == "feed" and not re.search(re.escape((extra_en or extra).split()[0]), it["title"] + " " + it["summary"], re.I):
                 continue                      # direct feeds are not searched by the news engine, so apply the extra words here
             n = _norm(it["title"])
             if not n or n in seen:

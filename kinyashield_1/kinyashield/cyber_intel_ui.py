@@ -40,13 +40,13 @@ S = {
 }
 X = {
     "en": dict(recent="Recent and past", coming="Upcoming", refresh="Refresh now (fetch the newest)", up_note="Nobody can know future attacks. This list shows only what is scheduled or due: recurring security-calendar dates (computed by rule, check the publisher for changes) and remediation deadlines CISA has set.",
-               up_none="Nothing scheduled was found for this period. Try a longer one.", rec="recurring calendar rule", due="deadline", up_title="Upcoming", live_off="Live deadlines could not be fetched; only the recurring calendar is shown.", uptodate="Always fetched live when you press Search; results are kept for 10 minutes."),
+               up_none="Nothing scheduled was found for this period. Try a longer one.", rec="recurring calendar rule", due="deadline", up_title="Upcoming", live_off="Live deadlines could not be fetched; only the recurring calendar is shown.", tr_btn="Translate these headlines", tr_busy="Translating…", tr_fail="Translation could not be made now (the AI key may be missing). The original headlines stay above.", tr_note="Machine translation of headlines only; open the link for the original.", uptodate="Always fetched live when you press Search; results are kept for 10 minutes."),
     "fr": dict(recent="Récent et passé", coming="À venir", refresh="Actualiser (récupérer le plus récent)", up_note="Personne ne peut connaître les attaques futures. Cette liste ne montre que ce qui est planifié ou dû : dates récurrentes du calendrier de sécurité (calculées par règle, vérifiez auprès de l'éditeur) et échéances de correction fixées par la CISA.",
-               up_none="Rien de planifié trouvé pour cette période. Essayez une période plus longue.", rec="règle de calendrier récurrente", due="échéance", up_title="À venir", live_off="Les échéances en direct n'ont pas pu être récupérées ; seul le calendrier récurrent est affiché.", uptodate="Récupéré en direct à chaque recherche ; résultats gardés 10 minutes."),
+               up_none="Rien de planifié trouvé pour cette période. Essayez une période plus longue.", rec="règle de calendrier récurrente", due="échéance", up_title="À venir", live_off="Les échéances en direct n'ont pas pu être récupérées ; seul le calendrier récurrent est affiché.", tr_btn="Traduire ces titres en français", tr_busy="Traduction…", tr_fail="La traduction n'a pas pu être faite maintenant (la clé IA manque peut-être). Les titres originaux restent affichés.", tr_note="Traduction automatique des titres seulement ; ouvrez le lien pour l'original.", uptodate="Récupéré en direct à chaque recherche ; résultats gardés 10 minutes."),
     "rw": dict(recent="Ibyabaye vuba n'ibyashize", coming="Ibigiye kuza", refresh="Vugurura (zana ibishya)", up_note="Nta wamenya ibitero bizaza. Uru rutonde rwerekana gusa ibiteganyijwe cyangwa ibigomba gukorwa: amatariki asubirwamo y'ingengabihe y'umutekano (abarwa ku mategeko, genzura ku mutangaza) n'amatariki ntarengwa CISA yashyizeho yo gukosora.",
-               up_none="Nta kiteganyijwe cyabonetse muri iki gihe. Gerageza igihe kirekire.", rec="itegeko ry'ingengabihe risubirwamo", due="itariki ntarengwa", up_title="Ibigiye kuza", live_off="Amatariki ntarengwa ya CISA ntiyabashije kuboneka; herekanwa ingengabihe isubirwamo gusa.", uptodate="Bikurwa ako kanya iyo ukanze Shakisha; ibisubizo bibikwa iminota 10."),
+               up_none="Nta kiteganyijwe cyabonetse muri iki gihe. Gerageza igihe kirekire.", rec="itegeko ry'ingengabihe risubirwamo", due="itariki ntarengwa", up_title="Ibigiye kuza", live_off="Amatariki ntarengwa ya CISA ntiyabashije kuboneka; herekanwa ingengabihe isubirwamo gusa.", tr_btn="Hindura iyi mitwe mu Kinyarwanda", tr_busy="Turahindura…", tr_fail="Guhindura ntibyakunze ubu (urufunguzo rwa AI rushobora kuba rutarimo). Imitwe y'umwimerere iracyahari.", tr_note="Ni ihindura rya mudasobwa ry'imitwe gusa; fungura umurongo urebe umwimerere.", uptodate="Bikurwa ako kanya iyo ukanze Shakisha; ibisubizo bibikwa iminota 10."),
     "sw": dict(recent="Ya hivi karibuni na yaliyopita", coming="Yajayo", refresh="Onyesha upya (pata mpya zaidi)", up_note="Hakuna anayejua mashambulizi ya baadaye. Orodha hii inaonyesha tu yaliyopangwa au yanayodaiwa: tarehe zinazojirudia za kalenda ya usalama (zinahesabiwa kwa kanuni, hakiki kwa mchapishaji) na tarehe za mwisho za kurekebisha alizoweka CISA.",
-               up_none="Hakuna kilichopangwa kwa kipindi hiki. Jaribu kipindi kirefu.", rec="kanuni ya kalenda inayojirudia", due="tarehe ya mwisho", up_title="Yajayo", live_off="Tarehe za mwisho za moja kwa moja hazikupatikana; kalenda inayojirudia pekee ndiyo inaonyeshwa.", uptodate="Hupatikana moja kwa moja unapobonyeza Tafuta; matokeo hukaa dakika 10."),
+               up_none="Hakuna kilichopangwa kwa kipindi hiki. Jaribu kipindi kirefu.", rec="kanuni ya kalenda inayojirudia", due="tarehe ya mwisho", up_title="Yajayo", live_off="Tarehe za mwisho za moja kwa moja hazikupatikana; kalenda inayojirudia pekee ndiyo inaonyeshwa.", tr_btn="Tafsiri vichwa hivi kwa Kiswahili", tr_busy="Inatafsiri…", tr_fail="Tafsiri haikuweza kufanywa sasa (huenda ufunguo wa AI haupo). Vichwa asili vinabaki juu.", tr_note="Tafsiri ya kompyuta ya vichwa pekee; fungua kiungo kuona asili.", uptodate="Hupatikana moja kwa moja unapobonyeza Tafuta; matokeo hukaa dakika 10."),
 }
 _BADGE = {"official": "official", "research": "research", "news": "news"}
 
@@ -78,6 +78,21 @@ def render_results(st, res: dict, lang: str, tx: dict):
         st.caption(f"{tx['failed']}: " + ", ".join(res["failed"][:10]))
     st.caption(f"{tx['fetched']}: {res['fetched']} (Kigali)")
     st.caption(tx["note"])
+
+
+def translate_titles(titles, lang: str):
+    """Titles translated into the user's language by the AI (one numbered list in, one out), or None when the AI is unavailable. Never raises."""
+    try:
+        from assistant_engine import answer_question
+        name = {"fr": "French", "rw": "Kinyarwanda", "sw": "Kiswahili"}[lang]
+        q = (f"Translate these news headlines into {name}. Keep the numbering, one line each, no comments, keep names, numbers and product names unchanged. If unsure of a Kinyarwanda/Kiswahili term, use the closest natural wording.\n\n"
+             + "\n".join(f"{i}. {t}" for i, t in enumerate(titles, 1)))
+        out = answer_question(question=q, history=[], language_name=name, language_code=lang)
+        rows = re.findall(r"^\s*(\d+)[.)]\s*(.+)$", out, re.M)
+        res = {int(n): t.strip() for n, t in rows}
+        return [res.get(i) or titles[i - 1] for i in range(1, len(titles) + 1)] if res else None
+    except Exception:
+        return None
 
 
 def render_upcoming(st, res: dict, lang: str, tx: dict):
@@ -167,6 +182,16 @@ def render(st, lang: str):
         with st.spinner(tx["loading"]):
             resu = cu.search(ss[kf], topics, lang, fresh=fresh)
         render_upcoming(st, resu, lang, tx)
+    if lang != "en" and ss.get(kp) is not None:
+        titles = [it["title"] for t in topics for it in (res["items"].get(t) or [])][:25]
+        if titles and st.button(x["tr_btn"], key=f"intel_tr_{lang}"):
+            with st.spinner(x["tr_busy"]):
+                got = translate_titles(titles, lang)
+            if got:
+                st.markdown("\n".join(f"{i}. {t}" for i, t in enumerate(got, 1)))
+                st.caption(x["tr_note"])
+            else:
+                st.info(x["tr_fail"])
     st.caption(x["uptodate"])
     if st.button(tx["change"], key=f"intel_change_{lang}"):
         ss[kp] = None

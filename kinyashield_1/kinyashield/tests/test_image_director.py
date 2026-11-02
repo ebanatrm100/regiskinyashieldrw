@@ -55,3 +55,23 @@ assert out[2] == "fast" and time.time() - t0 < 1.0, out                 # the se
 slots[:] = [("bad", "x", lambda p, a, n, r_, sd: (_ for _ in ()).throw(G.ImageGenError("quota"))), ("ok", "x", lambda p, a, n, r_, sd: [(b"o", "image/png", "ok")])]
 assert G._one("p", "1:1", None, 0)[2] == "ok"                           # a failing service hands over immediately
 print("OK image speed")
+
+# reference photo: never a silent different person
+G._slots = lambda: [("pub", "public", lambda p, a, n, r_, sd: [(b"x", "image/png", "pub")])]
+G._ordered = lambda s: s
+try:
+    G._one("p", "1:1", (b"\x89PNG", "image/png"), 0); assert False
+except G.ImageGenError as e:
+    assert str(e) == "reference_unsupported"
+    for l in ("en", "fr", "rw", "sw"):
+        assert "GEMINI_API_KEY" in G.friendly_error(e, l)
+G._slots = lambda: [("g", "gemini", lambda p, a, n, r_, sd: (_ for _ in ()).throw(G.ImageGenError("Gemini: quota"))), ("pub", "public", lambda p, a, n, r_, sd: [(b"x", "image/png", "pub")])]
+try:
+    G._one("p", "1:1", (b"\x89PNG", "image/png"), 0); assert False
+except G.ImageGenError as e:
+    assert str(e).startswith("reference_failed") and "quota" in G.friendly_error(e, "en")
+r = D.direct("pasteur dans une église", "fr", use_ai=False, has_reference=True)
+assert "EXACTLY the same person" in r["prompt"] and "pastor" in r["prompt"] and "church" in r["prompt"] and not r["ai"]
+r = D.direct("umupasiteri mu itorero", "rw", use_ai=False); assert "church" in r["prompt"]
+r = D.direct("pastor in a church", "en", use_ai=False); assert r["kind"] == "portrait" and "must clearly show: pastor in a church" in r["prompt"] and "creamy" not in r["prompt"]
+print("OK image reference")

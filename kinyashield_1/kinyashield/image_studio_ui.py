@@ -71,11 +71,13 @@ def _create(st, k, u):
     n = c3.slider(u["count"], 1, 4, 1, key=f"studio_n_{k}")
     better = st.checkbox(u["better"], value=True, key=f"studio_better_{k}")
     up = st.file_uploader(u["ref"], type=list(AT.IMG_EXTS), key=f"studio_ref_{k}")
+    if up is not None and not IG._gemini_keys():       # say it BEFORE generating: a reference photo needs the image-editing AI
+        st.warning(IG.friendly_error(IG.ImageGenError("reference_unsupported"), k))
     prompt = ""
     if idea.strip():
         try:
             import image_director as DIR
-            prompt = DIR.direct(idea, k, style, aspect, use_ai=False)["prompt"] if better else idea.strip()     # instant preview; the AI art director refines it when you press the button
+            prompt = DIR.direct(idea, k, style, aspect, use_ai=False, has_reference=bool(up))["prompt"] if better else idea.strip()     # instant preview; the AI art director refines it when you press the button
         except IG.ImageGenError:
             prompt = ""
     if prompt:
@@ -105,9 +107,9 @@ def _create(st, k, u):
         variant = (st.session_state.get(var_key, 0) + 1) if repeat else 0
         try:
             with st.spinner("…"):
-                if better:
+                if better or ref is not None:
                     import image_director as DIR
-                    _d = DIR.direct(idea, k, style, aspect, use_ai=True)
+                    _d = DIR.direct(idea, k, style, aspect, use_ai=True, has_reference=ref is not None)
                     prompt = _d["prompt"]
                     st.session_state[f"studio_used_{k}"] = (prompt, _d["ai"])
                 res = IG.generate(prompt, aspect, n, ref, variant=variant)

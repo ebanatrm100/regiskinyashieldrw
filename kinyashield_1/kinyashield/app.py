@@ -341,7 +341,7 @@ with tab_chat:
                 _ref = (_atts["images"][0][0], _atts["images"][0][1]) if _atts["images"] else None
                 try:
                     import image_director as _dir
-                    _prompt_used = _dir.direct(_idea, _chat_lang, _ig.suggest_style(_idea), "1:1")["prompt"]    # understood in all 4 languages, written as a complete finished picture
+                    _prompt_used = _dir.direct(_idea, _chat_lang, _ig.suggest_style(_idea), "1:1", has_reference=_ref is not None)["prompt"]    # understood in all 4 languages, written as a complete finished picture
                 except _ig.ImageGenError:
                     raise
                 except Exception:

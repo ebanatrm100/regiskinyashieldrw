@@ -318,6 +318,10 @@ def _one(prompt, aspect, reference, seed):
     slots = _ordered(_slots())
     if not slots:
         raise ImageGenError("not_configured")
+    if reference:      # a reference photo can only be used by an image-EDITING service (Gemini). The others would ignore it and draw a different person, so they are never used for it.
+        slots = [x for x in slots if x[1] == "gemini"]
+        if not slots:
+            raise ImageGenError("reference_unsupported")
     reasons = []
 
     def attempt(nm, kd, f):
@@ -350,7 +354,7 @@ def _one(prompt, aspect, reference, seed):
                     return res
     finally:
         ex.shutdown(wait=False)       # slower services that are still running finish in the background and are ignored
-    raise ImageGenError("failed: " + ("; ".join(dict.fromkeys(reasons)) if reasons else "no service returned a picture"))
+    raise ImageGenError(("reference_failed: " if reference else "failed: ") + ("; ".join(dict.fromkeys(reasons)) if reasons else "no service returned a picture"))
 
 
 def fair_use(who, cost=1):
@@ -455,6 +459,20 @@ DISCLOSE = {"en": "AI-generated image. It may contain errors (hands, lettering, 
             "sw": "Picha iliyozalishwa na AI. Inaweza kuwa na makosa (mikono, herufi, jiometri) na si picha halisi; ikague kabla ya kuishiriki."}
 
 
+REF_UNSUPPORTED = {
+    "en": "I did not create anything, because you gave a reference photo and keeping the same face needs an image-editing AI (Gemini), which is not available in this app right now. The free picture services ignore the photo and would draw a different person, so I refuse to give you a wrong picture. The owner can fix this by adding GEMINI_API_KEY (a free key from Google AI Studio) in Streamlit Secrets. You can still create a picture without the reference photo.",
+    "fr": "Je n'ai rien créé : vous avez fourni une photo de référence et garder le même visage demande une IA de retouche d'image (Gemini), indisponible dans l'application pour le moment. Les services d'images gratuits ignorent la photo et dessineraient une autre personne ; je refuse donc de vous donner une image fausse. Le propriétaire peut corriger cela en ajoutant GEMINI_API_KEY (clé gratuite de Google AI Studio) dans les Secrets Streamlit. Vous pouvez toujours créer une image sans la photo de référence.",
+    "rw": "Nta kintu nakoze, kuko watanze ifoto yo gushingiraho kandi kugumana isura imwe bisaba AI ihindura amashusho (Gemini), itaboneka muri porogaramu ubu. Serivisi z'ubuntu zirengagiza ifoto zigashushanya undi muntu, ni yo mpamvu nanze kuguha ishusho itari yo. Nyiri porogaramu abikemura ashyiramo GEMINI_API_KEY (urufunguzo rw'ubuntu rwa Google AI Studio) muri Streamlit Secrets. Ushobora gukora ishusho nta foto yo gushingiraho.",
+    "sw": "Sikuunda chochote, kwa sababu ulitoa picha ya rejea na kuweka uso uleule kunahitaji AI ya kuhariri picha (Gemini), ambayo haipatikani kwenye programu sasa. Huduma za bure hupuuza picha na kuchora mtu mwingine, kwa hiyo nakataa kukupa picha isiyo sahihi. Mmiliki anaweza kurekebisha kwa kuweka GEMINI_API_KEY (ufunguo wa bure wa Google AI Studio) kwenye Streamlit Secrets. Bado unaweza kuunda picha bila picha ya rejea.",
+}
+REF_FAILED = {
+    "en": "I could not keep the face from your reference photo this time, so I did not give you a different person. The image-editing service failed (reason below): try again in a minute, or use a clearer, front-facing photo.",
+    "fr": "Je n'ai pas pu conserver le visage de votre photo de référence cette fois, donc je ne vous donne pas une autre personne. Le service de retouche a échoué (raison ci-dessous) : réessayez dans une minute ou utilisez une photo plus nette, de face.",
+    "rw": "Ntabashije kugumana isura y'ifoto yawe ubu, bityo sinaguhaye undi muntu. Serivisi ihindura amashusho ntiyakoze (impamvu hasi): ongera ugerageze nyuma y'umunota, cyangwa ukoreshe ifoto isobanutse irebana imbere.",
+    "sw": "Sikuweza kuweka uso wa picha yako ya rejea safari hii, kwa hiyo sikukupa mtu mwingine. Huduma ya kuhariri imeshindwa (sababu hapa chini): jaribu tena baada ya dakika, au tumia picha iliyo wazi inayotazama mbele.",
+}
+
+
 def friendly_error(exc, lang="en"):
     msg = str(exc)
     k = lang if lang in REFUSAL else "en"
@@ -466,6 +484,10 @@ def friendly_error(exc, lang="en"):
         return BUSY[k]
     if msg.startswith("limit:"):
         return LIMIT[k].format(s=msg.split(":", 1)[1])
+    if msg == "reference_unsupported":
+        return REF_UNSUPPORTED[k]
+    if msg.startswith("reference_failed"):
+        return REF_FAILED[k] + (f"\n\n_({msg.split(':', 1)[1].strip()[:220]})_" if ":" in msg else "")
     if msg.startswith("The reference") or msg.startswith("Describe"):
         return msg
     detail = msg[len("failed: "):] if msg.startswith("failed: ") else ""

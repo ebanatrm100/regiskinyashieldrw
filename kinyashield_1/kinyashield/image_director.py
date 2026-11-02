@@ -16,6 +16,9 @@ _GLOSS = {
     "paka": "cat", "mbwa": "dog", "simba": "lion", "ng'ombe": "cow", "ngombe": "cow", "farasi": "horse", "ndege": "bird", "samaki": "fish", "tembo": "elephant", "twiga": "giraffe", "tumbili": "monkey", "mbuzi": "goat", "kondoo": "sheep", "kuku": "hen", "kipepeo": "butterfly", "sokwe": "gorilla", "chui": "leopard", "pundamilia": "zebra", "kiboko": "hippopotamus",
     # people
     "homme": "man", "femme": "woman", "enfant": "child", "enfants": "children", "fille": "girl", "garcon": "boy", "agriculteur": "farmer", "fermier": "farmer", "medecin": "doctor", "enseignant": "teacher", "etudiant": "student", "famille": "family", "bebe": "baby", "vieil homme": "elderly man", "mariage": "wedding",
+    "pasteur": "pastor", "pretre": "priest", "eveque": "bishop", "imam": "imam", "eglise": "church", "mosquee": "mosque", "temple": "temple", "cathedrale": "cathedral", "chaire": "pulpit", "predicateur": "preacher", "garcon": "boy",
+    "pasiteri": "pastor", "umupasiteri": "pastor", "umupadiri": "priest", "padiri": "priest", "musenyeri": "bishop", "itorero": "church", "kiliziya": "church", "umusigiti": "mosque", "umubwirizabutumwa": "preacher", "ku ruhimbi": "at the pulpit",
+    "mchungaji": "pastor", "padri": "priest", "askofu": "bishop", "kanisa": "church", "msikiti": "mosque", "mhubiri": "preacher", "madhabahu": "pulpit",
     "umugabo": "man", "umugore": "woman", "umwana": "child", "abana": "children", "umukobwa": "girl", "umuhungu": "boy", "umuhinzi": "farmer", "umuvuzi": "doctor", "umwarimu": "teacher", "umunyeshuri": "student", "umuryango": "family", "impinja": "baby", "ubukwe": "wedding",
     "mwanaume": "man", "mwanamke": "woman", "mtoto": "child", "watoto": "children", "msichana": "girl", "mvulana": "boy", "mkulima": "farmer", "daktari": "doctor", "mwalimu": "teacher", "mwanafunzi": "student", "familia": "family", "mtoto mchanga": "baby", "harusi": "wedding",
     # places and nature
@@ -67,9 +70,9 @@ def to_english(text: str, lang: str = "en") -> str:
 
 # ---- 2. what kind of picture is it? (chooses the completions that make a picture look finished)
 _KINDS = [
-    ("portrait", r"\b(?:man|woman|girl|boy|child|children|baby|farmer|doctor|teacher|student|person|people|family|couple|elderly|wedding|portrait|selfie|face|lady|gentleman|worker|nurse|athlete|singer|dancer)\b",
+    ("portrait", r"\b(?:man|woman|girl|boy|child|children|baby|farmer|doctor|teacher|student|person|people|family|couple|elderly|wedding|portrait|selfie|face|lady|gentleman|worker|nurse|athlete|singer|dancer|pastor|priest|bishop|imam|preacher|nun|minister|president|businessman|businesswoman|police|soldier)\b",
      "the whole person fully in frame from head to feet (or a deliberate waist-up portrait with the face complete), natural relaxed pose, expressive realistic face, correct hands with five fingers, natural skin texture, catchlights in the eyes, flattering soft light",
-     "85mm lens, shallow depth of field, creamy background blur"),
+     "85mm portrait lens, face and eyes tack-sharp, high resolution, only the far background softly out of focus"),
     ("animal", r"\b(?:cat|dog|lion|cow|horse|bird|fish|elephant|giraffe|monkey|goat|sheep|hen|butterfly|gorilla|leopard|zebra|hippopotamus|animal|puppy|kitten|tiger|bear|eagle|wildlife|parrot|snake|rabbit)\b",
      "the entire animal visible from nose to tail with all legs, ears and tail present, fur or feather detail sharp, alert natural pose, eyes in sharp focus with a bright catchlight, in its natural habitat",
      "telephoto 200mm wildlife photography, fast shutter, soft background"),
@@ -79,7 +82,7 @@ _KINDS = [
     ("landscape", r"\b(?:landscape|mountain|mountains|hills|valley|forest|lake|river|waterfall|beach|sea|ocean|sunset|sunrise|sky|field|fields|farm|desert|savanna|savannah|jungle|island|countryside|volcano|garden|tea plantation)\b",
      "a wide, complete scene with foreground, middle ground and background all fully rendered, leading lines, depth and atmosphere, natural colours, a dramatic but believable sky",
      "24mm wide-angle, deep depth of field, golden-hour light, tripod-sharp"),
-    ("city", r"\b(?:city|street|market|town|village|building|buildings|house|houses|school|hospital|bridge|road|station|shop|skyline|architecture|church|mosque|stadium|airport|convention|hotel)\b",
+    ("city", r"\b(?:city|street|market|town|village|building|buildings|house|houses|school|hospital|bridge|road|station|shop|skyline|architecture|church|mosque|cathedral|temple|stadium|airport|convention|hotel)\b",
      "the whole building or street scene fully in frame, straight vertical lines, correct perspective, realistic people and vehicles in natural proportions, lived-in details, readable signage kept minimal",
      "24mm architectural lens, balanced exposure, blue-hour or golden-hour light"),
     ("vehicle", r"\b(?:car|bicycle|motorcycle|bus|truck|train|plane|airplane|boat|ship|bike|taxi|tractor|drone|vehicle)\b",
@@ -131,7 +134,10 @@ def offline_prompt(idea_en: str, kind: str | None = None, photo: bool = True) ->
         if not _TIME.search(idea):
             parts.append("lit by soft natural light" if kind in ("portrait", "food", "product", "interior") else "beautiful natural light, clear weather")
         parts.append(cam)
-    return ", ".join(p for p in parts if p)
+    out = ", ".join(p for p in parts if p)
+    if photo and len(idea.split()) <= 14:
+        out += f". The picture must clearly show: {idea}"          # weaker models drift away from short requests: say it again at the end
+    return out
 
 
 # ---- 3. AI art-director rewrite (best quality; used when an AI answers, checked, cached)
@@ -190,7 +196,15 @@ def _timed(fn, seconds, *a):
     return box.get("r", (None, "timeout"))
 
 
-def direct(idea: str, lang: str = "en", style: str = "photo", aspect: str = "1:1", extra: str = "", use_ai: bool = True, ask=None) -> dict:
+def reference_prompt(english_idea: str, kind: str) -> str:
+    """The instruction for an image-EDITING model that is given the person's photo: keep the identity exactly, change only what was asked."""
+    return ("Use the attached reference photo as the identity reference. Create a new photograph of EXACTLY the same person: keep the same face, facial features, face shape, skin tone, age, hair and expression character, "
+            "so that anyone who knows him or her recognises the person at once. Do not change, beautify, age or replace the face. Change only what is requested here: " + english_idea.strip().rstrip(".")
+            + ". The face must be fully visible, sharp and well lit, the whole subject in frame, natural proportions and correct hands, a fully rendered believable background, "
+              "one clear light source, modern high-resolution photograph with true-to-life colours.")
+
+
+def direct(idea: str, lang: str = "en", style: str = "photo", aspect: str = "1:1", extra: str = "", use_ai: bool = True, ask=None, has_reference: bool = False) -> dict:
     """{'prompt','english','ai','kind'}: the final prompt for the image service, the English description, whether the AI wrote it, and the picture type."""
     import image_gen as G
     idea = re.sub(r"\s+", " ", (idea or "").strip())
@@ -198,6 +212,9 @@ def direct(idea: str, lang: str = "en", style: str = "photo", aspect: str = "1:1
         raise G.ImageGenError("Describe the picture first.")
     en = to_english(idea, lang)
     kind = kind_of(en)
+    if has_reference:       # no AI rewrite here: it could invent a different person; the edit instruction below keeps the face
+        core = reference_prompt((en + (", " + extra.strip() if extra.strip() else "")), kind)
+        return {"prompt": core + f" Aspect ratio {aspect}.", "english": core, "ai": False, "kind": kind}
     core, used_ai = None, False
     if use_ai and len(idea.split()) < 28:          # a long, detailed request needs no rewrite: skipping it saves seconds
         core, _err = _timed(ai_rewrite, float(__import__("settings").get("IMAGE_AI_REWRITE_SECONDS", "6") or 6), idea + ((", " + extra.strip()) if extra.strip() else ""), lang, style if style not in ("photo", "cinematic") else "photo", ask)

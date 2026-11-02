@@ -36,3 +36,22 @@ except G.ImageGenError:
 # old behaviour kept
 assert G.build_prompt("a market in Kigali at sunset", "cinematic", "16:9").startswith("a market in Kigali at sunset")
 print("OK image director")
+
+# speed: hedged race and time-boxed rewrite
+import time, threading
+import image_director as D2
+t0 = time.time()
+r = D2.direct("un lion", "fr", ask=lambda q, l: (time.sleep(3) or ("x" * 80, None))) if False else None
+os.environ["IMAGE_AI_REWRITE_SECONDS"] = "0.3"
+t0 = time.time(); r = D2.direct("un lion lent", "fr", ask=lambda q, l: (time.sleep(2) or ("A slow but lovely lion " * 6, None)))
+assert time.time() - t0 < 1.5 and not r["ai"]                         # slow AI never holds the picture back
+os.environ["IMAGE_HEDGE_SECONDS"] = "0.2"
+calls = []
+slots = [("slow", "x", lambda p, a, n, r_, sd: (time.sleep(1.5), [(b"s", "image/png", "slow")])[1]), ("fast", "x", lambda p, a, n, r_, sd: [(b"f", "image/png", "fast")])]
+G._slots = lambda: slots
+G._ordered = lambda s: s
+t0 = time.time(); out = G._one("p", "1:1", None, 0)
+assert out[2] == "fast" and time.time() - t0 < 1.0, out                 # the second service started while the first was still working
+slots[:] = [("bad", "x", lambda p, a, n, r_, sd: (_ for _ in ()).throw(G.ImageGenError("quota"))), ("ok", "x", lambda p, a, n, r_, sd: [(b"o", "image/png", "ok")])]
+assert G._one("p", "1:1", None, 0)[2] == "ok"                           # a failing service hands over immediately
+print("OK image speed")

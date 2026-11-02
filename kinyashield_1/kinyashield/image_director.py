@@ -180,6 +180,16 @@ def ai_rewrite(idea: str, lang: str = "en", style_hint: str = "photo", ask=None)
 
 
 # ---- 4. the one entry point
+def _timed(fn, seconds, *a):
+    """fn(*a) with a time limit: (result) or (None, 'timeout'). The slow call keeps running in the background (and fills the cache for the next try)."""
+    import threading
+    box = {}
+    t = threading.Thread(target=lambda: box.setdefault("r", fn(*a)), daemon=True)
+    t.start()
+    t.join(seconds)
+    return box.get("r", (None, "timeout"))
+
+
 def direct(idea: str, lang: str = "en", style: str = "photo", aspect: str = "1:1", extra: str = "", use_ai: bool = True, ask=None) -> dict:
     """{'prompt','english','ai','kind'}: the final prompt for the image service, the English description, whether the AI wrote it, and the picture type."""
     import image_gen as G
@@ -189,8 +199,8 @@ def direct(idea: str, lang: str = "en", style: str = "photo", aspect: str = "1:1
     en = to_english(idea, lang)
     kind = kind_of(en)
     core, used_ai = None, False
-    if use_ai:
-        core, _err = ai_rewrite(idea + ((", " + extra.strip()) if extra.strip() else ""), lang, style if style not in ("photo", "cinematic") else "photo", ask)
+    if use_ai and len(idea.split()) < 28:          # a long, detailed request needs no rewrite: skipping it saves seconds
+        core, _err = _timed(ai_rewrite, float(__import__("settings").get("IMAGE_AI_REWRITE_SECONDS", "6") or 6), idea + ((", " + extra.strip()) if extra.strip() else ""), lang, style if style not in ("photo", "cinematic") else "photo", ask)
         used_ai = core is not None
     if core is None:
         core = offline_prompt((en + ", " + extra.strip()) if extra.strip() else en, kind, photo=style in ("photo", "cinematic"))

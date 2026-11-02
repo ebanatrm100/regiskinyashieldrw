@@ -24,6 +24,6 @@ def flag(name: str, default: bool = False) -> bool:
 
 def number(name: str, default: int = 0) -> int:
     try:
-        return int(get(name, str(default)) or default)
+        return int(float(get(name, str(default)) or default))
     except ValueError:
         return default

@@ -10,7 +10,7 @@ Secrets (Streamlit > Settings > Secrets), all optional; the first provider that 
 Quality depends on the provider you configure; a generated image can contain errors (hands, lettering, geometry) and must be checked."""
 from __future__ import annotations
 import base64, json, re, threading, urllib.error, urllib.parse, urllib.request
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait as _wait, FIRST_COMPLETED as _FIRST_COMPLETED
 import settings
 import image_pool as POOL
 from textutil import fold
@@ -233,13 +233,13 @@ def _public(prompt, aspect, n, reference, seed=0):
         raise ImageGenError("public service not enabled")
     w, h = ASPECTS.get(aspect, (1024, 1024))
     short = prompt.split(". ")[0][:300]
-    attempts = [(prompt[:900], "flux"), (short, "flux"), (short, "turbo"), (short, "")]
+    attempts = [(prompt[:900], "flux"), (short, "turbo"), (short, "")]
     out, last = [], None
     for i in range(n):
         for text, model in attempts:
             try:
                 q = f"?width={w}&height={h}&nologo=true&seed={i + 7 + seed}" + (f"&model={model}" if model else "")
-                raw, _ = _http("https://image.pollinations.ai/prompt/" + urllib.parse.quote(text) + q, headers=_UA, timeout=75)
+                raw, _ = _http("https://image.pollinations.ai/prompt/" + urllib.parse.quote(text) + q, headers=_UA, timeout=45 if model == "flux" else 30)
                 if _sniff(raw):
                     out.append((raw, _sniff(raw), "Pollinations (public)"))
                     break
@@ -334,11 +334,22 @@ def _one(prompt, aspect, reference, seed):
             POOL.HEALTH.fail(nm, "other"); reasons.append(f"{nm}: {_err_text(e)}")
         return None
 
-    live = [x for x in slots if POOL.HEALTH.available(x[0])]
-    for x in live or slots:        # when every service is cooling down, try them all once anyway rather than refusing
-        res = attempt(*x)
-        if res:
-            return res
+    live = [x for x in slots if POOL.HEALTH.available(x[0])] or slots      # when every service is cooling down, try them all once anyway rather than refusing
+    # Hedged race: start the best service; if it has not answered after HEDGE seconds (or fails at once) start the next one WHILE the first keeps running. The first picture wins.
+    hedge = float(settings.get("IMAGE_HEDGE_SECONDS", "7") or 7)
+    ex = ThreadPoolExecutor(max_workers=min(len(live), 3))
+    pending, queue = set(), list(live)
+    try:
+        while queue or pending:
+            if queue and len(pending) < 3:
+                pending.add(ex.submit(attempt, *queue.pop(0)))
+            done, pending = _wait(pending, timeout=hedge if queue else None, return_when=_FIRST_COMPLETED)
+            for f in done:
+                res = f.result()
+                if res:
+                    return res
+    finally:
+        ex.shutdown(wait=False)       # slower services that are still running finish in the background and are ignored
     raise ImageGenError("failed: " + ("; ".join(dict.fromkeys(reasons)) if reasons else "no service returned a picture"))
 
 

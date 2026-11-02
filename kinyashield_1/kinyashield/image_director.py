@@ -231,13 +231,13 @@ def describe_person(reference, ask_vision=None) -> str:
     q = ("Describe only the visible appearance of the main person in this photo for an artist, in one English sentence of at most 45 words: apparent age range, gender presentation, hair (colour, length, style), "
          "skin tone, face shape, eyes, eyebrows, nose, mouth, facial hair, glasses and expression. Do not name or identify the person and do not guess who they are.")
     try:
-        if ask_vision is None:
-            import assistant_engine as E
-            ask_vision = lambda qq, im: E.answer_question(question=qq, history=[], language_name="English", language_code="en", images=[im])    # noqa: E731
         t = ""
         try:
+            if ask_vision is None:
+                import assistant_engine as E
+                ask_vision = lambda qq, im: E.answer_question(question=qq, history=[], language_name="English", language_code="en", images=[im])    # noqa: E731
             t = (ask_vision(q, reference) or "").strip().replace("\n", " ")
-        except Exception:       # noqa: BLE001 (no Gemini key: try the free keyless service)
+        except Exception:       # noqa: BLE001 (no Gemini key / engine unavailable: try the free keyless service)
             t = ""
         if not (len(t) > 20 and not _BAD.match(t)):
             import llm_backend
@@ -250,3 +250,41 @@ def describe_person(reference, ask_vision=None) -> str:
 def likeness_prompt(desc: str, english_idea: str) -> str:
     return (f"A modern high-resolution photograph of a person who looks like this: {desc.rstrip('.')}. Show this person as: {english_idea.strip().rstrip('.')}. "
             "The face fully visible and sharp, the whole subject in frame, correct hands, a fully rendered believable background, one clear light source, true-to-life colours.")
+
+
+SIMILAR_NOTE = {
+    "en": "Note: the exact face could not be kept (that needs an image-editing AI that is not available here). I described your photo and drew a person who LOOKS SIMILAR. It is NOT the same face.",
+    "fr": "Note : le visage exact n'a pas pu être conservé (cela demande une IA de retouche d'image non disponible ici). J'ai décrit votre photo et dessiné une personne d'APPARENCE SIMILAIRE. Ce n'est PAS le même visage.",
+    "rw": "Icyitonderwa: isura nyayo ntiyashoboye kugumana (bisaba AI ihindura amashusho itaboneka hano). Nasobanuye ifoto yawe nkora umuntu USHOBORA GUHURA na yo. SI isura imwe.",
+    "sw": "Kumbuka: uso kamili haukuweza kuhifadhiwa (hilo linahitaji AI ya kuhariri picha isiyopatikana hapa). Nimeelezea picha yako na kuchora mtu ANAYEFANANA. SI uso uleule.",
+}
+UNREAD_NOTE = {
+    "en": "Note: your photo could not be read here, so this picture is made from your words only. It does not use your photo's face.",
+    "fr": "Note : votre photo n'a pas pu être lue ici, cette image est donc créée à partir de vos mots seulement. Elle n'utilise pas le visage de votre photo.",
+    "rw": "Icyitonderwa: ifoto yawe ntiyashoboye gusomwa hano, bityo ishusho yakozwe mu magambo yawe gusa. Ntikoresha isura y'ifoto yawe.",
+    "sw": "Kumbuka: picha yako haikuweza kusomwa hapa, kwa hiyo picha hii imetengenezwa kwa maneno yako tu. Haitumii uso wa picha yako.",
+}
+
+
+def generate_with_photo(idea, lang, style, aspect, n, ref, variant=0, like=True):
+    """(pictures, note or '', prompt). With a photo: first the exact-face route (image-editing AI). If that is unavailable or fails and `like` is on: describe the photo and draw a SIMILAR person
+    (clearly labelled); if the photo cannot even be described, draw from the words only (also labelled). Never a silent wrong person. Raises ImageGenError otherwise."""
+    import image_gen as G
+    if ref is None:
+        d = direct(idea, lang, style, aspect)
+        return G.generate(d["prompt"], aspect, n, None, variant=variant), "", d["prompt"]
+    d = direct(idea, lang, style, aspect, has_reference=True)
+    try:
+        return G.generate(d["prompt"], aspect, n, ref, variant=variant), "", d["prompt"]
+    except G.ImageGenError as e:
+        if not like or not (str(e) == "reference_unsupported" or str(e).startswith("reference_failed")):
+            raise
+    en = to_english(idea, lang)
+    desc = describe_person(ref)
+    if desc:
+        prompt = G.build_prompt(likeness_prompt(desc, en), style, aspect, complete=True)
+        note = SIMILAR_NOTE.get(lang, SIMILAR_NOTE["en"])
+    else:
+        prompt = direct(idea, lang, style, aspect)["prompt"]
+        note = UNREAD_NOTE.get(lang, UNREAD_NOTE["en"])
+    return G.generate(prompt, aspect, n, None, variant=variant), note, prompt

@@ -110,28 +110,16 @@ def _create(st, k, u):
             st.warning(IG.friendly_error(IG.ImageGenError(f"limit:{int(wait)}"), k))
             return
         variant = (st.session_state.get(var_key, 0) + 1) if repeat else 0
-        st.session_state[f"studio_likenote_{k}"] = False
+        st.session_state[f"studio_likenote_{k}"] = ""
         try:
             with st.spinner("…"):
+                import image_director as DIR
                 if better or ref is not None:
-                    import image_director as DIR
-                    _d = DIR.direct(idea, k, style, aspect, use_ai=True, has_reference=ref is not None)
-                    prompt = _d["prompt"]
-                    st.session_state[f"studio_used_{k}"] = (prompt, _d["ai"])
-                try:
-                    res = IG.generate(prompt, aspect, n, ref, variant=variant)
-                except IG.ImageGenError as _re:
-                    if ref is None or not like or not (str(_re) == "reference_unsupported" or str(_re).startswith("reference_failed")):
-                        raise
-                    import image_director as DIR       # opt-in: describe the person, draw a similar-looking one (never claimed to be the same face)
-                    _desc = DIR.describe_person(ref)
-                    if not _desc:
-                        raise
-                    _en = DIR.to_english(idea, k)
-                    prompt = IG.build_prompt(DIR.likeness_prompt(_desc, _en), style, aspect, complete=True)
+                    res, _note, prompt = DIR.generate_with_photo(idea, k, style, aspect, n, ref, variant, like)
                     st.session_state[f"studio_used_{k}"] = (prompt, False)
-                    res = IG.generate(prompt, aspect, n, None, variant=variant)
-                    st.session_state[f"studio_likenote_{k}"] = True
+                    st.session_state[f"studio_likenote_{k}"] = _note
+                else:
+                    res = IG.generate(prompt, aspect, n, ref, variant=variant)
             for _k in [x for x in st.session_state if str(x).startswith("studio_out_")]:
                 st.session_state.pop(_k, None)          # keep only the newest pictures per visitor (memory on a busy server)
             st.session_state[f"studio_out_{k}"] = res
@@ -154,7 +142,7 @@ def _create(st, k, u):
                 st.caption(f"{u['made']} {prov}")
                 st.download_button(u["dl"], data, file_name=f"kinyashield_image_{i + 1}." + ("jpg" if mime == "image/jpeg" else "webp" if mime == "image/webp" else "png"), mime=mime, key=f"studio_dl_{k}_{i}")
         if st.session_state.get(f"studio_likenote_{k}"):
-            st.warning(u["like_note"])
+            st.warning(st.session_state.get(f"studio_likenote_{k}"))
         _used = st.session_state.get(f"studio_used_{k}")
         if _used:
             with st.expander(u["prompt"]):

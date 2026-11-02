@@ -94,3 +94,30 @@ import llm_backend as LB
 LB._post = lambda url, payload, key="", timeout=40: {"choices": [{"message": {"content": "A boy of about ten with short black hair and a round face, calm smile."}}]}
 assert "boy" in D.describe_person((b"x", "image/png"), ask_vision=lambda q, im: (_ for _ in ()).throw(RuntimeError("no key")))
 print("OK keyless vision")
+
+# the whole photo flow, no key: similar person (labelled) / words only (labelled) / exact route when it works
+G._slots = lambda: [("pub", "public", lambda p, a, n, r_, sd: [(b"x", "image/png", "pub")])]
+G._ordered = lambda s: s
+G.check_prompt = lambda t: None
+POOL_ = G.POOL
+G.POOL.GATE.acquire(timeout=1) and G.POOL.GATE.release()
+seen = {}
+def fake_generate(prompt, aspect, n, ref, variant=0):
+    seen["p"], seen["ref"] = prompt, ref
+    if ref:
+        raise G.ImageGenError("reference_unsupported")
+    return [(b"img", "image/png", "pub")]
+real_gen = G.generate; G.generate = fake_generate
+LB._post = lambda url, payload, key="", timeout=40: {"choices": [{"message": {"content": "A boy of about ten with short black hair, dark skin, round face and a calm smile."}}]}
+res, note, prompt = D.generate_with_photo("un pasteur dans une église", "fr", "photo", "1:1", 1, (b"x", "image/png"))
+assert res and "PAS le même visage" in note and "looks like this" in prompt and "pastor" in prompt and seen["ref"] is None
+LB._post = lambda *a, **k: (_ for _ in ()).throw(OSError("down"))
+res, note, prompt = D.generate_with_photo("a pastor in a church", "en", "photo", "1:1", 1, (b"x", "image/png"))
+assert res and "could not be read" in note and "pastor" in prompt
+try:
+    D.generate_with_photo("a pastor", "en", "photo", "1:1", 1, (b"x", "image/png"), like=False); assert False
+except G.ImageGenError as e:
+    assert str(e) == "reference_unsupported"
+res, note, prompt = D.generate_with_photo("a lion", "en", "photo", "1:1", 1, None); assert res and note == ""
+G.generate = real_gen
+print("OK image photo flow")

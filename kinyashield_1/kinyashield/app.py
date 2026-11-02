@@ -339,20 +339,15 @@ with tab_chat:
         if _idea:
             try:
                 _ref = (_atts["images"][0][0], _atts["images"][0][1]) if _atts["images"] else None
-                try:
-                    import image_director as _dir
-                    _prompt_used = _dir.direct(_idea, _chat_lang, _ig.suggest_style(_idea), "1:1", has_reference=_ref is not None)["prompt"]    # understood in all 4 languages, written as a complete finished picture
-                except _ig.ImageGenError:
-                    raise
-                except Exception:
-                    _prompt_used = _ig.build_prompt(_idea, _ig.suggest_style(_idea), "1:1")
+                _prompt_used = _ig.build_prompt(_idea, _ig.suggest_style(_idea), "1:1")
                 _uid_ = st.session_state.setdefault("kinyashield_uid", __import__("uuid").uuid4().hex)
                 _ok_, _wait_ = _ig.fair_use(_uid_, 1)
                 if not _ok_:
                     raise _ig.ImageGenError(f"limit:{int(_wait_)}")
-                with st.spinner("…"):
-                    _made = _ig.generate(_prompt_used, "1:1", 1, _ref)
-                _hist.append({"role": "assistant", "content": _ig.DISCLOSE.get(_chat_lang, _ig.DISCLOSE["en"]), "kind": "note",
+                import image_director as _dir
+                with st.spinner("…"):      # understood in all 4 languages, written as a complete finished picture; with a photo: exact face if possible, else a labelled similar person
+                    _made, _note, _prompt_used = _dir.generate_with_photo(_idea, _chat_lang, _ig.suggest_style(_idea), "1:1", 1, _ref)
+                _hist.append({"role": "assistant", "content": _ig.DISCLOSE.get(_chat_lang, _ig.DISCLOSE["en"]) + (("\n\n" + _note) if _note else ""), "kind": "note",
                               "generated": [{"data": d_, "mime": m_, "provider": p_} for d_, m_, p_ in _made]})
             except Exception as _ie:
                 _txt = _ig.friendly_error(_ie, _chat_lang) if _ig else str(_ie)

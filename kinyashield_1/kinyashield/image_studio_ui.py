@@ -41,6 +41,9 @@ def _uid(st):
     return st.session_state["kinyashield_uid"]
 
 
+_PHOTO_INFO = {'en': 'Photo received. Keeping the exact face needs an image-editing AI that is not connected, so I will describe your photo and create a person who looks SIMILAR (it will be labelled, and it is not the same face). Just press Create.', 'fr': "Photo reçue. Garder exactement le même visage demande une IA de retouche non connectée ; je vais donc décrire votre photo et créer une personne d'APPARENCE SIMILAIRE (indiqué clairement, ce n'est pas le même visage). Appuyez simplement sur Créer.", 'rw': 'Ifoto yakiriwe. Kugumana isura imwe neza bisaba AI ihindura amashusho itari ihujwe; nzasobanura ifoto yawe nkore umuntu USHOBORA GUHURA na yo (bizamenyeshwa, si isura imwe). Kanda gusa Kora.', 'sw': 'Picha imepokelewa. Kuweka uso uleule kunahitaji AI ya kuhariri isiyounganishwa; nitaelezea picha yako na kuunda mtu ANAYEFANANA (itaandikwa wazi, si uso uleule). Bonyeza tu Unda.'}
+
+
 def render(st, lang):
     k = lang if lang in U else "en"
     u = U[k]
@@ -72,7 +75,7 @@ def _create(st, k, u):
     better = st.checkbox(u["better"], value=True, key=f"studio_better_{k}")
     up = st.file_uploader(u["ref"], type=list(AT.IMG_EXTS), key=f"studio_ref_{k}")
     if up is not None and not IG._gemini_keys():       # say it BEFORE generating: a reference photo needs the image-editing AI
-        st.warning(IG.friendly_error(IG.ImageGenError("reference_unsupported"), k))
+        st.info(_PHOTO_INFO[k])
     like = bool(up is not None and st.checkbox(u["like"], value=True, key=f"studio_like_{k}"))
     if st.button(u["diag"], key=f"studio_diag_{k}"):
         with st.spinner(u["diag_busy"]):

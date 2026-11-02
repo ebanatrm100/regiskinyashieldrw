@@ -142,3 +142,21 @@ def backup_chat(system, history, question):
         except Exception as e:
             errs.append(str(e)[:120])
     raise LLMError("No backup AI service answered. " + "; ".join(errs) if errs else "No backup AI service is configured.")
+
+
+def keyless_vision(question: str, image: tuple, timeout: int = 40) -> str:
+    """Ask the free keyless service to look at ONE photo (bytes, mime). '' on any failure. Only used to describe a photo the person chose to upload."""
+    import base64
+    if not keyless_ok() or not image or len(image[0]) > 4_000_000:
+        return ""
+    url = "data:%s;base64,%s" % (image[1], base64.b64encode(image[0]).decode("ascii"))
+    msg = [{"role": "user", "content": [{"type": "text", "text": question}, {"type": "image_url", "image_url": {"url": url}}]}]
+    for base, model in KEYLESS:
+        try:
+            data = _post(base + "/chat/completions", {"model": model, "messages": msg, "max_tokens": 200}, "", timeout)
+            t = (data["choices"][0]["message"]["content"] or "").strip()
+            if t:
+                return t
+        except Exception:
+            continue
+    return ""

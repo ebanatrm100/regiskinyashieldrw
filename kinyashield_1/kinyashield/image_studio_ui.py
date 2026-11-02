@@ -7,25 +7,25 @@ import attachments as AT
 import web_photos as WP
 
 U = {
-    "en": dict(tcreate="Create with AI", tfind="Find real photos online", fq="What photos do you want to find?", fph="for example: tomato harvest in Rwanda", fgo="Search photos", more="Show more", opens="Open source page", nores="No photos found. Try other words, or the English word.", srcs="Searched", live="{r} of {t} image services ready", queue="people waiting: {w}", again="New variation of the same idea",
+    "en": dict(diag='Check my image setup', diag_busy='Checking…', like='If the face cannot be kept, make a SIMILAR-looking person instead (not the same face)', like_note='The picture shows a person who looks similar to your photo. It is NOT the same face.', tcreate="Create with AI", tfind="Find real photos online", fq="What photos do you want to find?", fph="for example: tomato harvest in Rwanda", fgo="Search photos", more="Show more", opens="Open source page", nores="No photos found. Try other words, or the English word.", srcs="Searched", live="{r} of {t} image services ready", queue="people waiting: {w}", again="New variation of the same idea",
                tab="Image Studio", title="Create pictures with AI", idea="Describe the picture you want", ph="A farmer carrying ripe tomatoes at sunrise, Rwandan hills in the background",
                style="Style", shape="Shape", count="How many pictures", ref="Optional: a photo to base the new picture on (edit or variation)", better="Make my description stronger automatically",
                go="Create picture", prompt="Prompt that will be used", need="Describe the picture first.", status="Image services ready", none="No image service is switched on yet.", copy="Copy this prompt into any image tool:",
                dl="Download", sq="Square 1:1", land="Landscape 16:9", port="Portrait 9:16", l43="Landscape 4:3", p34="Portrait 3:4", tip="Tip: change one thing at a time and keep any text inside the picture very short.",
                made="Created by"),
-    "fr": dict(tcreate="Créer avec l'IA", tfind="Trouver de vraies photos en ligne", fq="Quelles photos cherchez-vous ?", fph="par exemple : récolte de tomates au Rwanda", fgo="Chercher des photos", more="Afficher plus", opens="Ouvrir la page source", nores="Aucune photo trouvée. Essayez d'autres mots, ou le mot en anglais.", srcs="Sources interrogées", live="{r} services d'images prêts sur {t}", queue="personnes en attente : {w}", again="Nouvelle variante de la même idée",
+    "fr": dict(diag="Vérifier ma configuration d'images", diag_busy='Vérification…', like="Si le visage ne peut pas être conservé, créer une personne d'APPARENCE SIMILAIRE (pas le même visage)", like_note="L'image montre une personne d'apparence similaire à votre photo. Ce n'est PAS le même visage.", tcreate="Créer avec l'IA", tfind="Trouver de vraies photos en ligne", fq="Quelles photos cherchez-vous ?", fph="par exemple : récolte de tomates au Rwanda", fgo="Chercher des photos", more="Afficher plus", opens="Ouvrir la page source", nores="Aucune photo trouvée. Essayez d'autres mots, ou le mot en anglais.", srcs="Sources interrogées", live="{r} services d'images prêts sur {t}", queue="personnes en attente : {w}", again="Nouvelle variante de la même idée",
                tab="Studio d'images", title="Créer des images avec l'IA", idea="Décrivez l'image souhaitée", ph="Un agriculteur portant des tomates mûres au lever du soleil, collines rwandaises en arrière-plan",
                style="Style", shape="Format", count="Nombre d'images", ref="Facultatif : une photo comme base (modification ou variante)", better="Renforcer automatiquement ma description",
                go="Créer l'image", prompt="Prompt utilisé", need="Décrivez d'abord l'image.", status="Services d'images prêts", none="Aucun service d'images n'est encore activé.", copy="Copiez ce prompt dans n'importe quel outil d'image :",
                dl="Télécharger", sq="Carré 1:1", land="Paysage 16:9", port="Portrait 9:16", l43="Paysage 4:3", p34="Portrait 3:4", tip="Astuce : changez une seule chose à la fois et gardez le texte dans l'image très court.",
                made="Créée par"),
-    "rw": dict(tcreate="Kora ukoresheje AI", tfind="Shakisha amafoto nyakuri kuri interineti", fq="Ni ayahe mafoto ushaka?", fph="urugero: isarura ry'inyanya mu Rwanda", fgo="Shakisha amafoto", more="Erekana andi", opens="Fungura urupapuro rw'inkomoko", nores="Nta mafoto yabonetse. Gerageza andi magambo cyangwa ijambo mu Cyongereza.", srcs="Ahashakishijwe", live="Serivisi {r} kuri {t} ziteguye", queue="abategereje: {w}", again="Indi verisiyo y'igitekerezo kimwe",
+    "rw": dict(diag="Genzura iby'amashusho yanjye", diag_busy='Turagenzura…', like='Niba isura idashobora kugumana, kora umuntu USHOBORA GUHURA na yo (si isura imwe)', like_note="Ishusho irerekana umuntu usa n'uwo mu ifoto yawe. SI isura imwe.", tcreate="Kora ukoresheje AI", tfind="Shakisha amafoto nyakuri kuri interineti", fq="Ni ayahe mafoto ushaka?", fph="urugero: isarura ry'inyanya mu Rwanda", fgo="Shakisha amafoto", more="Erekana andi", opens="Fungura urupapuro rw'inkomoko", nores="Nta mafoto yabonetse. Gerageza andi magambo cyangwa ijambo mu Cyongereza.", srcs="Ahashakishijwe", live="Serivisi {r} kuri {t} ziteguye", queue="abategereje: {w}", again="Indi verisiyo y'igitekerezo kimwe",
                tab="Aho gukorera amashusho", title="Kora amashusho ukoresheje AI", idea="Sobanura ishusho ushaka", ph="Umuhinzi ukoze inyanya zeze mu rukerera, imisozi y'u Rwanda inyuma",
                style="Uburyo", shape="Ingano", count="Umubare w'amashusho", ref="Bitari ngombwa: ifoto yo gushingiraho (guhindura cyangwa indi verisiyo)", better="Kongera gukomeza ibisobanuro byanjye byikora",
                go="Kora ishusho", prompt="Prompt izakoreshwa", need="Banza usobanure ishusho.", status="Serivisi z'amashusho ziteguye", none="Nta serivisi y'amashusho irashyirwaho.", copy="Koporora iyi prompt mu gikoresho icyo ari cyo cyose cy'amashusho:",
                dl="Kuramo", sq="Kare 1:1", land="Landscape 16:9", port="Portrait 9:16", l43="Landscape 4:3", p34="Portrait 3:4", tip="Inama: hindura ikintu kimwe icyarimwe kandi inyandiko iri mu shusho ibe ngufi cyane.",
                made="Yakozwe na"),
-    "sw": dict(tcreate="Unda kwa AI", tfind="Tafuta picha halisi mtandaoni", fq="Unataka kutafuta picha gani?", fph="mfano: mavuno ya nyanya Rwanda", fgo="Tafuta picha", more="Onyesha zaidi", opens="Fungua ukurasa wa chanzo", nores="Hakuna picha zilizopatikana. Jaribu maneno mengine, au neno la Kiingereza.", srcs="Vilivyotafutwa", live="Huduma {r} kati ya {t} za picha ziko tayari", queue="wanaosubiri: {w}", again="Toleo jipya la wazo lilelile",
+    "sw": dict(diag='Kagua mipangilio yangu ya picha', diag_busy='Inakagua…', like='Ikiwa uso hauwezi kuhifadhiwa, tengeneza mtu MWENYE MWONEKANO UNAOFANANA (si uso uleule)', like_note='Picha inaonyesha mtu anayefanana na picha yako. SI uso uleule.', tcreate="Unda kwa AI", tfind="Tafuta picha halisi mtandaoni", fq="Unataka kutafuta picha gani?", fph="mfano: mavuno ya nyanya Rwanda", fgo="Tafuta picha", more="Onyesha zaidi", opens="Fungua ukurasa wa chanzo", nores="Hakuna picha zilizopatikana. Jaribu maneno mengine, au neno la Kiingereza.", srcs="Vilivyotafutwa", live="Huduma {r} kati ya {t} za picha ziko tayari", queue="wanaosubiri: {w}", again="Toleo jipya la wazo lilelile",
                tab="Studio ya Picha", title="Unda picha kwa AI", idea="Eleza picha unayotaka", ph="Mkulima amebeba nyanya zilizoiva alfajiri, vilima vya Rwanda nyuma",
                style="Mtindo", shape="Umbo", count="Idadi ya picha", ref="Hiari: picha ya kutumia kama msingi (kuhariri au toleo jingine)", better="Imarisha maelezo yangu kiotomatiki",
                go="Unda picha", prompt="Prompt itakayotumika", need="Eleza picha kwanza.", status="Huduma za picha tayari", none="Hakuna huduma ya picha iliyowashwa bado.", copy="Nakili prompt hii kwenye zana yoyote ya picha:",
@@ -73,6 +73,11 @@ def _create(st, k, u):
     up = st.file_uploader(u["ref"], type=list(AT.IMG_EXTS), key=f"studio_ref_{k}")
     if up is not None and not IG._gemini_keys():       # say it BEFORE generating: a reference photo needs the image-editing AI
         st.warning(IG.friendly_error(IG.ImageGenError("reference_unsupported"), k))
+    like = bool(up is not None and st.checkbox(u["like"], value=True, key=f"studio_like_{k}"))
+    if st.button(u["diag"], key=f"studio_diag_{k}"):
+        with st.spinner(u["diag_busy"]):
+            for _n, _ok, _why in IG.diagnose():
+                (st.success if _ok else st.error)(f"**{_n}:** {_why}")
     prompt = ""
     if idea.strip():
         try:
@@ -105,6 +110,7 @@ def _create(st, k, u):
             st.warning(IG.friendly_error(IG.ImageGenError(f"limit:{int(wait)}"), k))
             return
         variant = (st.session_state.get(var_key, 0) + 1) if repeat else 0
+        st.session_state[f"studio_likenote_{k}"] = False
         try:
             with st.spinner("…"):
                 if better or ref is not None:
@@ -112,7 +118,20 @@ def _create(st, k, u):
                     _d = DIR.direct(idea, k, style, aspect, use_ai=True, has_reference=ref is not None)
                     prompt = _d["prompt"]
                     st.session_state[f"studio_used_{k}"] = (prompt, _d["ai"])
-                res = IG.generate(prompt, aspect, n, ref, variant=variant)
+                try:
+                    res = IG.generate(prompt, aspect, n, ref, variant=variant)
+                except IG.ImageGenError as _re:
+                    if ref is None or not like or not (str(_re) == "reference_unsupported" or str(_re).startswith("reference_failed")):
+                        raise
+                    import image_director as DIR       # opt-in: describe the person, draw a similar-looking one (never claimed to be the same face)
+                    _desc = DIR.describe_person(ref)
+                    if not _desc:
+                        raise
+                    _en = DIR.to_english(idea, k)
+                    prompt = IG.build_prompt(DIR.likeness_prompt(_desc, _en), style, aspect, complete=True)
+                    st.session_state[f"studio_used_{k}"] = (prompt, False)
+                    res = IG.generate(prompt, aspect, n, None, variant=variant)
+                    st.session_state[f"studio_likenote_{k}"] = True
             for _k in [x for x in st.session_state if str(x).startswith("studio_out_")]:
                 st.session_state.pop(_k, None)          # keep only the newest pictures per visitor (memory on a busy server)
             st.session_state[f"studio_out_{k}"] = res
@@ -134,6 +153,8 @@ def _create(st, k, u):
                     st.image(data)
                 st.caption(f"{u['made']} {prov}")
                 st.download_button(u["dl"], data, file_name=f"kinyashield_image_{i + 1}." + ("jpg" if mime == "image/jpeg" else "webp" if mime == "image/webp" else "png"), mime=mime, key=f"studio_dl_{k}_{i}")
+        if st.session_state.get(f"studio_likenote_{k}"):
+            st.warning(u["like_note"])
         _used = st.session_state.get(f"studio_used_{k}")
         if _used:
             with st.expander(u["prompt"]):

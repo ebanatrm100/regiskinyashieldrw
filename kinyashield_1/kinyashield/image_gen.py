@@ -357,6 +357,28 @@ def _one(prompt, aspect, reference, seed):
     raise ImageGenError(("reference_failed: " if reference else "failed: ") + ("; ".join(dict.fromkeys(reasons)) if reasons else "no service returned a picture"))
 
 
+def diagnose():
+    """[(service, ok, plain reason)] from ONE tiny real test per Gemini key (and a key-shape check), so a person can see exactly why pictures fail. Never includes the key."""
+    out = []
+    names = [n for n in ("GEMINI_API_KEY",) + tuple(f"GEMINI_API_KEY_{i}" for i in range(2, 9)) if settings.get(n)]
+    if not names:
+        out.append(("Gemini", False, "No GEMINI_API_KEY found in Secrets (check the name is exactly GEMINI_API_KEY, in capitals)."))
+    for i, key in enumerate(_gemini_keys(), 1):
+        label = f"Gemini key {i}"
+        if not key.startswith("AIza") or len(key) < 30 or any(c in key for c in " \"'\n"):
+            out.append((label, False, "The key looks wrong: it should start with AIza, with no spaces or extra quotes. Copy it again from Google AI Studio."))
+            continue
+        try:
+            _gemini("a red apple on a white table", "1:1", 1, None, key=key)
+            out.append((label, True, "Works: it can create pictures."))
+        except Exception as e:                      # noqa: BLE001
+            r = str(e).replace("Gemini: ", "")
+            hint = " Google's free tier often gives 0 picture quota; enabling billing on the Google project (or using another service) is needed." if "quota" in r or "free tier" in r else ""
+            out.append((label, False, r + "." + hint))
+    out.append(("Free public service", settings.flag("IMAGE_ALLOW_PUBLIC", True), "On (cannot use a reference photo)." if settings.flag("IMAGE_ALLOW_PUBLIC", True) else "Off."))
+    return out
+
+
 def fair_use(who, cost=1):
     """(allowed, seconds_to_wait) for one visitor. Limits per minute/hour come from Secrets IMAGE_PER_MINUTE (default 6) and IMAGE_PER_HOUR (default 40); 0 = no limit. IMAGE_GLOBAL_PER_MINUTE (default 0 = off) caps the whole app."""
     ok, wait = POOL.LIMITER.check(who or "anon", settings.number("IMAGE_PER_MINUTE", 6), settings.number("IMAGE_PER_HOUR", 40), cost)

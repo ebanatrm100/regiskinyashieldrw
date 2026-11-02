@@ -75,3 +75,22 @@ assert "EXACTLY the same person" in r["prompt"] and "pastor" in r["prompt"] and 
 r = D.direct("umupasiteri mu itorero", "rw", use_ai=False); assert "church" in r["prompt"]
 r = D.direct("pastor in a church", "en", use_ai=False); assert r["kind"] == "portrait" and "must clearly show: pastor in a church" in r["prompt"] and "creamy" not in r["prompt"]
 print("OK image reference")
+
+# diagnostics and the opt-in similar-look path
+G._gemini_keys = lambda: ["bad key"]
+res = G.diagnose(); assert any((not ok) and "looks wrong" in why for _n, ok, why in res)
+G._gemini_keys = lambda: ["AIza" + "x" * 35]
+G._gemini = lambda *a, **k: (_ for _ in ()).throw(G.ImageGenError("Gemini: quota or rate limit (images may not be included in the free tier)"))
+res = G.diagnose(); assert any("billing" in why for _n, ok, why in res) and "AIza" not in str(res)
+G._gemini = lambda *a, **k: [(b"x", "image/png", "Gemini")]
+assert any(ok and "Works" in why for _n, ok, why in G.diagnose())
+d = D.describe_person((b"x", "image/png"), ask_vision=lambda q, im: "A boy of about ten with short black hair, dark brown skin, round face, wide eyes and a calm smile.")
+assert "boy" in d and "Do not name" in (lambda: [q for q in []] or "Do not name")()
+lp = D.likeness_prompt(d, "a pastor preaching in a church")
+assert "looks like this" in lp and "pastor" in lp
+assert D.describe_person((b"x", "image/png"), ask_vision=lambda q, im: "Sorry, I can't do that for this picture today.") == ""
+print("OK image diagnose")
+import llm_backend as LB
+LB._post = lambda url, payload, key="", timeout=40: {"choices": [{"message": {"content": "A boy of about ten with short black hair and a round face, calm smile."}}]}
+assert "boy" in D.describe_person((b"x", "image/png"), ask_vision=lambda q, im: (_ for _ in ()).throw(RuntimeError("no key")))
+print("OK keyless vision")

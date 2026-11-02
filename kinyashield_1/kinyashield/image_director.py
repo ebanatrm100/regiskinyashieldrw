@@ -222,3 +222,31 @@ def direct(idea: str, lang: str = "en", style: str = "photo", aspect: str = "1:1
     if core is None:
         core = offline_prompt((en + ", " + extra.strip()) if extra.strip() else en, kind, photo=style in ("photo", "cinematic"))
     return {"prompt": G.build_prompt(core, style, aspect, complete=True), "english": core, "ai": used_ai, "kind": kind}
+
+
+# ---- reference photo without an image-editing AI: describe the person, then draw a SIMILAR-looking person (clearly not the same face)
+def describe_person(reference, ask_vision=None) -> str:
+    """English description of the visible look in the photo (age range, hair, skin tone, face shape, features, glasses, clothing) from the Gemini vision model; '' when unavailable.
+    Never names or identifies anyone."""
+    q = ("Describe only the visible appearance of the main person in this photo for an artist, in one English sentence of at most 45 words: apparent age range, gender presentation, hair (colour, length, style), "
+         "skin tone, face shape, eyes, eyebrows, nose, mouth, facial hair, glasses and expression. Do not name or identify the person and do not guess who they are.")
+    try:
+        if ask_vision is None:
+            import assistant_engine as E
+            ask_vision = lambda qq, im: E.answer_question(question=qq, history=[], language_name="English", language_code="en", images=[im])    # noqa: E731
+        t = ""
+        try:
+            t = (ask_vision(q, reference) or "").strip().replace("\n", " ")
+        except Exception:       # noqa: BLE001 (no Gemini key: try the free keyless service)
+            t = ""
+        if not (len(t) > 20 and not _BAD.match(t)):
+            import llm_backend
+            t = llm_backend.keyless_vision(q, reference).replace("\n", " ")
+        return t[:400] if len(t) > 20 and not _BAD.match(t) else ""
+    except Exception:           # noqa: BLE001
+        return ""
+
+
+def likeness_prompt(desc: str, english_idea: str) -> str:
+    return (f"A modern high-resolution photograph of a person who looks like this: {desc.rstrip('.')}. Show this person as: {english_idea.strip().rstrip('.')}. "
+            "The face fully visible and sharp, the whole subject in frame, correct hands, a fully rendered believable background, one clear light source, true-to-life colours.")

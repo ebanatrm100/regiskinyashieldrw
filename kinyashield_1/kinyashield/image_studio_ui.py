@@ -74,7 +74,8 @@ def _create(st, k, u):
     prompt = ""
     if idea.strip():
         try:
-            prompt = IG.build_prompt(idea, style, aspect) if better else idea.strip()
+            import image_director as DIR
+            prompt = DIR.direct(idea, k, style, aspect, use_ai=False)["prompt"] if better else idea.strip()     # instant preview; the AI art director refines it when you press the button
         except IG.ImageGenError:
             prompt = ""
     if prompt:
@@ -82,7 +83,7 @@ def _create(st, k, u):
             st.code(prompt, language=None)
     st.caption(u["tip"])
     sig_key, var_key = f"studio_sig_{k}", f"studio_var_{k}"
-    sig = (prompt, aspect, n, bool(up))
+    sig = (idea.strip(), style, aspect, n, bool(up), better)
     repeat = st.session_state.get(sig_key) == sig and bool(st.session_state.get(f"studio_out_{k}"))
     if st.button(u["again"] if repeat else u["go"], key=f"studio_go_{k}", type="primary"):
         if not idea.strip():
@@ -104,6 +105,11 @@ def _create(st, k, u):
         variant = (st.session_state.get(var_key, 0) + 1) if repeat else 0
         try:
             with st.spinner("…"):
+                if better:
+                    import image_director as DIR
+                    _d = DIR.direct(idea, k, style, aspect, use_ai=True)
+                    prompt = _d["prompt"]
+                    st.session_state[f"studio_used_{k}"] = (prompt, _d["ai"])
                 res = IG.generate(prompt, aspect, n, ref, variant=variant)
             for _k in [x for x in st.session_state if str(x).startswith("studio_out_")]:
                 st.session_state.pop(_k, None)          # keep only the newest pictures per visitor (memory on a busy server)
@@ -126,6 +132,10 @@ def _create(st, k, u):
                     st.image(data)
                 st.caption(f"{u['made']} {prov}")
                 st.download_button(u["dl"], data, file_name=f"kinyashield_image_{i + 1}." + ("jpg" if mime == "image/jpeg" else "webp" if mime == "image/webp" else "png"), mime=mime, key=f"studio_dl_{k}_{i}")
+        _used = st.session_state.get(f"studio_used_{k}")
+        if _used:
+            with st.expander(u["prompt"]):
+                st.code(_used[0], language=None)
         st.caption(IG.DISCLOSE[k])
 
 

@@ -339,7 +339,13 @@ with tab_chat:
         if _idea:
             try:
                 _ref = (_atts["images"][0][0], _atts["images"][0][1]) if _atts["images"] else None
-                _prompt_used = _ig.build_prompt(_idea, _ig.suggest_style(_idea), "1:1")
+                try:
+                    import image_director as _dir
+                    _prompt_used = _dir.direct(_idea, _chat_lang, _ig.suggest_style(_idea), "1:1")["prompt"]    # understood in all 4 languages, written as a complete finished picture
+                except _ig.ImageGenError:
+                    raise
+                except Exception:
+                    _prompt_used = _ig.build_prompt(_idea, _ig.suggest_style(_idea), "1:1")
                 _uid_ = st.session_state.setdefault("kinyashield_uid", __import__("uuid").uuid4().hex)
                 _ok_, _wait_ = _ig.fair_use(_uid_, 1)
                 if not _ok_:

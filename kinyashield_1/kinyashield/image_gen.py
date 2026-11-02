@@ -26,7 +26,7 @@ class ImageGenError(RuntimeError):
 ASPECTS = {"1:1": (1024, 1024), "16:9": (1344, 768), "9:16": (768, 1344), "4:3": (1152, 864), "3:4": (864, 1152), "3:2": (1248, 832)}
 
 STYLES = {  # id -> (label per language, English prompt fragment)
-    "photo": ({"en": "Realistic photo", "fr": "Photo réaliste", "rw": "Ifoto nyakuri", "sw": "Picha halisi"}, "photorealistic photograph, natural lighting, sharp focus, realistic textures, balanced composition"),
+    "photo": ({"en": "Realistic photo", "fr": "Photo réaliste", "rw": "Ifoto nyakuri", "sw": "Picha halisi"}, "photorealistic professional photograph, full-frame camera, natural lighting, tack-sharp focus, realistic textures, balanced composition"),
     "cinematic": ({"en": "Cinematic", "fr": "Cinématographique", "rw": "Nka filime", "sw": "Kisinema"}, "cinematic still, dramatic lighting, shallow depth of field, rich colour grading, clear focal point"),
     "watercolor": ({"en": "Watercolour", "fr": "Aquarelle", "rw": "Watercolor", "sw": "Rangi za maji"}, "soft watercolour painting, visible paper texture, gentle colour washes"),
     "illustration": ({"en": "Illustration", "fr": "Illustration", "rw": "Igishushanyo", "sw": "Mchoro"}, "clean digital illustration, bold shapes, coherent palette, clear outlines"),
@@ -37,14 +37,21 @@ STYLES = {  # id -> (label per language, English prompt fragment)
 QUALITY = "clear focal point, coherent anatomy, consistent shadows and perspective, balanced composition, no distorted hands or faces, no watermark, no unreadable text"
 
 
-def build_prompt(idea, style="photo", aspect="1:1", extra=""):
+def build_prompt(idea, style="photo", aspect="1:1", extra="", complete=False):
     """A stronger prompt from the person's idea (their own words are kept first), following the guide: subject first, then style, quality goals, constraints."""
     idea = re.sub(r"\s+", " ", (idea or "").strip())
     if not idea:
         raise ImageGenError("Describe the picture first.")
     frag = STYLES.get(style, STYLES["photo"])[1]
     ratio = {"16:9": "landscape composition", "9:16": "portrait composition", "1:1": "square composition", "4:3": "landscape composition", "3:4": "portrait composition", "3:2": "landscape composition"}.get(aspect, "")
-    parts = [idea.rstrip(".")] + ([extra.strip().rstrip(".")] if extra.strip() else []) + [frag, ratio, QUALITY]
+    tail = QUALITY
+    if complete:     # the idea is already a full description: add the "finished, whole picture" requirements compactly (services cut long prompts)
+        try:
+            import image_director as D
+            tail = D.TAIL_SHORT + ", coherent anatomy, consistent shadows and perspective"
+        except Exception:
+            pass
+    parts = [idea.rstrip(".")] + ([extra.strip().rstrip(".")] if extra.strip() else []) + [frag, ratio, tail]
     return ". ".join(p for p in parts if p)
 
 
@@ -226,7 +233,7 @@ def _public(prompt, aspect, n, reference, seed=0):
         raise ImageGenError("public service not enabled")
     w, h = ASPECTS.get(aspect, (1024, 1024))
     short = prompt.split(". ")[0][:300]
-    attempts = [(prompt[:700], "flux"), (short, "flux"), (short, "turbo"), (short, "")]
+    attempts = [(prompt[:900], "flux"), (short, "flux"), (short, "turbo"), (short, "")]
     out, last = [], None
     for i in range(n):
         for text, model in attempts:

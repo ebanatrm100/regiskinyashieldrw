@@ -50,13 +50,13 @@ X = {
                up_none="Hakuna kilichopangwa kwa kipindi hiki. Jaribu kipindi kirefu.", rec="kanuni ya kalenda inayojirudia", due="tarehe ya mwisho", up_title="Yajayo", live_off="Tarehe za mwisho za moja kwa moja hazikupatikana; kalenda inayojirudia pekee ndiyo inaonyeshwa.", tr_btn="Tafsiri vichwa hivi kwa Kiswahili", tr_busy="Inatafsiri…", tr_fail="Tafsiri haikuweza kufanywa sasa (huenda ufunguo wa AI haupo). Vichwa asili vinabaki juu.", tr_note="Tafsiri ya kompyuta ya vichwa pekee; fungua kiungo kuona asili.", uptodate="Hupatikana moja kwa moja unapobonyeza Tafuta; matokeo hukaa dakika 10."),
 }
 EX = {
-    "en": dict(explain="Explain this", digest="In plain words", ai_btn="Explain these results in more depth (AI)", ai_busy="Explaining…", ai_fail="The AI explanation is not available now (the AI key may be missing). The plain-language explanations above still work.",
+    "en": dict(full='Read the full story', full_busy='Getting the full story…', full_src='Full text from the source page (first part)', full_none='The source page could not be read here (it may block automated readers or need a login). Open the link above for the full article.', full_ai='Complete explanation (AI, from the text above)', full_note='Based only on the text fetched from the source. Check the link for the full facts.', explain="Explain this", digest="In plain words", ai_btn="Explain these results in more depth (AI)", ai_busy="Explaining…", ai_fail="The AI explanation is not available now (the AI key may be missing). The plain-language explanations above still work.",
                ai_note="AI explanation of the headlines above. It may contain mistakes: open the links for the facts."),
-    "fr": dict(explain="Expliquer", digest="En termes simples", ai_btn="Expliquer ces résultats plus en profondeur (IA)", ai_busy="Explication…", ai_fail="L'explication par l'IA n'est pas disponible maintenant (la clé IA manque peut-être). Les explications simples ci-dessus fonctionnent toujours.",
+    "fr": dict(full="Lire l'article complet", full_busy="Récupération de l'article…", full_src='Texte complet de la page source (première partie)', full_none="La page source n'a pas pu être lue ici (elle bloque peut-être les lecteurs automatiques ou demande une connexion). Ouvrez le lien ci-dessus pour l'article complet.", full_ai='Explication complète (IA, à partir du texte ci-dessus)', full_note='Basé uniquement sur le texte récupéré de la source. Consultez le lien pour tous les faits.', explain="Expliquer", digest="En termes simples", ai_btn="Expliquer ces résultats plus en profondeur (IA)", ai_busy="Explication…", ai_fail="L'explication par l'IA n'est pas disponible maintenant (la clé IA manque peut-être). Les explications simples ci-dessus fonctionnent toujours.",
                ai_note="Explication par l'IA des titres ci-dessus. Elle peut contenir des erreurs : ouvrez les liens pour les faits."),
-    "rw": dict(explain="Sobanura", digest="Mu magambo yoroshye", ai_btn="Sobanura ibi bisubizo byimbitse (AI)", ai_busy="Turasobanura…", ai_fail="Isobanura rya AI ntirishoboka ubu (urufunguzo rwa AI rushobora kuba rutarimo). Ibisobanuro byoroshye byo hejuru biracyakora.",
+    "rw": dict(full='Soma inkuru yose', full_busy='Turimo kuzana inkuru yose…', full_src="Inyandiko yose y'urupapuro rw'isoko (igice cya mbere)", full_none="Urupapuro rw'isoko ntirwashoboye gusomwa hano (rushobora kubuza porogaramu cyangwa gusaba kwinjira). Fungura umurongo uri hejuru usome inkuru yose.", full_ai='Ibisobanuro byuzuye (AI, ishingiye ku nyandiko iri hejuru)', full_note='Bishingiye gusa ku nyandiko yavuye ku isoko. Reba umurongo ku makuru yose.', explain="Sobanura", digest="Mu magambo yoroshye", ai_btn="Sobanura ibi bisubizo byimbitse (AI)", ai_busy="Turasobanura…", ai_fail="Isobanura rya AI ntirishoboka ubu (urufunguzo rwa AI rushobora kuba rutarimo). Ibisobanuro byoroshye byo hejuru biracyakora.",
                ai_note="Isobanura rya AI ry'imitwe iri hejuru. Rishobora kuba rifite amakosa: fungura imirongo urebe ukuri."),
-    "sw": dict(explain="Eleza hili", digest="Kwa maneno rahisi", ai_btn="Eleza matokeo haya kwa undani (AI)", ai_busy="Inaeleza…", ai_fail="Maelezo ya AI hayapatikani sasa (huenda ufunguo wa AI haupo). Maelezo rahisi hapo juu bado yanafanya kazi.",
+    "sw": dict(full='Soma habari kamili', full_busy='Inapata habari kamili…', full_src='Maandishi kamili kutoka ukurasa wa chanzo (sehemu ya kwanza)', full_none='Ukurasa wa chanzo haukuweza kusomwa hapa (huenda unazuia visomaji otomatiki au unahitaji kuingia). Fungua kiungo hapo juu kwa makala kamili.', full_ai='Maelezo kamili (AI, kutoka maandishi yaliyo juu)', full_note='Yanatokana na maandishi yaliyopatikana kutoka chanzo pekee. Angalia kiungo kwa ukweli kamili.', explain="Eleza hili", digest="Kwa maneno rahisi", ai_btn="Eleza matokeo haya kwa undani (AI)", ai_busy="Inaeleza…", ai_fail="Maelezo ya AI hayapatikani sasa (huenda ufunguo wa AI haupo). Maelezo rahisi hapo juu bado yanafanya kazi.",
                ai_note="Maelezo ya AI ya vichwa vilivyo juu. Yanaweza kuwa na makosa: fungua viungo kupata ukweli."),
 }
 
@@ -64,10 +64,38 @@ EX = {
 def explain_item(st, it: dict, lang: str):
     e = cx.explain(it, lang)
     l1, l2, l3 = e["labels"]
-    with st.expander(f"{EX[lang]['explain']} · {e['kind_name']}"):
+    x = EX[lang]
+    import hashlib
+    kid = hashlib.md5((it.get("url") or it.get("title", "")).encode("utf-8", "ignore")).hexdigest()[:10]
+    store = f"intel_state_full_{kid}_{lang}"                      # never a widget key
+    ss = st.session_state
+    with st.expander(f"{x['explain']} · {e['kind_name']}", expanded=store in ss):
         st.markdown(f"**{l1}.** {e['what']}")
         st.markdown(f"**{l2}.** {e['why']}")
         st.markdown(f"**{l3}.** {e['do']}")
+        if st.button(x["full"], key=f"intel_full_{kid}_{lang}"):
+            import cyber_fulltext as ft
+            with st.spinner(x["full_busy"]):
+                story = ft.fetch_story(it.get("url", ""))
+                ai, err = ft.explain_story(it, story["text"], lang)
+            ss[store] = (story, ai, err)
+        if store in ss:
+            story, ai, err = ss[store]
+            if story["text"]:
+                st.markdown(f"**{x['full_src']}**")
+                st.write(story["text"])
+            elif it.get("summary"):
+                st.write(it["summary"])
+                st.caption(x["full_none"])
+            else:
+                st.caption(x["full_none"])
+            if ai:
+                st.markdown(f"**{x['full_ai']}**")
+                st.markdown(ai)
+                st.caption(x["full_note"])
+            elif err:
+                import ai_status
+                st.info(ai_status.explain_failure(err, lang))
 
 
 def explain_ai(titles, lang: str):
@@ -105,7 +133,7 @@ def render_results(st, res: dict, lang: str, tx: dict):
         for it in items:
             st.markdown(f"**[{_md(it['title'])}]({it['url']})**  \n:gray[{_md(it['source'])} · {tx[_BADGE.get(it['kind'], 'news')]} · {it['date']}]")
             if it.get("summary"):
-                st.caption(_md(it["summary"]))
+                st.write(_md(it["summary"]))
             explain_item(st, it, lang)
     if res.get("sources"):
         st.caption(f"**{tx['sources']}:** " + ", ".join(f"{n} ({c})" for n, _k, c in res["sources"][:14]))

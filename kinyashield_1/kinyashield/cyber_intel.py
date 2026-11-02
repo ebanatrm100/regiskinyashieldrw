@@ -336,7 +336,7 @@ def _http(url: str, accept: str = "application/xml, application/rss+xml, text/xm
         return r.read(3_000_000)
 
 
-def _strip(text: str, n: int = 260) -> str:
+def _strip(text: str, n: int = 900) -> str:
     text = html.unescape(re.sub(r"<[^>]+>", " ", text or ""))
     text = re.sub(r"\s+", " ", text).strip()
     return text if len(text) <= n else text[: n - 1].rsplit(" ", 1)[0] + "…"

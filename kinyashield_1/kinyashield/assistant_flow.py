@@ -168,6 +168,16 @@ def route(question, lang, force_ai=False, history=None):
         _special = _request_intent(q, lang, history)
         if _special is not None:
             return _special
+    if not force_ai and len(q) < 220:      # world tools: currency (live rates), units, time zones, country facts, distances, dates; in all four languages
+        try:
+            import world_tools as _wt
+            _w = _wt.answer(q, lang)
+            if _w:
+                from textutil import entry as _entry2
+                _t = {x: _wt._T[x]["title"] for x in _wt._T}
+                return {"kind": "guide", "entry": _entry2("world_tools", "world", _t, {x: _w for x in _t})}
+        except Exception:
+            pass
     if not force_ai and len(q) < 200 and _LOG_HELP.search(q):
         try:
             from textutil import entry as _entry

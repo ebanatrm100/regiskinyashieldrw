@@ -520,8 +520,8 @@ def friendly_error(exc, lang="en"):
 _VERB = r"(?:generate|create|make|draw|paint|design|produce|render|imagine|sketch|illustrate|génère|genere|générer|crée|cree|créer|dessine|dessiner|fais|fabrique|peins|kora|shushanya|ntegurira|nkorera|nshushanyiriza|tengeneza|nitengenezee|chora|nichoree|unda)"
 _NOUN = r"(?:an?\s+|the\s+|une?\s+|des\s+|some\s+)?(?:image|picture|photo|illustration|drawing|painting|poster|logo|icon|artwork|wallpaper|portrait|banner|cartoon|image|dessin|affiche|logo|icône|ishusho|igishushanyo|logo|ifoto|picha|mchoro|nembo|bango)"
 _REQ = [
-    re.compile(rf"^\s*(?:please\s+|s'il te pla[iî]t\s+|nyabuneka\s+|tafadhali\s+)?(?:can you\s+|could you\s+|peux-tu\s+|pouvez-vous\s+)?{_VERB}(?:\s+me|\s+moi)?\s+(?P<noun>{_NOUN})\s+(?P<prep>of|about|showing|with|for|de|d'|du|des|pour|ya|y'|za|wa|kuri|yerekana|ina|kwa)\s*(?P<idea>.+?)\s*$", re.I | re.S),
-    re.compile(rf"^\s*(?:draw|paint|sketch|illustrate|dessine|peins|chora|shushanya)(?:\s+me|\s+moi)?\s+(?P<idea>.+?)\s*$", re.I | re.S),
+    re.compile(rf"^\s*(?:please\s+|s'il te pla[iî]t\s+|nyabuneka\s+|tafadhali\s+)?(?:can you\s+|could you\s+|peux-tu\s+|pouvez-vous\s+)?{_VERB}(?:\s+me|\s+moi|-moi)?\s+(?P<noun>{_NOUN})\s+(?P<prep>of|about|showing|with|for|de|d'|du|des|pour|ya|y'|za|wa|kuri|yerekana|ina|kwa)\s*(?P<idea>.+?)\s*$", re.I | re.S),
+    re.compile(rf"^\s*(?:draw|paint|sketch|illustrate|dessine|peins|chora|shushanya)(?:\s+me|\s+moi|-moi)?\s+(?P<idea>.+?)\s*$", re.I | re.S),
     re.compile(rf"^\s*(?:image|picture|draw|imagine|dessine|ishusho|picha)\s*[:：]\s*(?P<idea>.+?)\s*$", re.I | re.S),
 ]
 _REAL = re.compile(r"^\s*(?:show|give|find|get|display|montre|affiche|ndeshya|nyereka|nionyeshe|onyesha)\b", re.I)

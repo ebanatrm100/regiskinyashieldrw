@@ -93,11 +93,13 @@ RULES = [
                 r"\bto (?:receive|claim|release|collect|unlock)\b[^.!?\n]{0,40}\b(?:prize|scholarship|loan|parcel|package|reward|gift|funds)\b[^.!?\n]{0,50}\b(?:pay|send|deposit)\b[^.!?\n]{0,30}\b(?:fee|fees|rwf|frw)\b",
             ],
             "fr": [
-                r"\b(?:payez?|payer|versez?|verser|envoyez?|envoyer|deposez?|transferez?)\b[^.!?\n]{0,40}?\b(?:frais|taxe|taxes|droits?|commission|caution)\b[^.!?\n]{0,60}?\b(?:pour (?:recevoir|obtenir|debloquer|reclamer|retirer|toucher|activer)|avant de (?:recevoir|retirer|toucher))\b",
+                r"\b(?:payez?|payer|versez?|verser|envoyez?|envoyer|deposez?|transferez?)\b[^.!?\n]{0,40}?\b(?:frais|taxe|taxes|droits?|commission|caution)\b[^.!?\n]{0,60}?\b(?:(?:pour|afin de) (?:le |la |les |l')?(?:recevoir|obtenir|debloquer|reclamer|retirer|toucher|activer|recuperer)|avant de (?:recevoir|retirer|toucher))\b",
                 r"\bpour (?:recevoir|reclamer|debloquer|retirer|toucher|obtenir)\b[^.!?\n]{0,40}\b(?:prix|gain|gains|bourse|pret|colis|cadeau|fonds|lot)\b[^.!?\n]{0,50}\b(?:payez?|envoyez?|versez?)\b[^.!?\n]{0,30}\b(?:frais|rwf|frw|fcfa|usd)\b",
             ],
             "rw": [
                 r"\b(?:ishyura|kwishyura|ohereza|tanga)\b[^.!?\n]{0,50}?\b(?:amafaranga|frw|rwf|ubwishyu|frais)\b[^.!?\n]{0,60}?\b(?:kugira ngo|kugirango|mbere yo)\b",
+                r"\b(?:ohereza|ishyura|tanga)\b[^.!?\n]{0,40}\b(?:ubanze|ubanza|mbere)\b[^.!?\n]{0,40}\b(?:wishyure|kwishyura|ishyura|utange)\b[^.!?\n]{0,50}\b(?:kugira ngo|kugirango)\b",
+                r"\b(?:kugira ngo|kugirango)\b[^.!?\n]{0,30}\b(?:wakire|ubone|ugihabwe|uhabwe|wohererezwe)\b[^.!?\n]{0,40}\b(?:igihembo|inguzanyo|buruse|ipaki|amafaranga)\b",
             ],
             "sw": [
                 r"\b(?:lipa|tuma|weka|toa)\b[^.!?\n]{0,50}?\b(?:ada|ushuru|gharama|malipo|tsh|rwf|frw|kes)\b[^.!?\n]{0,60}?\b(?:ili (?:u(?:i|ya|zi|li)?(?:pate|pokee)|kupokea|kupata|kutoa|kuchukua)|kabla ya kupokea)\b",
@@ -209,7 +211,7 @@ RULES = [
         "patterns": {
             "en": [r"\b(?:you(?:'ve| have)? won|you were selected|you have been selected|selected to receive|lucky (?:draw|winner)|winner!)\b"],
             "fr": [r"\b(?:vous avez gagne|vous etes (?:le |la )?(?:gagnant|gagnante|selectionne|selectionnee|choisi|choisie)|gagnant du tirage|tirage au sort)\b"],
-            "rw": [r"\b(?:watsindiye|mwatsindiye|wegukanye|mwegukanye|watoranyijwe|mwatoranyijwe)\b"],
+            "rw": [r"\b(?:watsindiye|mwatsindiye|wegukanye|mwegukanye|watoranyijwe|mwatoranyijwe|wahawe igihembo|mwahawe igihembo|watsinze (?:miliyoni|igihembo|tombola|amafaranga)|mwatsinze (?:miliyoni|igihembo|tombola|amafaranga))\b"],
             "sw": [r"\b(?:umeshinda|umechaguliwa kupokea|umechaguliwa kupata|umechaguliwa kuwa mshindi|mshindi wa bahati nasibu|droo ya bahati nasibu)\b"],
         },
     },

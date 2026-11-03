@@ -25,6 +25,13 @@ def _translation_request(routed, ui_lang):
 
 st.set_page_config(page_title="KinyaShield RW", page_icon="\U0001F6E1", layout="centered")
 
+
+try:
+    import warmup
+    warmup.start()      # background, once per server process
+except Exception:
+    pass
+
 lang = st.sidebar.radio("Language", LANGS, format_func=lambda x: LANG_NAMES[x])
 t = ui.STR[lang]
 st.markdown(ui.CSS, unsafe_allow_html=True)

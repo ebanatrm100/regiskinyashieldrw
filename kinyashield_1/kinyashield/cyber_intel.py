@@ -24,7 +24,8 @@ from textutil import fold
 UA = "KinyaShieldRW/1.0 (https://regiskinyashieldrw.streamlit.app; cyber awareness; contact via the app)"
 TZ = timezone(timedelta(hours=2))          # Africa/Kigali
 HTTP_TIMEOUT = 8
-TOTAL_TIMEOUT = 12
+TOTAL_TIMEOUT = 9
+EARLY_SECONDS = 4          # after this long, stop waiting when most sources have already answered
 CACHE_SECONDS = 600
 TOPICS = ("security", "awareness", "crime")
 
@@ -549,7 +550,9 @@ def _search(period: dict, topics=None, lang: str = "en", text: str = "", fetch_j
     results, failed = [], []
     ex = cf.ThreadPoolExecutor(max_workers=14)
     futs = {ex.submit(fn): (name, kind, tps) for name, kind, tps, fn in jobs}
-    done, pending = cf.wait(futs, timeout=TOTAL_TIMEOUT)
+    done, pending = cf.wait(futs, timeout=min(EARLY_SECONDS, TOTAL_TIMEOUT))
+    if pending and len(done) < 0.75 * len(futs):                  # too few answers yet: wait for the slow sources, up to the hard limit
+        done, pending = cf.wait(futs, timeout=max(0.1, TOTAL_TIMEOUT - EARLY_SECONDS))
     for f in pending:
         failed.append(futs[f][0])
         f.cancel()
